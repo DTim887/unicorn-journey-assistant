@@ -11,6 +11,7 @@
 	<groupId>com.unicorn</groupId>
 	<artifactId>unicorn-journey-assistant</artifactId>
 	<version>1.0.0</version>
+    <packaging>jar</packaging>
 	<name>unicorn-journey-assistant</name>
 	<description>unicorn-journey-assistant</description>
 	<url/>
