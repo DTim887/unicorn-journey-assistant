@@ -41,7 +41,7 @@ public abstract class BaseService<T> {
     private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
 
     /**
-     * 通用方法：根据枚举键获取缓存对象
+     * 通用方法：根据缓存Key获取缓存对象
      */
     public T get(Object cacheKey) {
         return getInternal(cacheKey);
