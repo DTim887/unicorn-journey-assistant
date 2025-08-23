@@ -1,7 +1,6 @@
 package com.unicorn.journey.assistant;
 
 import com.unicorn.journey.assistant.entity.Order;
-import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.OrderService;
 import com.unicorn.journey.assistant.service.UserService;
 import jakarta.annotation.Resource;
@@ -22,19 +21,19 @@ class UnicornJourneyAssistantApplicationTests {
 
     @Test
     void contextLoads() {
-        User getUser1 = userService.retrieveUserById(1);
-        User user = User.builder().id(1).nickname("Tim").build();
-        userService.saveUser(user);
-        User user1 = User.builder().id(2).nickname("Seval").build();
-        userService.saveUser(user1);
-        User getUser2 = userService.retrieveUserById(2);
-        List<User> users = userService.retrieveAllUsers();
+//        User getUser1 = userService.retrieveUserById(1);
+//        User user = User.builder().id(1).nickname("Tim").build();
+//        userService.saveUser(user);
+//        User user1 = User.builder().id(2).nickname("Seval").build();
+//        userService.saveUser(user1);
+//        User getUser2 = userService.retrieveUserById(2);
+//        List<User> users = userService.retrieveAllUsers();
 
 //        CaffeineCacheManager cacheManager = SpringBeanUtils.getBean(CaffeineCacheManager.class);
 //        CaffeineCache nativeCache =  (CaffeineCache)cacheManager.getCache("USERS");
 //        Assertions.assertNotNull(cache);
 //        CaffeineCache nativeCache = (CaffeineCache) cache.getNativeCache();
-        System.out.println(users);
+//        System.out.println(users);
 
         Order order = Order.builder().id(1).orderNo("CH112233").build();
         Order order1 = Order.builder().id(2).orderNo("CC11222").build();

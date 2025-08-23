@@ -2,6 +2,7 @@ package com.unicorn.journey.assistant.config;
 
 
 import com.unicorn.journey.assistant.chat.AiService;
+import com.unicorn.journey.assistant.service.OrderService;
 import com.unicorn.journey.assistant.service.UserService;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
 import dev.langchain4j.memory.ChatMemory;
@@ -33,6 +34,12 @@ public class ChatModelConfiguration {
 
     @Bean
     public StreamingChatModel streamingChatModel() {
+//        return GoogleAiGeminiStreamingChatModel.builder()
+//                .modelName("gemini-2.5-flash-lite")
+//                .apiKey("AIzaSyDxySH9-KCJb1F9Ec2SSMeqyb0jdEKd3yA")
+//                .temperature(0.3)
+//                .listeners(List.of(customChatModelListener))
+//                .build();
         return QwenStreamingChatModel.builder()
                 .modelName(streamModelName)
                 .apiKey(streamModelKey)
@@ -50,7 +57,7 @@ public class ChatModelConfiguration {
 //    }
 
     @Bean
-    public AiService aiServices(){
+    public AiService aiServices(OrderService orderService){
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(100);
         return AiServices.builder(AiService.class)
 //                .chatModel(chatModel())

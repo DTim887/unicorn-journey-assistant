@@ -11,4 +11,6 @@ import lombok.*;
 public class User {
     private int id;
     private String nickname;
+    private String sex;
+    private String[] tags;
 }

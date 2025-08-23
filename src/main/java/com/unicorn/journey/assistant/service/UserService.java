@@ -13,13 +13,14 @@ import java.util.List;
 public class UserService extends BaseService<User> {
 
 
+    //Save user with nickname as key
     public void saveUser(User user) {
-        this.put(user.getId(), user);
+        this.put(user.getNickname(), user);
     }
 
-    @Tool("Get user by user id")
-    public User retrieveUserById(int id) {
-        return this.get(id);
+    @Tool("Get user by nickname")
+    public User retrieveUserById(String name) {
+        return this.get(name);
     }
 
     @Tool("Get all users")
