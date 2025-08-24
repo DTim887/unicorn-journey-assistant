@@ -12,5 +12,6 @@ public class User {
     private int id;
     private String nickname;
     private String sex;
+    private String avatar;
     private String[] tags;
 }

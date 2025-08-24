@@ -1,12 +1,12 @@
 package com.unicorn.journey.assistant.controller;
 
+import com.unicorn.journey.assistant.controller.request.LoginRequest;
 import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -18,9 +18,10 @@ public class UserController {
     }
 
     //switch login user
+    @CrossOrigin(origins = "*")
     @PostMapping("/user/login")
-    public Result login(@RequestParam String nickname) {
-        User user = userService.retrieveUserByNickname(nickname);
+    public Result login(@RequestBody LoginRequest loginRequest) {
+        User user = userService.retrieveUserByNickname(loginRequest.getNickname());
         if (user != null) {
             userService.login(user);
         }
@@ -28,10 +29,19 @@ public class UserController {
     }
 
     //Get current login user
+    @CrossOrigin(origins = "*")
     @GetMapping("/user/current")
     public Result currentUser() {
         User currentUser = userService.currentUser();
         return Result.ok(currentUser);
+    }
+
+    //Get all user in system
+    @CrossOrigin(origins = "*")
+    @GetMapping("/user/all")
+    public Result allUser() {
+        List<User> allUser = userService.getAll(User.class);
+        return Result.ok(allUser);
     }
 
 }

@@ -1,4 +1,22 @@
 [
-  {"id": 1, "nickname": "Tim", "sex":"male", "tags": ["亲子","冒险"]},
-  {"id": 2, "nickname": "Seval","sex":"male","tags": ["浪漫","刺激"]}
+  {
+    "id": 1,
+    "nickname": "Tim",
+    "sex": "男",
+    "avatar": "/images/lion.png",
+    "tags": [
+      "亲子",
+      "冒险"
+    ]
+  },
+  {
+    "id": 2,
+    "nickname": "Seval",
+    "sex": "男",
+    "avatar": "/images/panda.png",
+    "tags": [
+      "浪漫",
+      "刺激"
+    ]
+  }
 ]

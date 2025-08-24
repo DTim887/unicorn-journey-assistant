@@ -7,10 +7,14 @@ import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 @LocalCache(value = CacheName.USERS)
 public class UserService extends BaseService<User> {
+
+    private static final ConcurrentMap<String, User> loginCache = new ConcurrentHashMap<>();
 
 
     //Save user with nickname as key
@@ -30,11 +34,11 @@ public class UserService extends BaseService<User> {
 
     //用户登录
     public void login(User user) {
-        this.put("login", user);
+        loginCache.put("login", user);
     }
 
     //获取当前登录用户
     public User currentUser() {
-        return this.get("login");
+        return loginCache.get("login");
     }
 }
