@@ -1,5 +1,7 @@
 package com.unicorn.journey.assistant.constant;
 
+import com.unicorn.journey.assistant.chat.AiService;
+import com.unicorn.journey.assistant.entity.Facility;
 import com.unicorn.journey.assistant.entity.Order;
 import com.unicorn.journey.assistant.entity.User;
 import lombok.Getter;

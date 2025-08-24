@@ -2,7 +2,9 @@ package com.unicorn.journey.assistant.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unicorn.journey.assistant.entity.Facility;
 import com.unicorn.journey.assistant.entity.User;
+import com.unicorn.journey.assistant.service.FacilityService;
 import com.unicorn.journey.assistant.service.UserService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
