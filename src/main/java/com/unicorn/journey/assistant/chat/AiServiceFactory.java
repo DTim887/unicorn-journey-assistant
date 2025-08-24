@@ -4,6 +4,7 @@ import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.BaseService;
+import com.unicorn.journey.assistant.service.FacilityService;
 import com.unicorn.journey.assistant.service.UserService;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -11,6 +12,8 @@ import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @LocalCache(value = CacheName.AISERVICE)
@@ -21,6 +24,9 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FacilityService facilityService;
 
     public AiService getAiService(User user) {
         AiService aiService = this.get(user.getId());
@@ -39,7 +45,7 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .chatMemoryProvider(memoryId -> chatMemory)
 //               .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
-//                .tools(List.of(userService))
+                .tools(List.of(userService,facilityService))
                 .build();
         this.put(id, aiService);
         return aiService;
