@@ -36,8 +36,14 @@ public class DataInitializer implements ApplicationRunner {
             return;
         }
         try (InputStream inputStream = resource.getInputStream()) {
-            List<User> users = objectMapper.readValue(inputStream, new TypeReference<List<User>>() {});
+            List<User> users = objectMapper.readValue(inputStream, new TypeReference<List<User>>() {
+            });
             users.forEach(userService::saveUser);
+            //预设当前Tim是登录用户
+            User currentUser = userService.retrieveUserByNickname("Tim");
+            if (currentUser != null) {
+                userService.login(currentUser);
+            }
             log.info("预热 user 缓存 End");
         }
     }

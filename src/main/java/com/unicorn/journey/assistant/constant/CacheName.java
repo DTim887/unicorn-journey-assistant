@@ -1,12 +1,13 @@
 package com.unicorn.journey.assistant.constant;
 
+import com.unicorn.journey.assistant.chat.AiService;
 import com.unicorn.journey.assistant.entity.Order;
 import com.unicorn.journey.assistant.entity.User;
 import lombok.Getter;
 
 @Getter
 public enum CacheName{
-
+    AISERVICE("AISERVICE", AiService.class),
     USERS("USERS", User.class),
     ORDERS("ORDERS", Order.class),
     ;

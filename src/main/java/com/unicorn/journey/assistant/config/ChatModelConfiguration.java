@@ -1,14 +1,9 @@
 package com.unicorn.journey.assistant.config;
 
 
-import com.unicorn.journey.assistant.chat.AiService;
-import com.unicorn.journey.assistant.service.OrderService;
 import com.unicorn.journey.assistant.service.UserService;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
-import dev.langchain4j.memory.ChatMemory;
-import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.StreamingChatModel;
-import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -55,20 +50,6 @@ public class ChatModelConfiguration {
 ////                .listeners(List.of(myChatModelListener))
 //                .build();
 //    }
-
-    @Bean
-    public AiService aiServices(OrderService orderService){
-        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(100);
-        return AiServices.builder(AiService.class)
-//                .chatModel(chatModel())
-                .streamingChatModel(streamingChatModel())
-                .chatMemory(chatMemory)
-                .chatMemoryProvider(memoryId -> chatMemory)
-//                .toolProvider(mcpToolProvider)  //mcp tool
-                //register the tools
-                .tools(List.of(userService))
-                .build();
-    }
 
 
 }
