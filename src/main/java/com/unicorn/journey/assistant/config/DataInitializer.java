@@ -2,7 +2,9 @@ package com.unicorn.journey.assistant.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unicorn.journey.assistant.entity.Facility;
 import com.unicorn.journey.assistant.entity.User;
+import com.unicorn.journey.assistant.service.FacilityService;
 import com.unicorn.journey.assistant.service.UserService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
@@ -25,20 +27,35 @@ public class DataInitializer implements ApplicationRunner {
     @Resource
     UserService userService;
 
+    @Resource
+    FacilityService facilityService;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         // Load the JSON file from the classpath (src/main/resources)
         log.info("预热 user 缓存 Start");
-        ClassPathResource resource = new ClassPathResource("user.json");
-        if (!resource.exists()) {
+        ClassPathResource userResource = new ClassPathResource("user.json");
+        if (!userResource.exists()) {
             log.error("文件不存在: users.json");
             return;
         }
-        try (InputStream inputStream = resource.getInputStream()) {
-            List<User> users = objectMapper.readValue(inputStream, new TypeReference<List<User>>() {});
+        try (InputStream userInputStream = userResource.getInputStream()) {
+            List<User> users = objectMapper.readValue(userInputStream, new TypeReference<List<User>>() {});
             users.forEach(userService::saveUser);
             log.info("预热 user 缓存 End");
+        }
+
+        log.info("预热 facility 缓存 Start");
+        ClassPathResource facilityResource = new ClassPathResource("facility.json");
+        if (!facilityResource.exists()) {
+            log.error("文件不存在: facility.json");
+            return;
+        }
+        try (InputStream facilityInputStream = facilityResource.getInputStream()) {
+            List<Facility> facilities = objectMapper.readValue(facilityInputStream, new TypeReference<List<Facility>>() {});
+            facilities.forEach(facilityService::saveFacility);
+            log.info("预热 facility 缓存 End");
         }
     }
 }

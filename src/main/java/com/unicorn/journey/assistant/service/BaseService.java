@@ -21,7 +21,7 @@ public abstract class BaseService<T> {
     private CacheName cacheName;
 
     private static class SessionManagerHolder {
-        private final static CaffeineCacheManager cacheManager = SpringBeanUtils.getBean(CaffeineCacheManager.class);
+        private static final CaffeineCacheManager cacheManager = SpringBeanUtils.getBean(CaffeineCacheManager.class);
     }
 
     @PostConstruct

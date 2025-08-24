@@ -2,6 +2,7 @@ package com.unicorn.journey.assistant.config;
 
 
 import com.unicorn.journey.assistant.chat.AiService;
+import com.unicorn.journey.assistant.service.FacilityService;
 import com.unicorn.journey.assistant.service.OrderService;
 import com.unicorn.journey.assistant.service.UserService;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
@@ -26,6 +27,9 @@ public class ChatModelConfiguration {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FacilityService facilityService;
 
     @Resource
     private CustomChatModelListener customChatModelListener;
@@ -66,7 +70,7 @@ public class ChatModelConfiguration {
                 .chatMemoryProvider(memoryId -> chatMemory)
 //                .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
-                .tools(List.of(userService))
+                .tools(List.of(userService, facilityService))
                 .build();
     }
 
