@@ -25,6 +25,9 @@ public class DataInitializer implements ApplicationRunner {
     @Resource
     UserService userService;
 
+    @Resource
+    FacilityService facilityService;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -45,6 +48,18 @@ public class DataInitializer implements ApplicationRunner {
                 userService.login(currentUser);
             }
             log.info("预热 user 缓存 End");
+        }
+
+        log.info("预热 facility 缓存 Start");
+        ClassPathResource facilityResource = new ClassPathResource("facility.json");
+        if (!facilityResource.exists()) {
+            log.error("文件不存在: facility.json");
+            return;
+        }
+        try (InputStream facilityInputStream = facilityResource.getInputStream()) {
+            List<Facility> facilities = objectMapper.readValue(facilityInputStream, new TypeReference<List<Facility>>() {});
+            facilities.forEach(facilityService::saveFacility);
+            log.info("预热 facility 缓存 End");
         }
     }
 }
