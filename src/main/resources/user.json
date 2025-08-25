@@ -18,5 +18,16 @@
       "浪漫",
       "刺激"
     ]
+  },
+  {
+    "id": 3,
+    "nickname": "Mary",
+    "sex": "女",
+    "avatar": "/images/mary.png",
+    "tags": [
+      "浪漫",
+      "童话",
+      "情侣"
+    ]
   }
 ]
