@@ -11,21 +11,31 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Facility {
-    private int id;
+public class Attraction {
+
+    /**
+     * 景点id
+     */
+    private Integer attractionId;
 
     /**
      * 景点名称
      */
-    private String facilityName;
+    private String attractionName;
+
+
+    /**
+     * 排队时间 单位:分钟
+     */
+    private Integer queueTime;
 
     /**
      * 景点照
      */
-    private String facilityPhoto;
+    private String image;
 
     /**
-     * 标签
+     * 标签、特征
      */
     private String[] tags;
 }
