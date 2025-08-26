@@ -42,3 +42,25 @@ curl --location 'http://localhost:8080/journey-assistant/user/all'
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/stream-chat?userMessage=%E7%99%BB%E5%BD%95%E7%94%A8%E6%88%B7'
 ```
+
+#### 保存订单
+```shell
+curl --location 'http://localhost:8080/journey-assistant/order/save' \
+--header 'Content-Type: application/json' \
+--data '{
+    "id":2,
+    "userId":2,
+    "productName":"二日票",
+    "price":300.00
+}'
+```
+
+#### 根据订单号获取订单
+```shell
+curl --location 'http://localhost:8080/journey-assistant/order/get/2'
+```
+
+#### 根据用户ID获取订单
+```shell
+curl --location 'http://localhost:8080/journey-assistant/order/get?userId=2'
+```
