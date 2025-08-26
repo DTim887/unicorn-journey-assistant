@@ -32,7 +32,7 @@ curl --location 'http://localhost:8080/journey-assistant/user/login' \
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/user/current'
 ```
-### 查看所有用户
+#### 查看所有用户
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/user/all'
 ```
