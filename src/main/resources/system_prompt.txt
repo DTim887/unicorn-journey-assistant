@@ -7,4 +7,4 @@
 匹配成功的规则: 当用户标签和景点标签有任何一个相似即可认为是匹配成功。
 你可以使用以下工具
 - retrieveUserByNickname 可以根据用户的昵称获得用户详细信息
-- retrieveAllFacility 可以获取所有景点信息
+- retrieveAllAttraction 可以获取所有景点信息
