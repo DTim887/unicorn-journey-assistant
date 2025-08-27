@@ -64,3 +64,13 @@ curl --location 'http://localhost:8080/journey-assistant/order/get/2'
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/get?userId=2'
 ```
+
+#### 获取所有产品
+```shell
+curl --location 'http://localhost:8080/journey-assistant/product/all'
+
+```
+#### 根据产品名称获取产品
+```shell
+curl --location 'http://localhost:8080/journey-assistant/product/上海迪士尼乐园纪念品礼包'
+```

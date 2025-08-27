@@ -1,0 +1,138 @@
+[
+  {
+    "id": 1,
+    "productName": "上海迪士尼乐园一日票",
+    "description": "畅游上海迪士尼乐园，体验梦幻世界",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥499", "inventory": 100},
+      {"date": "2025-10-02", "price": "¥499", "inventory": 100},
+      {"date": "2025-10-03", "price": "¥499", "inventory": 100},
+      {"date": "2025-10-04", "price": "¥499", "inventory": 100},
+      {"date": "2025-10-05", "price": "¥499", "inventory": 100},
+      {"date": "2025-10-06", "price": "¥499", "inventory": 100},
+      {"date": "2025-10-07", "price": "¥499", "inventory": 100}
+    ],
+    "attractionId": 1,
+    "imageId": 1001,
+    "content": "包含所有主题园区门票"
+  },
+  {
+    "id": 2,
+    "productName": "上海迪士尼乐园两日票",
+    "description": "两天畅游，更多时间探索魔法世界",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥899", "inventory": 50},
+      {"date": "2025-10-02", "price": "¥899", "inventory": 50},
+      {"date": "2025-10-03", "price": "¥899", "inventory": 50},
+      {"date": "2025-10-04", "price": "¥899", "inventory": 50},
+      {"date": "2025-10-05", "price": "¥899", "inventory": 50},
+      {"date": "2025-10-06", "price": "¥899", "inventory": 50},
+      {"date": "2025-10-07", "price": "¥899", "inventory": 50}
+    ],
+    "attractionId": 2,
+    "imageId": 1002,
+    "content": "两日无限次入园"
+  },
+  {
+    "id": 3,
+    "productName": "上海迪士尼乐园VIP快速通行证",
+    "description": "享受专属快速通道，节省排队时间",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥1299", "inventory": 30},
+      {"date": "2025-10-02", "price": "¥1299", "inventory": 30},
+      {"date": "2025-10-03", "price": "¥1299", "inventory": 30},
+      {"date": "2025-10-04", "price": "¥1299", "inventory": 30},
+      {"date": "2025-10-05", "price": "¥1299", "inventory": 30},
+      {"date": "2025-10-06", "price": "¥1299", "inventory": 30},
+      {"date": "2025-10-07", "price": "¥1299", "inventory": 30}
+    ],
+    "attractionId": 3,
+    "imageId": 1003,
+    "content": "包含快速通行证及专属服务"
+  },
+  {
+    "id": 4,
+    "productName": "上海迪士尼乐园家庭套票",
+    "description": "适合全家出游的超值套票",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥1999", "inventory": 20},
+      {"date": "2025-10-02", "price": "¥1999", "inventory": 20},
+      {"date": "2025-10-03", "price": "¥1999", "inventory": 20},
+      {"date": "2025-10-04", "price": "¥1999", "inventory": 20},
+      {"date": "2025-10-05", "price": "¥1999", "inventory": 20},
+      {"date": "2025-10-06", "price": "¥1999", "inventory": 20},
+      {"date": "2025-10-07", "price": "¥1999", "inventory": 20}
+    ],
+    "attractionId": 4,
+    "imageId": 1004,
+    "content": "包含4张一日票"
+  },
+  {
+    "id": 5,
+    "productName": "上海迪士尼乐园晚宴套餐",
+    "description": "享受特色晚宴与烟花秀",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥699", "inventory": 40},
+      {"date": "2025-10-02", "price": "¥699", "inventory": 40},
+      {"date": "2025-10-03", "price": "¥699", "inventory": 40},
+      {"date": "2025-10-04", "price": "¥699", "inventory": 40},
+      {"date": "2025-10-05", "price": "¥699", "inventory": 40},
+      {"date": "2025-10-06", "price": "¥699", "inventory": 40},
+      {"date": "2025-10-07", "price": "¥699", "inventory": 40}
+    ],
+    "attractionId": 5,
+    "imageId": 1005,
+    "content": "包含晚宴及烟花观赏区"
+  },
+  {
+    "id": 6,
+    "productName": "上海迪士尼乐园纪念品礼包",
+    "description": "精选迪士尼纪念品礼包",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥299", "inventory": 100},
+      {"date": "2025-10-02", "price": "¥299", "inventory": 100},
+      {"date": "2025-10-03", "price": "¥299", "inventory": 100},
+      {"date": "2025-10-04", "price": "¥299", "inventory": 100},
+      {"date": "2025-10-05", "price": "¥299", "inventory": 100},
+      {"date": "2025-10-06", "price": "¥299", "inventory": 100},
+      {"date": "2025-10-07", "price": "¥299", "inventory": 100}
+    ],
+    "attractionId": 6,
+    "imageId": 1006,
+    "content": "包含限量版纪念品"
+  },
+  {
+    "id": 7,
+    "productName": "上海迪士尼乐园酒店住宿",
+    "description": "入住迪士尼主题酒店",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥1599", "inventory": 15},
+      {"date": "2025-10-02", "price": "¥1599", "inventory": 15},
+      {"date": "2025-10-03", "price": "¥1599", "inventory": 15},
+      {"date": "2025-10-04", "price": "¥1599", "inventory": 15},
+      {"date": "2025-10-05", "price": "¥1599", "inventory": 15},
+      {"date": "2025-10-06", "price": "¥1599", "inventory": 15},
+      {"date": "2025-10-07", "price": "¥1599", "inventory": 15}
+    ],
+    "attractionId": 7,
+    "imageId": 1007,
+    "content": "包含一晚住宿及早餐"
+  },
+  {
+    "id": 8,
+    "productName": "上海迪士尼乐园年卡",
+    "description": "全年无限次入园，超值优惠",
+    "calendar": [
+      {"date": "2025-10-01", "price": "¥2999", "inventory": 10},
+      {"date": "2025-10-02", "price": "¥2999", "inventory": 10},
+      {"date": "2025-10-03", "price": "¥2999", "inventory": 10},
+      {"date": "2025-10-04", "price": "¥2999", "inventory": 10},
+      {"date": "2025-10-05", "price": "¥2999", "inventory": 10},
+      {"date": "2025-10-06", "price": "¥2999", "inventory": 10},
+      {"date": "2025-10-07", "price": "¥2999", "inventory": 10}
+    ],
+    "attractionId": 8,
+    "imageId": 1008,
+    "content": "全年无限次入园特权"
+  }
+]

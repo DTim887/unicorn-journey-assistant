@@ -3,8 +3,10 @@ package com.unicorn.journey.assistant.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unicorn.journey.assistant.entity.Attraction;
+import com.unicorn.journey.assistant.entity.Product;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.AttractionService;
+import com.unicorn.journey.assistant.service.ProductService;
 import com.unicorn.journey.assistant.service.UserService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Random;
@@ -30,6 +33,9 @@ public class DataInitializer implements ApplicationRunner {
 
     @Resource
     AttractionService attractionService;
+
+    @Resource
+    ProductService productService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -62,7 +68,8 @@ public class DataInitializer implements ApplicationRunner {
 
 
         try (InputStream attractionInputStream = attractionResource.getInputStream()) {
-            List<Attraction> attractions = objectMapper.readValue(attractionInputStream, new TypeReference<>() {});
+            List<Attraction> attractions = objectMapper.readValue(attractionInputStream, new TypeReference<>() {
+            });
 
             Random random = new Random();
 
@@ -80,6 +87,23 @@ public class DataInitializer implements ApplicationRunner {
             });
             log.info("最终景点信息为：{}", attractions);
             log.info("预热 attraction 缓存 End");
+        }
+
+        warmupProduct(objectMapper);
+    }
+
+    private void warmupProduct(ObjectMapper objectMapper) throws IOException {
+        log.info("预热 product 缓存 Start");
+        ClassPathResource productResource = new ClassPathResource("product.json");
+        if (!productResource.exists()) {
+            log.error("文件不存在: product.json");
+            return;
+        }
+        try (InputStream productInputStream = productResource.getInputStream()) {
+            List<Product> products = objectMapper.readValue(productInputStream, new TypeReference<>() {
+            });
+            products.forEach(product -> productService.saveProduct(product));
+            log.info("预热 product 缓存 End, siez:{}", products.size());
         }
     }
 }
