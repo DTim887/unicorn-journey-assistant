@@ -17,9 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 public class Plan {
     /**
-     * plan id
+     * plan id 暂时用uuid
      */
-    private Integer planId;
+    private String planId;
 
     /**
      * plan 名称

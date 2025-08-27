@@ -5,6 +5,7 @@ import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.AttractionService;
 import com.unicorn.journey.assistant.service.BaseService;
+import com.unicorn.journey.assistant.service.PlanService;
 import com.unicorn.journey.assistant.service.UserService;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -28,6 +29,9 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private AttractionService attractionService;
 
+    @Resource
+    private PlanService planService;
+
     public AiService getAiService(User user) {
         AiService aiService = this.get(user.getId());
         if(aiService == null) {
@@ -45,7 +49,7 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .chatMemoryProvider(memoryId -> chatMemory)
 //               .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
-                .tools(List.of(userService,attractionService))
+                .tools(List.of(userService, attractionService, planService))
                 .build();
         this.put(id, aiService);
         return aiService;

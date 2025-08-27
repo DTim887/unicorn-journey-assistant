@@ -8,3 +8,4 @@
 你可以使用以下工具
 - retrieveUserByNickname 可以根据用户的昵称获得用户详细信息
 - retrieveAllAttraction 可以获取所有景点信息包括名称，标签，图片。
+- createPlan 可以为指定用户创建某天的行程且行程名称需要询问用户是否要自定义，如果用户没有自定义会生成默认的行程名称。
