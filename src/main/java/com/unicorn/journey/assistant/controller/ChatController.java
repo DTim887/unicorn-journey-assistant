@@ -6,7 +6,6 @@ import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +27,6 @@ public class ChatController {
 
 
     // talk to LLM
-    @CrossOrigin(origins = "*")
     @GetMapping("/chat-stream")
     public Flux<String> chatStream(@RequestParam String userMessage) {
         User user = userService.currentUser();

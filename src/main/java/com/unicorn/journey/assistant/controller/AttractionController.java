@@ -15,8 +15,8 @@ public class AttractionController {
     @Resource
     AttractionService attractionService;
 
-    @GetMapping("/attraction/getAll")
-    public Result getAllAttraction() {
+    @GetMapping("/attraction/listAll")
+    public Result listAllAttraction() {
         List<Attraction> allAttractions = attractionService.getAll(Attraction.class);
         return Result.ok(allAttractions);
     }

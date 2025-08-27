@@ -18,7 +18,6 @@ public class OrderController {
     }
 
     //存储订单
-    @CrossOrigin(origins = "*")
     @PostMapping("/order/save")
     public Result saveOrder(@RequestBody Order order) {
         orderService.saveOrder(order);
@@ -26,7 +25,6 @@ public class OrderController {
     }
 
     //根据用户ID获取订单列表 - 用户 id 是订单实体属性, service 层做 filter
-    @CrossOrigin(origins = "*")
     @GetMapping("/order/get")
     public Result getOrdersByUser(@RequestParam int userId) {
         List<Order> orders = orderService.retrieveOrdersByUserId(userId);
@@ -34,7 +32,6 @@ public class OrderController {
     }
 
     //根据订单id获取订单
-    @CrossOrigin(origins = "*")
     @GetMapping("/order/get/{orderId}")
     public Result getOrderById(@PathVariable int orderId) {
         Order order = orderService.retrieveOrderById(orderId);

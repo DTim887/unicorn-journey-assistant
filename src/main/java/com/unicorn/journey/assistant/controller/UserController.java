@@ -18,7 +18,6 @@ public class UserController {
     }
 
     //switch login user
-    @CrossOrigin(origins = "*")
     @PostMapping("/user/login")
     public Result login(@RequestBody LoginRequest loginRequest) {
         User user = userService.retrieveUserByNickname(loginRequest.getNickname());
@@ -29,7 +28,6 @@ public class UserController {
     }
 
     //Get current login user
-    @CrossOrigin(origins = "*")
     @GetMapping("/user/current")
     public Result currentUser() {
         User currentUser = userService.currentUser();
@@ -37,7 +35,6 @@ public class UserController {
     }
 
     //Get all user in system
-    @CrossOrigin(origins = "*")
     @GetMapping("/user/all")
     public Result allUser() {
         List<User> allUser = userService.getAll(User.class);
