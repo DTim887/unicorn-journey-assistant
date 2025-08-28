@@ -79,3 +79,26 @@ curl --location 'http://localhost:8080/journey-assistant/product/上海迪士尼
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/attraction/listAll'
 ```
+
+#### 创建行程
+```shell
+curl --location --request POST 'localhost:8080/journey-assistant/plan/create' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "id": 1,
+    "planName" : "一日游",
+    "planDate" : "2025-08-29",
+    "attractionIds": [1,2,3],
+    "userId":1
+}'
+```
+
+#### 根据用户ID获取用户的所有plan信息
+```shell
+curl --location --request GET 'localhost:8080/journey-assistant/plan/get?userId=1'
+```
+
+#### 根据用户ID获取用户的所有plan信息
+```shell
+curl --location --request GET 'localhost:8080/journey-assistant/plan/get/1'
+```
