@@ -18,7 +18,7 @@ public class Plan {
     /**
      * plan id
      */
-    private String id;
+    private Integer id;
 
     /**
      * plan 名称
