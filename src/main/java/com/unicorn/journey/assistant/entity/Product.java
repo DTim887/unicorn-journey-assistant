@@ -13,8 +13,9 @@ public class Product {
     private String productName;
     private String description;
     private Calendar[] calendar;
-    private Integer attractionId;
-    private Integer imageId;
+    private Integer[] attractionId;
+    private String image;
+    private Integer quantity;
     private String content;
 
     @Data
