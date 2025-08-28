@@ -34,10 +34,12 @@
   },
   {
     "attractionId": 4,
-    "attractionName": "上海迪士尼乐团",
-    "image": "/images/attraction/entShanghaiDisneylandBand.jpg",
+    "attractionName": "风暴来临：杰克船长之惊天特技大冒险",
+    "image": "/images/attraction/entEyeOfStormCaptainJacksSpectacular.jpg",
     "tags": [
-      "现场娱乐演出"
+      "娱乐演出",
+      "亲子",
+      "海盗"
     ]
   },
   {
@@ -274,27 +276,29 @@
   },
   {
     "attractionId": 28,
-    "attractionName": "船奇戏水滩",
-    "image": "/images/attraction/attShipwreckShore.jpg",
+    "attractionName": "小飞侠天空奇遇",
+    "image": "/images/attraction/attPeterPanFlight.jpg",
     "tags": [
-      "亲子",
+      "黑暗",
+      "水滴",
+      "惊险",
       "室外"
     ]
   },
   {
     "attractionId": 29,
-    "attractionName": "十二朋友园",
-    "image": "/images/attraction/attGardenTwelveFriends.jpg",
+    "attractionName": "古迹探索营的探索步行道",
+    "image": "/images/attraction/attVistaTrail.jpg",
     "tags": [
-      "十二生肖",
+      "冒险",
       "室外",
-      "迪士尼朋友"
+      "探索"
     ]
   },
   {
     "attractionId": 30,
     "attractionName": "旋转疯蜜罐",
-    "image": "/images/attraction/attHunnyPotSpin.jpg",
+    "image": "/images/attraction/attHunnyPotSpin.png",
     "tags": [
       "旋转",
       "刺激"

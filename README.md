@@ -74,3 +74,8 @@ curl --location 'http://localhost:8080/journey-assistant/product/all'
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/product/上海迪士尼乐园纪念品礼包'
 ```
+
+#### 获取所有景点信息
+```shell
+curl --location 'http://localhost:8080/journey-assistant/attraction/listAll'
+```
