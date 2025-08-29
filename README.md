@@ -74,3 +74,11 @@ curl --location 'http://localhost:8080/journey-assistant/product/all'
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/product/上海迪士尼乐园纪念品礼包'
 ```
+
+#### 输入语音 POST 接口
+前端代码已经提交到 https://github.com/DTim887/myplan-ui 可下载参考
+```shell
+curl -v -X POST \
+  -F "audio=@/path/to/your/local/audio_file.wav" \
+  http://localhost:8080/journey-assistant/voice-chat
+```
