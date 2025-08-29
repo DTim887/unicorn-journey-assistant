@@ -1,7 +1,7 @@
 [
   {
     "attractionId": 1,
-    "attractionName": "七个小矮人矿车",
+    "attractionName": "七个小矮人矿山车",
     "image": "/images/attraction/attSevenDwarfsMineTrain.jpg",
     "tags": [
       "刺激",
@@ -136,7 +136,7 @@
   },
   {
     "attractionId": 14,
-    "attractionName": "翱翔·飞跃地平线",
+    "attractionName": "翱翔·飞越地平线",
     "image": "/images/attraction/attSoaringOverHorizon.jpg",
     "tags": [
       "亲子",
