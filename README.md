@@ -82,6 +82,7 @@ curl --location 'http://localhost:8080/journey-assistant/product/上海迪士尼
 curl -v -X POST \
   -F "audio=@/path/to/your/local/audio_file.wav" \
   http://localhost:8080/journey-assistant/voice-chat
+````
 
 #### 获取所有景点信息
 ```shell
