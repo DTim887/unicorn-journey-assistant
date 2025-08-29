@@ -1,41 +1,44 @@
 package com.unicorn.journey.assistant.service;
 
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.entity.Plan;
-import com.unicorn.journey.assistant.exception.ErrorCode;
-import com.unicorn.journey.assistant.exception.ThrowUtils;
 import dev.langchain4j.agent.tool.Tool;
+
+import java.util.Collections;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @LocalCache(value = CacheName.PLAN)
 @Service
 public class PlanService extends BaseService<Plan>{
 
-    @Tool("为单个指定用户，创建指定某一天的行程，planName为空会使用点亮心中绮梦作为默认名称，景点id不能为空，且景点顺序是attractionIds中attractionId的顺序")
-    String createPlan(int userId, String planName, List<Integer> attractionIds, LocalDate planDate) {
-        String planId = UUID.randomUUID().toString();
-
-        ThrowUtils.throwIf(ObjectUtil.isEmpty(attractionIds), ErrorCode.ATTRACTION_IS_NULL_ERROR);
-
-        Plan plan = Plan.builder()
-                .planId(planId)
-                .planName(planName)
-                .planDate(planDate)
-                .attractionIds(attractionIds)
-                .userId(userId)
-                .createTime(LocalDateTime.now())
-                .updateTime(LocalDateTime.now())
-                .build();
-
-        put(plan.getPlanId(), plan);
-
-        return planId;
+    @Tool("为单个指定用户，创建指定某一天的行程。id用雪花算法生成，planName为空则使用点亮心中绮梦作为默认名称，景点id不能为空，且景点顺序是attractionIds中attractionId的顺序")
+    public void createPlan(Plan plan) {
+        put(plan.getId(), plan);
     }
+
+    @Tool("为单个指定用户，查询其所有行程")
+    public List<Plan> retrievePlansByUserId(int userId) {
+        List<Plan> plans = this.getAll(Plan.class);
+        if(CollUtil.isNotEmpty(plans)){
+            return plans.stream()
+                    .filter(plan -> userId == plan.getUserId())
+                    .toList();
+        }
+        return Collections.emptyList();
+    }
+
+
+    /**
+     * 获取指定id的行程
+     * @param id plan id
+     * @return 指定plan
+     */
+    public Plan retrievePlanById(int id) {
+        return this.get(id);
+    }
+
 }

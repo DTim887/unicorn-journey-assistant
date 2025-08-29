@@ -75,10 +75,38 @@ curl --location 'http://localhost:8080/journey-assistant/product/all'
 curl --location 'http://localhost:8080/journey-assistant/product/上海迪士尼乐园纪念品礼包'
 ```
 
+
 #### 输入语音 POST 接口
 前端代码已经提交到 https://github.com/DTim887/myplan-ui 可下载参考
 ```shell
 curl -v -X POST \
   -F "audio=@/path/to/your/local/audio_file.wav" \
   http://localhost:8080/journey-assistant/voice-chat
+
+#### 获取所有景点信息
+```shell
+curl --location 'http://localhost:8080/journey-assistant/attraction/listAll'
+```
+
+#### 创建行程
+```shell
+curl --location --request POST 'localhost:8080/journey-assistant/plan/create' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "id": 1,
+    "planName" : "一日游",
+    "planDate" : "2025-08-29",
+    "attractionIds": [1,2,3],
+    "userId":1
+}'
+```
+
+#### 根据用户ID获取用户的所有plan信息
+```shell
+curl --location --request GET 'localhost:8080/journey-assistant/plan/get?userId=1'
+```
+
+#### 根据用户ID获取用户的所有plan信息
+```shell
+curl --location --request GET 'localhost:8080/journey-assistant/plan/get/1'
 ```

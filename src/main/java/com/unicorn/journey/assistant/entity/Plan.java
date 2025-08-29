@@ -3,7 +3,6 @@ package com.unicorn.journey.assistant.entity;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -17,9 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 public class Plan {
     /**
-     * plan id 暂时用uuid
+     * plan id
      */
-    private String planId;
+    private Integer id;
 
     /**
      * plan 名称
@@ -41,13 +40,4 @@ public class Plan {
      */
     private Integer userId;
 
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateTime;
 }
