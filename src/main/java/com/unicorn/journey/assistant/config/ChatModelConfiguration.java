@@ -32,7 +32,7 @@ public class ChatModelConfiguration {
 //        return GoogleAiGeminiStreamingChatModel.builder()
 //                .modelName("gemini-2.5-flash-lite")
 //                .apiKey("AIzaSyDxySH9-KCJb1F9Ec2SSMeqyb0jdEKd3yA")
-//                .temperature(0.3)
+//                .temperature(0.0)
 //                .listeners(List.of(customChatModelListener))
 //                .build();
         return QwenStreamingChatModel.builder()
