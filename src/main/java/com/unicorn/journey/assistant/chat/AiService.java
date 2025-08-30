@@ -3,12 +3,16 @@ package com.unicorn.journey.assistant.chat;
 import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
-import dev.langchain4j.service.V;
 import reactor.core.publisher.Flux;
 
 public interface AiService  {
 
-    //This is Agent System Prompt
+    //和 judy 聊天
     @SystemMessage(fromResource = "system_prompt.txt")
-    Flux<String> streamChat(@MemoryId int memoryId, @UserMessage String userMessage, @V("nickname") String nickname);
+    Flux<String> judyChat(@MemoryId String memoryId , @UserMessage String userMessage);
+
+
+    //和 duffy 聊天
+    @SystemMessage(fromResource = "duffy_prompt.txt")
+    Flux<String> duffyChat(@MemoryId String memoryId , @UserMessage String userMessage);
 }

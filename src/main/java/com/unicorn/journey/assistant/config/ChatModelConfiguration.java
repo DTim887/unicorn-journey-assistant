@@ -14,9 +14,9 @@ import java.util.List;
 @Configuration
 public class ChatModelConfiguration {
 
-    @Value("${langchain4j.community.dashscope.chat-model.model-name}")
+    @Value("${langchain4j.community.dashscope.streaming-chat-model.model-name}")
     private String streamModelName;
-    @Value("${langchain4j.community.dashscope.chat-model.api-key}")
+    @Value("${langchain4j.community.dashscope.streaming-chat-model.api-key}")
     private String streamModelKey;
 
     @Resource
@@ -38,7 +38,7 @@ public class ChatModelConfiguration {
         return QwenStreamingChatModel.builder()
                 .modelName(streamModelName)
                 .apiKey(streamModelKey)
-                .temperature(0.3f)
+                .temperature(0.0f)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
