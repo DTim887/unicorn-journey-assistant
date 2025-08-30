@@ -303,5 +303,15 @@
       "旋转",
       "刺激"
     ]
+  },
+  {
+    "attractionId": 31,
+    "attractionName": "疯狂动物城：热力追踪",
+    "image": "/images/attraction/attZootopiaHotPursuit.jpg",
+    "tags": [
+      "黑暗",
+      "小幅降落",
+      "室内"
+    ]
   }
 ]

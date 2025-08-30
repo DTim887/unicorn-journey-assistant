@@ -84,7 +84,7 @@
       {"date": "2026-05-06", "price": "¥890", "inventory": 40},
       {"date": "2026-05-07", "price": "¥890", "inventory": 40}
     ],
-    "attractionId": [-1,14,12,27,10,19],
+    "attractionId": [31,14,12,27,10,19],
     "image": "/images/product/DPA-6.png",
     "quantity": 6,
     "content": "套装包含：疯狂动物城：热力追踪，翱翔•飞越地平线，加勒比海盗--沉落宝藏之战，晶彩奇航，巴斯光年星际营救，小飞象"
@@ -102,7 +102,7 @@
       {"date": "2026-05-06", "price": "¥180", "inventory": 100},
       {"date": "2026-05-07", "price": "¥180", "inventory": 100}
     ],
-    "attractionId": [-1],
+    "attractionId": [31],
     "image": "/images/product/shdr-att-hot-pursuit-sq-20240104.png",
     "quantity": 1,
     "content": "疯狂动物城：热力追踪"
