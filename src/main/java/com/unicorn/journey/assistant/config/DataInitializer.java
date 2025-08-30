@@ -2,9 +2,11 @@ package com.unicorn.journey.assistant.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.Attraction;
 import com.unicorn.journey.assistant.entity.Product;
 import com.unicorn.journey.assistant.entity.User;
+import com.unicorn.journey.assistant.service.AssistantService;
 import com.unicorn.journey.assistant.service.AttractionService;
 import com.unicorn.journey.assistant.service.ProductService;
 import com.unicorn.journey.assistant.service.UserService;
@@ -29,17 +31,21 @@ public class DataInitializer implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     @Resource
-    UserService userService;
+    private UserService userService;
 
     @Resource
-    AttractionService attractionService;
+    private AttractionService attractionService;
 
     @Resource
-    ProductService productService;
+    private ProductService productService;
+
+    @Resource
+    private AssistantService assistantService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         // Load the JSON file from the classpath (src/main/resources)
         log.info("预热 user 缓存 Start");
         ClassPathResource resource = new ClassPathResource("user.json");
@@ -89,10 +95,31 @@ public class DataInitializer implements ApplicationRunner {
             log.info("预热 attraction 缓存 End");
         }
 
-        warmupProduct(objectMapper);
+        warmupProduct();
+        warmupAssistant();
     }
 
-    private void warmupProduct(ObjectMapper objectMapper) throws IOException {
+    public void warmupAssistant() throws IOException {
+        log.info("预热 assistant 缓存 Start");
+        ClassPathResource resource = new ClassPathResource("assistant.json");
+        if (!resource.exists()) {
+            log.error("文件不存在: assistant.json");
+            return;
+        }
+        try (InputStream productInputStream = resource.getInputStream()) {
+            List<Assistant> assistants = objectMapper.readValue(productInputStream, new TypeReference<>() {
+            });
+            assistants.forEach(assistant -> assistantService.saveAssistant(assistant));
+            //预设当前Judy是当前助手
+            Assistant assistant = assistantService.retrieveAssistantByName("朱迪");
+            if (assistant != null) {
+                assistantService.exchange(assistant);
+            }
+            log.info("预热 assistant 缓存 End, size:{}", assistants.size());
+        }
+    }
+
+    private void warmupProduct() throws IOException {
         log.info("预热 product 缓存 Start");
         ClassPathResource productResource = new ClassPathResource("product.json");
         if (!productResource.exists()) {
@@ -103,7 +130,7 @@ public class DataInitializer implements ApplicationRunner {
             List<Product> products = objectMapper.readValue(productInputStream, new TypeReference<>() {
             });
             products.forEach(product -> productService.saveProduct(product));
-            log.info("预热 product 缓存 End, siez:{}", products.size());
+            log.info("预热 product 缓存 End, size:{}", products.size());
         }
     }
 }

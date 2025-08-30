@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "assistantName": "朱迪",
+    "avatar": "/images/assistant/judy.png",
+    "chatApi": "/judy-chat",
+    "description": "朱迪是一个行程规划助手......"
+  },
+  {
+    "id": 1,
+    "assistantName": "达菲",
+    "avatar": "/images/assistant/duffy.png",
+    "chatApi": "/duffy-chat",
+    "description": "达菲会倾听你的声音，你只能发送语音消息给他......"
+  }
+]

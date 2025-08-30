@@ -2,7 +2,6 @@ package com.unicorn.journey.assistant.chat;
 
 import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.CacheName;
-import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.AttractionService;
 import com.unicorn.journey.assistant.service.BaseService;
 import com.unicorn.journey.assistant.service.PlanService;
@@ -32,15 +31,17 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private PlanService planService;
 
-    public AiService getAiService(User user) {
-        AiService aiService = this.get(user.getId());
+
+    public AiService getAiService(String id) {
+
+        AiService aiService = this.get(id);
         if(aiService == null) {
-            aiService = createAiService(user.getId());
+            aiService = createAiService(id);
         }
         return aiService;
     }
 
-    public AiService createAiService(int id) {
+    public AiService createAiService(String id) {
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(100);
         AiService aiService = AiServices.builder(AiService.class)
 //               .chatModel(chatModel())
