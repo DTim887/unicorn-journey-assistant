@@ -26,7 +26,7 @@ public class AttractionService extends BaseService<Attraction> {
         return this.get(attractionId);
     }
 
-    @Tool("Get all attractionId")
+    @Tool("获取所有的景点信息。包括景点ID，景点名称，景点图片，景点描述，排队时间。")
     public List<Attraction> retrieveAllAttraction() {
         return this.getAll(Attraction.class);
     }

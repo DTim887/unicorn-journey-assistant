@@ -12,8 +12,12 @@ import java.util.List;
 @LocalCache(value = CacheName.PRODUCT)
 public class ProductService extends BaseService<Product> {
 
+    /**
+     * 保存产品到缓存，Key=id
+     * @param product
+     */
     public void saveProduct(Product product) {
-        this.put(product.getProductName(), product);
+        this.put(product.getId(), product);
     }
 
 //    @Tool("Get product by name")
