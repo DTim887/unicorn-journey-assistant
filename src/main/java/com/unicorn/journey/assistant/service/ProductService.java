@@ -16,12 +16,16 @@ public class ProductService extends BaseService<Product> {
         this.put(product.getProductName(), product);
     }
 
-    @Tool("Get product by name")
+//    @Tool("Get product by name")
     public Product getProductByName(String name) {
         return this.get(name);
     }
 
-    @Tool("Get all product")
+    /**
+     * 获取所有产品列表
+     * @return List<Product>
+     */
+    @Tool("获取当前在售的所有产品的信息")
     public List<Product> getAllProduct() {
         return this.getAll(Product.class);
     }
