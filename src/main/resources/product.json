@@ -229,7 +229,7 @@
       {"date": "2026-05-07", "price": 140, "inventory": 10}
     ],
     "attractionId": [9],
-    "image": "static/images/product/shdr-att-winnie-the-pooh-new-c.jpg",
+    "image": "/images/product/shdr-att-winnie-the-pooh-new-c.png",
     "quantity": 1,
     "content": "小熊维尼历险记"
   },
@@ -265,7 +265,7 @@
       {"date": "2026-05-07", "price": 140, "inventory": 10}
     ],
     "attractionId": [21],
-    "image": "/images/product/shdr-att-woody-new-b-sq.jpg",
+    "image": "/images/product/shdr-att-woody-new-b-sq.png",
     "quantity": 1,
     "content": "胡迪牛仔嘉年华"
   }
