@@ -16,9 +16,9 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/product/{name}")
-    public Result getProductByName(@PathVariable("name") String name) {
-        Product product = productService.getProductByName(name);
+    @GetMapping("/product/{id}")
+    public Result getProductById(@PathVariable("id") int id) {
+        Product product = productService.getProductById(id);
         return Result.ok(product);
     }
 
