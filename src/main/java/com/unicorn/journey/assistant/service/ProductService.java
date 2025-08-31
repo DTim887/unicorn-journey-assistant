@@ -21,8 +21,8 @@ public class ProductService extends BaseService<Product> {
     }
 
 //    @Tool("Get product by name")
-    public Product getProductByName(String name) {
-        return this.get(name);
+    public Product getProductById(int id) {
+        return this.get(id);
     }
 
     /**
