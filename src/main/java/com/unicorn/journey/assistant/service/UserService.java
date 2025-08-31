@@ -22,7 +22,7 @@ public class UserService extends BaseService<User> {
         this.put(user.getNickname(), user);
     }
 
-    @Tool("Get user by nickname")
+
     public User retrieveUserByNickname(String name) {
         return this.get(name);
     }
@@ -37,7 +37,11 @@ public class UserService extends BaseService<User> {
         loginCache.put("login", user);
     }
 
-    //获取当前登录用户
+    /**
+     * <p>这个工具可以获取当前登录的用户，并且可以返回用户对象</p>
+     * @return User
+     */
+    @Tool("获取当前登录的用户")
     public User currentUser() {
         return loginCache.get("login");
     }
