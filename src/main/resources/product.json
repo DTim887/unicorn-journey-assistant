@@ -2,7 +2,7 @@
   {
     "id": 1,
     "productName": "上海迪士尼乐园一日票",
-    "description": "一票畅玩8大主题园区！",
+    "description": "一票畅玩8大主题园区！可当日多次入园，连续两日入园可享约9折优思！",
     "calendar": [
       {"date": "2026-05-01", "price": 475, "inventory": 100},
       {"date": "2026-05-02", "price": 475, "inventory": 100},
@@ -14,13 +14,12 @@
     ],
     "attractionId": null,
     "image": "/images/product/20250530-shdr-theme-park-tickets-icon.jpg",
-    "quantity": 1,
-    "content": "可当日多次入园，连续两日入园可享约9折优思！"
+    "quantity": 1
   },
   {
     "id": 2,
     "productName": "浪漫双人一日票套餐",
-    "description": "一都解锁在迪士尼的浪慢约会",
+    "description": "一都解锁在迪士尼的浪慢约会，心动游园、高甜穿搭、甜蜜小食你能想到的约会体验都在这里啦！",
     "calendar": [
       {"date": "2026-05-01", "price": 800, "inventory": 100},
       {"date": "2026-05-02", "price": 800, "inventory": 100},
@@ -32,13 +31,12 @@
     ],
     "attractionId": null,
     "image": "/images/product/shdr-theme-park-romance-celebration-package-2-0-icon-cn.png",
-    "quantity": 2,
-    "content": "心动游园、高甜穿搭、甜蜜小食你能想到的约会体验都在这里啦"
+    "quantity": 2
   },
   {
     "id": 3,
     "productName": "亲子套票",
-    "description": "亲子游玩好去处",
+    "description": "亲子游玩好去处，两大一小，或者一大两小亲子套票！",
     "calendar": [
       {"date": "2026-05-01", "price": 1200, "inventory": 100},
       {"date": "2026-05-02", "price": 1200, "inventory": 100},
@@ -50,11 +48,10 @@
     ],
     "attractionId": null,
     "image": "/images/product/Parent-Child-Bundle-Ticket-icon-20250311.jpg",
-    "quantity": 3,
-    "content": "购一大一小或两大一小亲子套票，至高立省135元！"
+    "quantity": 3
   },
   {
-    "id": 2,
+    "id": 4,
     "productName": "迪士尼尊享卡3项童趣套装A",
     "description": "畅享童趣",
     "calendar": [
@@ -68,30 +65,28 @@
     ],
     "attractionId": [14,9,21],
     "image": "/images/product/DPA-3A.png",
-    "quantity": 3,
-    "content": "套装包含：翱翔•飞越地平线，小熊维尼历险记，胡迪牛仔嘉年华"
+    "quantity": 3
   },
   {
     "id": 5,
     "productName": "迪士尼尊享卡6项畅玩套装",
     "description": "畅玩套装",
     "calendar": [
-      {"date": "2026-05-01", "price": 435, "inventory": 40},
-      {"date": "2026-05-02", "price": 435, "inventory": 40},
-      {"date": "2026-05-03", "price": 435, "inventory": 40},
-      {"date": "2026-05-04", "price": 435, "inventory": 40},
-      {"date": "2026-05-05", "price": 435, "inventory": 40},
-      {"date": "2026-05-06", "price": 435, "inventory": 40},
-      {"date": "2026-05-07", "price": 435, "inventory": 40}
+      {"date": "2026-05-01", "price": 800, "inventory": 40},
+      {"date": "2026-05-02", "price": 800, "inventory": 40},
+      {"date": "2026-05-03", "price": 800, "inventory": 40},
+      {"date": "2026-05-04", "price": 800, "inventory": 40},
+      {"date": "2026-05-05", "price": 800, "inventory": 40},
+      {"date": "2026-05-06", "price": 800, "inventory": 40},
+      {"date": "2026-05-07", "price": 800, "inventory": 40}
     ],
     "attractionId": [31,14,12,27,10,19],
     "image": "/images/product/DPA-6.png",
-    "quantity": 6,
-    "content": "套装包含：疯狂动物城：热力追踪，翱翔•飞越地平线，加勒比海盗--沉落宝藏之战，晶彩奇航，巴斯光年星际营救，小飞象"
+    "quantity": 6
   },
   {
     "id": 6,
-    "productName": "疯狂动物城：热力追踪",
+    "productName": "疯狂动物城：热力追踪尊享卡",
     "description": "所有身高",
     "calendar": [
       {"date": "2026-05-01", "price": 180, "inventory": 100},
@@ -104,12 +99,11 @@
     ],
     "attractionId": [31],
     "image": "/images/product/shdr-att-hot-pursuit-sq-20240104.png",
-    "quantity": 1,
-    "content": "疯狂动物城：热力追踪"
+    "quantity": 1
   },
   {
     "id": 7,
-    "productName": "翱翔•飞越地平线",
+    "productName": "翱翔•飞越地平线尊享卡",
     "description": "102厘米或以上",
     "calendar": [
       {"date": "2026-05-01", "price": 190, "inventory": 15},
@@ -122,12 +116,11 @@
     ],
     "attractionId": [14],
     "image": "/images/product/shdr-att-soaring-hero-new.jpg",
-    "quantity": 1,
-    "content": "翱翔•飞越地平线"
+    "quantity": 1
   },
   {
     "id": 8,
-    "productName": "七个小矮人矿山车",
+    "productName": "七个小矮人矿山车尊享卡",
     "description": "97厘米或以上",
     "calendar": [
       {"date": "2026-05-01", "price": 200, "inventory": 10},
@@ -140,12 +133,11 @@
     ],
     "attractionId": [1],
     "image": "/images/product/shdr-att-seven-dwarfs-mine-train-hero-sq-new.jpg",
-    "quantity": 1,
-    "content": "七个小矮人矿山车"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "创极速光轮一雪佛兰呈献",
+    "id": 9,
+    "productName": "创极速光轮一雪佛兰呈献尊享卡",
     "description": "122厘米或以上",
     "calendar": [
       {"date": "2026-05-01", "price": 160, "inventory": 10},
@@ -158,12 +150,11 @@
     ],
     "attractionId": [18],
     "image": "/images/product/shdr-att-tron-lightcycle-power-run-hero-sq-new-again.jpg",
-    "quantity": 1,
-    "content": "创极速光轮一雪佛兰呈献"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "雷鸣山漂流",
+    "id": 10,
+    "productName": "雷鸣山漂流尊享卡",
     "description": "107厘米或以上",
     "calendar": [
       {"date": "2026-05-01", "price": 180, "inventory": 10},
@@ -176,12 +167,11 @@
     ],
     "attractionId": [3],
     "image": "/images/product/shdr-att-roaring-new-c-sq.jpg",
-    "quantity": 1,
-    "content": "雷鸣山漂流"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "加勒比海盗--沉落宝藏之战",
+    "id": 11,
+    "productName": "加勒比海盗--沉落宝藏之战尊享卡",
     "description": "所有身高",
     "calendar": [
       {"date": "2026-05-01", "price": 180, "inventory": 10},
@@ -194,12 +184,11 @@
     ],
     "attractionId": [12],
     "image": "/images/product/shdr-att-pirates-of-caribbean-hero-sq-new-again.jpg",
-    "quantity": 1,
-    "content": "加勒比海盗--沉落宝藏之战"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "抱抱龙冲天赛车",
+    "id": 12,
+    "productName": "抱抱龙冲天赛车尊享卡",
     "description": "120厘米或以上",
     "calendar": [
       {"date": "2026-05-01", "price": 180, "inventory": 10},
@@ -212,12 +201,11 @@
     ],
     "attractionId": [22],
     "image": "/images/product/shdr-att-rexs-racer-new-c-sq.jpg",
-    "quantity": 1,
-    "content": "抱抱龙冲天赛车"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "小熊维尼历险记",
+    "id": 13,
+    "productName": "小熊维尼历险记尊享卡",
     "description": "所有身高",
     "calendar": [
       {"date": "2026-05-01", "price": 140, "inventory": 10},
@@ -230,12 +218,11 @@
     ],
     "attractionId": [9],
     "image": "/images/product/shdr-att-winnie-the-pooh-new-c.png",
-    "quantity": 1,
-    "content": "小熊维尼历险记"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "小飞侠天空奇遇",
+    "id": 14,
+    "productName": "小飞侠天空奇遇尊享卡",
     "description": "所有身高",
     "calendar": [
       {"date": "2026-05-01", "price": 140, "inventory": 10},
@@ -248,12 +235,11 @@
     ],
     "attractionId": [28],
     "image": "/images/product/shdr-att-peter-pans-flight-hero-sq-new-again2.jpg",
-    "quantity": 1,
-    "content": "小飞侠天空奇遇"
+    "quantity": 1
   },
   {
-    "id": 8,
-    "productName": "胡迪牛仔嘉年华",
+    "id": 15,
+    "productName": "胡迪牛仔嘉年华尊享卡",
     "description": "81厘米或以上",
     "calendar": [
       {"date": "2026-05-01", "price": 140, "inventory": 10},
@@ -266,7 +252,6 @@
     ],
     "attractionId": [21],
     "image": "/images/product/shdr-att-woody-new-b-sq.png",
-    "quantity": 1,
-    "content": "胡迪牛仔嘉年华"
+    "quantity": 1
   }
 ]

@@ -10,24 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 
-//{
-//    "id": 1,
-//        "productName": "上海迪士尼乐园一日票",
-//        "description": "一票畅玩8大主题园区！",
-//        "calendar": [
-//    {"date": "2026-05-01", "price": "¥475", "inventory": 100},
-//    {"date": "2026-05-02", "price": "¥475", "inventory": 100},
-//    {"date": "2026-05-03", "price": "¥475", "inventory": 100},
-//    {"date": "2026-05-04", "price": "¥475", "inventory": 100},
-//    {"date": "2026-05-05", "price": "¥475", "inventory": 100},
-//    {"date": "2026-05-06", "price": "¥475", "inventory": 100},
-//    {"date": "2026-05-07", "price": "¥475", "inventory": 100}
-//    ],
-//    "attractionId": null,
-//        "image": "/images/product/20250530-shdr-theme-park-tickets-icon.jpg",
-//        "quantity": 1,
-//        "content": "可当日多次入园，连续两日入园可享约9折优思！"
-//},
 public class Product {
 
     @Description("产品的ID，示例值: {\"id\": 2}")
@@ -48,11 +30,8 @@ public class Product {
     @Description("用户的图片的相对路径，示例值: {\"image\": \"/images/product/20250530-shdr-theme-park-tickets-icon.jpg\"}")
     private String image;
 
-    @Description("所包含的产品的数量，如果大于1则表示该产品是一个套装。示例值: {\"quantity\": 1}")
+    @Description("所包含的票的数量，如果大于1则表示该产品是一个套装，比如 quantity=3 表示包含了三张票。示例值: {\"quantity\": 1}")
     private Integer quantity;
-
-    @Description("产品的详情描述，示例值: {\"content\": \"可当日多次入园，连续两日入园可享约9折优思！\"}")
-    private String content;
 
     @Data
     private static class Calendar {
