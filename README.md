@@ -2,7 +2,7 @@
 An agent for journey connects with lazy commerce
 
 ## How to start
-Clone the repository and locate to the project directory 
+Clone the repository and locate to the project directory
 ### (Linux/macOS)
 ```terminaloutput
 ./mvnw clean package
@@ -54,23 +54,32 @@ curl --location 'http://localhost:8080/journey-assistant/user/all'
 ```
 ### 3. 订单接口
 #### 保存订单
+```java
+/**
+* userId : 下单人id
+* productId : 下单产品id
+* quantity : 下单总数量，比如买了三张一日票则 quantity = 3
+* visitDate : 入园日期
+* @param createOrderRequest
+*/
+```
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/save' \
 --header 'Content-Type: application/json' \
 --data '{
-    "id":2,
     "userId":2,
-    "productName":"二日票",
-    "price":300.00
+    "productId":1,
+    "quantity":1,
+    "visitDate":"2026-05-04"
 }'
 ```
-
 #### 根据订单号获取订单
+注意需要根据UUID获取
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/order/get/2'
+curl --location 'http://localhost:8080/journey-assistant/order/get/1d917e32-99ca-415a-9c84-8386fae0d9c8'
 ```
-
 #### 根据用户ID获取订单
+返回的是一个 list
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/get?userId=2'
 ```
@@ -87,7 +96,7 @@ curl --location 'http://localhost:8080/journey-assistant/product/1'
 ### 5. 景点接口
 #### 获取所有景点信息
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/attraction/all'
+curl --location 'http://localhost:8080/journey-assistant/attraction/listAll'
 ```
 
 ### 6. 行程接口
