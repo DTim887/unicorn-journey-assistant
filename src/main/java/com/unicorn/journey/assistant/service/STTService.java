@@ -19,7 +19,7 @@ public class STTService {
     private String appId;
 
     @Value("${doubao.app.accesstoken}")
-    private String accesstoken;
+    private String accessToken;
 
     @Value("${doubao.sst.resource.id}")
     private String resourceId;
@@ -41,7 +41,7 @@ public class STTService {
         //组装返回
         SSTResponse sstResponse = byteDanceRecognizeClient.recognizeFlash(
                 appId,
-                accesstoken,
+                accessToken,
                 resourceId,
                 SEQUENCE,
                 audioRequest);

@@ -33,8 +33,9 @@ public class Product {
     @Description("所包含的票的数量，如果大于1则表示该产品是一个套装，比如 quantity=3 表示包含了三张票。示例值: {\"quantity\": 1}")
     private Integer quantity;
 
-    @Data
-    private static class Calendar {
+    @Getter
+    @Setter
+    public static class Calendar {
 
         @Description("指定的日期，示例值: {\"date\": \"2026-05-01\"}")
         String date;
