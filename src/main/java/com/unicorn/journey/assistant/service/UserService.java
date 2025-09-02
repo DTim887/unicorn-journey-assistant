@@ -27,7 +27,7 @@ public class UserService extends BaseService<User> {
         return this.get(name);
     }
 
-    @Tool("Get all users")
+
     public List<User> retrieveAllUsers() {
         return this.getAll(User.class);
     }

@@ -6,6 +6,7 @@ import com.unicorn.journey.assistant.service.*;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import java.util.List;
 public class AiServiceFactory extends BaseService<AiService> {
 
     @Resource
-    private StreamingChatModel  streamingChatModel;
+    private StreamingChatModel streamingChatModel;
 
     @Resource
     private UserService userService;
@@ -34,11 +35,14 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private ProductService productService;
 
+    @Resource
+    private ContentRetriever contentRetriever;
+
 
     public AiService getAiService(String id) {
 
         AiService aiService = this.get(id);
-        if(aiService == null) {
+        if (aiService == null) {
             aiService = createAiService(id);
         }
         return aiService;
@@ -51,9 +55,10 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .streamingChatModel(streamingChatModel)
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)
+//                .contentRetriever(contentRetriever)
 //               .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
-                .tools(List.of(userService, attractionService, planService, orderService, productService))
+                .tools(List.of(userService, productService, orderService))
                 .build();
         this.put(id, aiService);
         return aiService;

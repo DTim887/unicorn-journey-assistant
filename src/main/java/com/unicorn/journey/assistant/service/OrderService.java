@@ -3,13 +3,13 @@ package com.unicorn.journey.assistant.service;
 import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.controller.request.CreateOrderRequest;
+import com.unicorn.journey.assistant.controller.vo.CreateOrderVO;
 import com.unicorn.journey.assistant.entity.Order;
-import com.unicorn.journey.assistant.entity.Product;
 import com.unicorn.journey.assistant.entity.mappers.OrderMapper;
+import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,23 +30,24 @@ public class OrderService extends BaseService<Order> {
     }
 
     /**
-     * userId : 下单人id
-     * productId : 下单产品id
-     * quantity : 下单总数量，比如买了三张一日票则 quantity = 3
+     * userId : 下单人的userId
+     * purchasedProducts : 订单中包含的产品列表数组, 包含产品ID和产品数量
      * visitDate : 入园日期
-     * @param createOrderRequest
      */
-    public void saveOrder(CreateOrderRequest createOrderRequest) {
+    @Tool("创建订单的工具")
+    public CreateOrderVO createOrder(CreateOrderRequest createOrderRequest) {
         Order order = OrderMapper.INSTANCE.convertToOrder(createOrderRequest);
         order.setId(UUID.randomUUID().toString());
-        //计算订单总价格
-        Product product = productService.getProductById(order.getProductId());
-        Product.Calendar calendar = Arrays.stream(product.getCalendar())
-                .filter(calendar1 -> calendar1.getDate().equals(order.getVisitDate()))
-                .findFirst()
-                .orElse(null);
-        assert calendar != null;
-        order.setTotalPrice(calendar.getPrice() * order.getQuantity());
+        order.setStatus("待付款");
+        this.saveOrder(order);
+        CreateOrderVO createOrderVO = new CreateOrderVO();
+        createOrderVO.setOrderId(order.getId());
+        createOrderVO.setOrderLink("http://localhost:8080/journey-assistant/order/detail/" + order.getId());
+        return createOrderVO;
+    }
+
+
+    public void saveOrder(Order order) {
         this.put(order.getId(), order);
     }
 
