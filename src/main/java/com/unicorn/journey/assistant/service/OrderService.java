@@ -6,6 +6,7 @@ import com.unicorn.journey.assistant.controller.request.CreateOrderRequest;
 import com.unicorn.journey.assistant.entity.Order;
 import com.unicorn.journey.assistant.entity.Product;
 import com.unicorn.journey.assistant.entity.mappers.OrderMapper;
+import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -29,6 +30,7 @@ public class OrderService extends BaseService<Order> {
         return this.get(id);
     }
 
+    @Tool("生成订单")
     /**
      * userId : 下单人id
      * productId : 下单产品id
