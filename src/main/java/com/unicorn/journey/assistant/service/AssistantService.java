@@ -24,7 +24,7 @@ public class AssistantService extends BaseService<Assistant> {
         return this.get(assistantName);
     }
 
-    public List<Assistant> retrieveAllUsers() {
+    public List<Assistant> retrieveAllAssistants() {
         return this.getAll(Assistant.class);
     }
 

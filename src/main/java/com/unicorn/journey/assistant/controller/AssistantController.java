@@ -40,8 +40,8 @@ public class AssistantController {
 
     //Get all assistant in system
     @GetMapping("/assistant/all")
-    public Result allUser() {
-        List<Assistant> assistants = assistantService.getAll(Assistant.class);
+    public Result allAssistant() {
+        List<Assistant> assistants = assistantService.retrieveAllAssistants();
         return Result.ok(assistants);
     }
 }

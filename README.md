@@ -15,6 +15,7 @@ Clone the repository and locate to the project directory
 ### Run JAR file
 ```terminaloutput
  java -jar target/unicorn-journey-assistant-1.0.0.jar 
+ ./mvnw spring-boot:run
 ```
 Open the bowser and visit : http://localhost:8088/journey-assistant
 

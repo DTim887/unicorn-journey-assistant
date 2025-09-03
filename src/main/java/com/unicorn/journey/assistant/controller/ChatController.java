@@ -61,6 +61,15 @@ public class ChatController {
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.duffyChat(memoryId,userMessage);
     }
+    
+    //和 Stella 聊天
+    @GetMapping("/stella-chat")
+    public Flux<String> stellaChat(@RequestParam String userMessage) {
+        String memoryId = this.createMemoryId();
+        AiService aiService = aiServiceFactory.getAiService(memoryId);
+        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        return aiService.stellaChat(memoryId, userMessage);
+    }
 
     private String createMemoryId() {
         User user = userService.currentUser();
