@@ -29,6 +29,7 @@ public class OrderService extends BaseService<Order> {
         return this.get(id);
     }
 
+    @Tool("生成订单")
     /**
      * userId : 下单人的userId
      * purchasedProducts : 订单中包含的产品列表数组, 包含产品ID和产品数量
