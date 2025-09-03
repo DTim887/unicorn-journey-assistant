@@ -56,32 +56,38 @@ curl --location 'http://localhost:8080/journey-assistant/user/all'
 #### 保存订单
 ```java
 /**
-* userId : 下单人id
-* productId : 下单产品id
-* quantity : 下单总数量，比如买了三张一日票则 quantity = 3
-* visitDate : 入园日期
-* @param createOrderRequest
-*/
+ * userId : 下单人的userId
+ * purchasedProducts : 订单中包含的产品列表数组, 包含产品ID和产品数量
+ * visitDate : 入园日期
+ */
 ```
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/order/save' \
+curl --location 'http://localhost:8080/journey-assistant/order/create' \
 --header 'Content-Type: application/json' \
 --data '{
-    "userId":2,
-    "productId":1,
-    "quantity":1,
-    "visitDate":"2026-05-04"
+    "userId": 2,
+    "purchasedProducts": [
+        {
+            "productId": 1,
+            "quantity": 1
+        },
+        {
+            "productId": 2,
+            "quantity": 2
+        }
+    ],
+    "visitDate": "2026-05-04"
 }'
 ```
-#### 根据订单号获取订单
+#### 根据订单号获取订单详情
 注意需要根据UUID获取
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/order/get/1d917e32-99ca-415a-9c84-8386fae0d9c8'
+curl --location 'http://localhost:8080/journey-assistant/order/detail/ab98c607-b5fc-4c60-9eac-befbc77bdc95'
 ```
-#### 根据用户ID获取订单
+#### 根据用户ID获取订单列表
 返回的是一个 list
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/order/get?userId=2'
+curl --location 'http://localhost:8080/journey-assistant/order/list?userId=1'
 ```
 ### 4. 产品接口
 #### 获取所有产品

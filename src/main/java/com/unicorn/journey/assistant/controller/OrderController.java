@@ -1,6 +1,7 @@
 package com.unicorn.journey.assistant.controller;
 
 import com.unicorn.journey.assistant.controller.request.CreateOrderRequest;
+import com.unicorn.journey.assistant.controller.vo.CreateOrderVO;
 import com.unicorn.journey.assistant.controller.vo.OrderVO;
 import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.entity.Order;
@@ -10,6 +11,8 @@ import com.unicorn.journey.assistant.service.OrderService;
 import com.unicorn.journey.assistant.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -25,26 +28,43 @@ public class OrderController {
     }
 
     //存储订单
-    @PostMapping("/order/save")
-    public Result saveOrder(@RequestBody CreateOrderRequest createOrderRequest) {
-        orderService.saveOrder(createOrderRequest);
-        return Result.ok();
+    @PostMapping("/order/create")
+    public Result createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+        CreateOrderVO createOrderVO = orderService.createOrder(createOrderRequest);
+        return Result.ok(createOrderVO);
     }
 
     //根据用户ID获取订单列表 - 用户 id 是订单实体属性, service 层做 filter
-    @GetMapping("/order/get")
+    @GetMapping("/order/list")
     public Result getOrdersByUser(@RequestParam int userId) {
         List<Order> orders = orderService.retrieveOrdersByUserId(userId);
         return Result.ok(orders);
     }
 
     //根据订单id获取订单
-    @GetMapping("/order/get/{orderId}")
+    @GetMapping("/order/detail/{orderId}")
     public Result getOrderById(@PathVariable String orderId) {
         Order order = orderService.retrieveOrderById(orderId);
-        Product product = productService.getProductById(order.getProductId());
         OrderVO orderVO = OrderMapper.INSTANCE.convertToOrderVO(order);
-        orderVO.setProductName(product.getProductName());
+        List<OrderVO.PurchasedProductVO> purchasedProductVOs = new ArrayList<>();
+        order.getPurchasedProducts().forEach(p -> {
+            Product product = productService.getProductById(p.getProductId());
+            OrderVO.PurchasedProductVO purchasedProductVO = new OrderVO.PurchasedProductVO();
+            purchasedProductVO.setProductName(product.getProductName());
+            purchasedProductVO.setQuantity(p.getQuantity());
+            Product.Calendar calendar = Arrays.stream(product.getCalendar())
+                    .filter(calendar1 -> calendar1.getDate().equals(order.getVisitDate()))
+                    .findFirst()
+                    .orElse(null);
+            assert calendar != null;
+            //价格
+            int price = calendar.getPrice() * purchasedProductVO.getQuantity();
+            //单个产品价格
+            purchasedProductVO.setPrice(price);
+            orderVO.setTotalPrice(orderVO.getTotalPrice() + price);
+            purchasedProductVOs.add(purchasedProductVO);
+        });
+        orderVO.setPurchasedProductVOs(purchasedProductVOs);
         return Result.ok(orderVO);
     }
 }
