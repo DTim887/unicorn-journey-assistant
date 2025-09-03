@@ -29,7 +29,6 @@ public class OrderService extends BaseService<Order> {
         return this.get(id);
     }
 
-    @Tool("生成订单")
     /**
      * userId : 下单人的userId
      * purchasedProducts : 订单中包含的产品列表数组, 包含产品ID和产品数量
@@ -43,7 +42,7 @@ public class OrderService extends BaseService<Order> {
         this.saveOrder(order);
         CreateOrderVO createOrderVO = new CreateOrderVO();
         createOrderVO.setOrderId(order.getId());
-        createOrderVO.setOrderLink("http://localhost:8080/journey-assistant/order/detail/" + order.getId());
+        createOrderVO.setOrderLink("http://localhost:8080/journey-assistant/order-detail.html?orderId=" + order.getId());
         return createOrderVO;
     }
 
