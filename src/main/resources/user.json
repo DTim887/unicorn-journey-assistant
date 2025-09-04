@@ -29,5 +29,16 @@
       "童话",
       "情侣"
     ]
+  },
+  {
+    "id": 4,
+    "nickname": "Stella",
+    "sex": "女",
+    "avatar": "/images/stella.png",
+    "tags": [
+      "琳娜贝尔",
+      "温柔",
+      "情侣"
+    ]
   }
 ]

@@ -2,6 +2,7 @@ package com.unicorn.journey.assistant.controller;
 
 import com.unicorn.journey.assistant.chat.AiService;
 import com.unicorn.journey.assistant.chat.AiServiceFactory;
+import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.AssistantService;
@@ -20,7 +21,6 @@ import java.io.IOException;
 
 @RestController
 public class ChatController {
-
 
 
     private final AiServiceFactory aiServiceFactory;
@@ -43,12 +43,11 @@ public class ChatController {
     //和朱迪聊天
     @GetMapping("/judy-chat")
     public Flux<String> judyChat(@RequestParam String userMessage) {
-        User user = userService.currentUser();
         String memoryId = this.createMemoryId();
         //Remembering the current logged-in user
-        AiService aiService = aiServiceFactory.getAiService(memoryId);
+        AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.JUDY);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.judyChat(memoryId,userMessage);
+        return aiService.judyChat(memoryId, userMessage);
     }
 
     //和 Duffy 聊天
@@ -57,9 +56,19 @@ public class ChatController {
         String userMessage = sttService.speechToText(file);
         String memoryId = this.createMemoryId();
         //把语音转文字作为大模型的输入
-        AiService aiService = aiServiceFactory.getAiService(memoryId);
+        AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.DUFFY);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.duffyChat(memoryId,userMessage);
+        return aiService.duffyChat(memoryId, userMessage);
+    }
+
+    //和 Wennie 聊天
+    @GetMapping("/wennie-chat")
+    public Flux<String> wennieChat(@RequestParam String userMessage) {
+        String memoryId = this.createMemoryId();
+        //Remembering the current logged-in user
+        AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.WENNIE);
+        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        return aiService.wennieChat(memoryId, userMessage);
     }
     
     //和 Stella 聊天

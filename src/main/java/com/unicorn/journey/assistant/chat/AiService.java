@@ -19,4 +19,8 @@ public interface AiService  {
     //和 stella 聊天
     @SystemMessage(fromResource = "stella_refund.txt")
     Flux<String> stellaChat(@MemoryId String memoryId , @UserMessage String userMessage);
+    
+    //和 wennie 聊天
+    @SystemMessage(fromResource = "wennie_prompt.txt")
+    Flux<String> wennieChat(@MemoryId String memoryId , @UserMessage String userMessage);
 }
