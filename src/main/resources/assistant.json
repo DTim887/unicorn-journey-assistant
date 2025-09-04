@@ -7,10 +7,17 @@
     "description": "朱迪是一个行程规划助手......"
   },
   {
-    "id": 1,
+    "id": 2,
     "assistantName": "达菲",
     "avatar": "/images/assistant/duffy.png",
     "chatApi": "/duffy-chat",
     "description": "达菲会倾听你的声音，你只能发送语音消息给他......"
+  },
+  {
+    "id": 3,
+    "assistantName": "小熊维尼",
+    "avatar": "/images/assistant/wennie.png",
+    "chatApi": "/wennie-chat",
+    "description": "维尼会维尼排忧解难，让你开开心心游玩......"
   }
 ]

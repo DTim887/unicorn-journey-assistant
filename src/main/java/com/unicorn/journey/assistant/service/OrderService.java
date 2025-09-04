@@ -2,6 +2,7 @@ package com.unicorn.journey.assistant.service;
 
 import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.CacheName;
+import com.unicorn.journey.assistant.constant.OrderStatus;
 import com.unicorn.journey.assistant.controller.request.CreateOrderRequest;
 import com.unicorn.journey.assistant.controller.vo.CreateOrderVO;
 import com.unicorn.journey.assistant.entity.Order;
@@ -38,7 +39,7 @@ public class OrderService extends BaseService<Order> {
     public CreateOrderVO createOrder(CreateOrderRequest createOrderRequest) {
         Order order = OrderMapper.INSTANCE.convertToOrder(createOrderRequest);
         order.setId(UUID.randomUUID().toString());
-        order.setStatus("待付款");
+        order.setStatus(OrderStatus.PENDING.name());
         this.saveOrder(order);
         CreateOrderVO createOrderVO = new CreateOrderVO();
         createOrderVO.setOrderId(order.getId());
@@ -46,9 +47,21 @@ public class OrderService extends BaseService<Order> {
         return createOrderVO;
     }
 
+    @Tool("通过订单ID对订单进行退款的工具")
+    public void refundOrder(String orderId) {
+        Order order = this.get(orderId);
+        order.setStatus(OrderStatus.REFUND.name());
+        this.saveOrder(order);
+    }
+
+
 
     public void saveOrder(Order order) {
         this.put(order.getId(), order);
+    }
+
+    public Order getOrder(String orderId) {
+        return this.get(orderId);
     }
 
     public List<Order> retrieveOrdersByUserId(int userId) {
