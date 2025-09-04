@@ -24,26 +24,23 @@ public class Product {
     @Description("产品的每日价格和库存信息，示例值: {\"calendar\": [{\"date\": \"2026-05-01\", \"price\": 475, \"inventory\": 100},{\"date\": \"2026-05-02\", \"price\": 400, \"inventory\": 20}]}")
     private Calendar[] calendar;
 
-    @Description("可使用该产品的景点ID，如果为空则表示没有景点可用。示例值: {\"attractionId\": 2} ")
+    @Description("可游玩的景点ID数组，如果为空则表示没有景点可用。示例值: {\"attractionId\": 2} ")
     private Integer[] attractionId;
 
     @Description("用户的图片的相对路径，示例值: {\"image\": \"/images/product/20250530-shdr-theme-park-tickets-icon.jpg\"}")
     private String image;
-
-    @Description("所包含的票的数量，如果大于1则表示该产品是一个套装，比如 quantity=3 表示包含了三张票。示例值: {\"quantity\": 1}")
-    private Integer quantity;
 
     @Getter
     @Setter
     public static class Calendar {
 
         @Description("指定的日期，示例值: {\"date\": \"2026-05-01\"}")
-        String date;
+        private String date;
 
         @Description("指定日期的价格，示例值: {\"price\": 400.00}")
-        Integer price;
+        private Integer price;
 
         @Description("指定日期的库存，为0则表示当日没有库存，示例值: {\"inventory\": 20}")
-        Integer inventory;
+        private Integer inventory;
     }
 }
