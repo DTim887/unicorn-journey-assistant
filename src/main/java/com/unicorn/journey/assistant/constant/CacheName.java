@@ -12,7 +12,7 @@ public enum CacheName{
     ATTRACTION("ATTRACTION", Attraction.class),
     PLAN("PLAN", Plan.class),
     PRODUCT("PRODUCT", Product.class),
-    ASSISTANT("PRODUCT",Assistant.class)
+    ASSISTANT("PRODUCT", Assistant.class)
     ;
     private final String cacheName;
     private final Class<?> clazz;
