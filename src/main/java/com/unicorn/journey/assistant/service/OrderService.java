@@ -43,7 +43,7 @@ public class OrderService extends BaseService<Order> {
         this.saveOrder(order);
         CreateOrderVO createOrderVO = new CreateOrderVO();
         createOrderVO.setOrderId(order.getId());
-        createOrderVO.setOrderLink("http://localhost:8080/journey-assistant/order-detail.html?orderId=" + order.getId());
+        createOrderVO.setOrderLink("order-detail.html?orderId=" + order.getId());
         return createOrderVO;
     }
 
