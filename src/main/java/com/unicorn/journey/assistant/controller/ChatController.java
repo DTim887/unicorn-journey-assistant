@@ -43,38 +43,38 @@ public class ChatController {
     //和朱迪聊天
     @GetMapping("/judy-chat")
     public Flux<String> judyChat(@RequestParam String userMessage) {
-        String memoryId = this.createMemoryId();
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
         //Remembering the current logged-in user
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.JUDY);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.judyChat(memoryId, userMessage);
+        return aiService.judyChat(memoryId, userMessage, user);
     }
 
     //和 Duffy 聊天
     @PostMapping("/duffy-chat")
     public Flux<String> voiceChat(@RequestParam("audio") MultipartFile file) throws IOException {
         String userMessage = sttService.speechToText(file);
-        String memoryId = this.createMemoryId();
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
         //把语音转文字作为大模型的输入
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.DUFFY);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.duffyChat(memoryId, userMessage);
+        return aiService.duffyChat(memoryId, userMessage, user);
     }
 
     //和 Wennie 聊天
     @GetMapping("/wennie-chat")
     public Flux<String> wennieChat(@RequestParam String userMessage) {
-        String memoryId = this.createMemoryId();
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
         //Remembering the current logged-in user
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.WENNIE);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.wennieChat(memoryId, userMessage);
-    }
-
-    private String createMemoryId() {
-        User user = userService.currentUser();
-        Assistant assistant = assistantService.currentAssistant();
-        return assistant.getAssistantName() + user.getId();
+        return aiService.wennieChat(memoryId, userMessage, user);
     }
 
 }

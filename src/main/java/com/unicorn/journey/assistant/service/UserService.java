@@ -38,10 +38,9 @@ public class UserService extends BaseService<User> {
     }
 
     /**
-     * <p>这个工具可以获取当前登录的用户，并且可以返回用户对象</p>
+     * <p>获取当前登录的用户，并且可以返回用户对象</p>
      * @return User
      */
-    @Tool("获取当前登录的用户")
     public User currentUser() {
         return loginCache.get("login");
     }
