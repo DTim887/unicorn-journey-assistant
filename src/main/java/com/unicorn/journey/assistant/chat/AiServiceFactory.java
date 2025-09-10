@@ -36,8 +36,8 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private ProductService productService;
 
-    @Resource
-    private ContentRetriever contentRetriever;
+    //@Resource
+    //private ContentRetriever contentRetriever;
 
 
     public AiService getAiService(String id, Assistants assistant) {
