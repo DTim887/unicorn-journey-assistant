@@ -55,7 +55,7 @@ public class AiServiceFactory extends BaseService<AiService> {
         List<Object> tools = switch (assistant) {
             case WENNIE -> List.of(userService, orderService);
             case DUFFY -> List.of(userService, productService, orderService);
-            case JUDY -> List.of(userService, attractionService, productService, orderService);
+            case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
         };
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
         AiService aiService = AiServices.builder(AiService.class)
