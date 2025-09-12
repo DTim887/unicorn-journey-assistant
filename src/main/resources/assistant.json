@@ -7,7 +7,7 @@
     "description": "朱迪是一个行程规划助手......"
   },
   {
-    "id": 1,
+    "id": 2,
     "assistantName": "达菲",
     "avatar": "/images/assistant/duffy.png",
     "chatApi": "/duffy-chat",
@@ -19,5 +19,12 @@
     "avatar": "/images/assistant/stella.png",
     "chatApi": "/stella-chat",
     "description": "斯黛拉是专门负责门票退款业务的助手，能帮助你处理因天气等原因需要退款的问题。"
+  },
+  {
+    "id": 4,
+    "assistantName": "小熊维尼",
+    "avatar": "/images/assistant/wennie.png",
+    "chatApi": "/wennie-chat",
+    "description": "维尼会维尼排忧解难，让你开开心心游玩......"
   }
 ]

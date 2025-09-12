@@ -1,6 +1,7 @@
 package com.unicorn.journey.assistant.chat;
 
 import com.unicorn.journey.assistant.annotations.LocalCache;
+import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.client.McpClient;
 import com.unicorn.journey.assistant.service.*;
@@ -39,21 +40,25 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private McpClient mcpClient;
 
-    @Resource
-    private ContentRetriever contentRetriever;
+    //@Resource
+    //private ContentRetriever contentRetriever;
 
 
-    public AiService getAiService(String id) {
-
+    public AiService getAiService(String id, Assistants assistant) {
         AiService aiService = this.get(id);
         if (aiService == null) {
-            aiService = createAiService(id);
+            aiService = createAiService(id, assistant);
         }
         return aiService;
     }
 
-    public AiService createAiService(String id) {
-        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(100);
+    private AiService createAiService(String id, Assistants assistant) {
+        List<Object> tools = switch (assistant) {
+            case WENNIE -> List.of(userService, orderService);
+            case DUFFY -> List.of(userService, productService, orderService);
+            case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
+        };
+        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
         AiService aiService = AiServices.builder(AiService.class)
 //               .chatModel(chatModel())
                 .streamingChatModel(streamingChatModel)
@@ -62,7 +67,7 @@ public class AiServiceFactory extends BaseService<AiService> {
 //                .contentRetriever(contentRetriever)
 //               .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
-.tools(List.of(userService, attractionService, planService, orderService, productService, mcpClient))
+                .tools(tools)
                 .build();
         this.put(id, aiService);
         return aiService;

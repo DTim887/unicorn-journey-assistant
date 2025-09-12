@@ -103,7 +103,7 @@ curl --location 'http://localhost:8080/journey-assistant/product/1'
 ### 5. 景点接口
 #### 获取所有景点信息
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/attraction/listAll'
+curl --location 'http://localhost:8080/journey-assistant/attraction/all'
 ```
 
 ### 6. 行程接口
