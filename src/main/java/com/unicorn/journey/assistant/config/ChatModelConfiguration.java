@@ -2,7 +2,9 @@ package com.unicorn.journey.assistant.config;
 
 
 import com.unicorn.journey.assistant.service.UserService;
+import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,13 +45,15 @@ public class ChatModelConfiguration {
                 .build();
     }
 
-//    @Bean
-//    public ChatModel chatModel() {
-//        return QwenChatModel.builder()
-//                .temperature(0.3f)
-////                .listeners(List.of(myChatModelListener))
-//                .build();
-//    }
+    @Bean
+    public ChatModel chatModel() {
+        return QwenChatModel.builder()
+                .modelName(streamModelName)
+                .apiKey(streamModelKey)
+                .temperature(0.0f)
+                .listeners(List.of(customChatModelListener))
+                .build();
+    }
 
 
 }
