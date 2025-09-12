@@ -20,13 +20,13 @@
     "productName": "浪漫双人一日票套餐",
     "description": "可供2人畅玩上海迪士尼乐园一整天，一起解锁在迪士尼的浪慢约会，心动游园、高甜穿搭、甜蜜小食你能想到的约会体验都在这里啦！",
     "calendar": [
-      {"date": "2026-05-01", "price": 800, "inventory": 100},
-      {"date": "2026-05-02", "price": 800, "inventory": 100},
-      {"date": "2026-05-03", "price": 800, "inventory": 100},
-      {"date": "2026-05-04", "price": 800, "inventory": 100},
-      {"date": "2026-05-05", "price": 800, "inventory": 100},
-      {"date": "2026-05-06", "price": 800, "inventory": 100},
-      {"date": "2026-05-07", "price": 800, "inventory": 100}
+      {"date": "2026-05-01", "price": 820, "inventory": 100},
+      {"date": "2026-05-02", "price": 810, "inventory": 0},
+      {"date": "2026-05-03", "price": 830, "inventory": 0},
+      {"date": "2026-05-04", "price": 840, "inventory": 100},
+      {"date": "2026-05-05", "price": 850, "inventory": 100},
+      {"date": "2026-05-06", "price": 860, "inventory": 100},
+      {"date": "2026-05-07", "price": 870, "inventory": 100}
     ],
     "attractionId": null,
     "image": "/images/product/shdr-theme-park-romance-celebration-package-2-0-icon-cn.png"
@@ -36,13 +36,13 @@
     "productName": "家庭套票",
     "description": "可供三人畅玩上海迪士尼乐园一整天，家庭游玩好去处，两大一小，或者一大两小亲子套票！",
     "calendar": [
-      {"date": "2026-05-01", "price": 1200, "inventory": 100},
-      {"date": "2026-05-02", "price": 1200, "inventory": 100},
-      {"date": "2026-05-03", "price": 1200, "inventory": 100},
-      {"date": "2026-05-04", "price": 1200, "inventory": 100},
-      {"date": "2026-05-05", "price": 1200, "inventory": 100},
-      {"date": "2026-05-06", "price": 1200, "inventory": 100},
-      {"date": "2026-05-07", "price": 1200, "inventory": 100}
+      {"date": "2026-05-01", "price": 1220, "inventory": 0},
+      {"date": "2026-05-02", "price": 1240, "inventory": 100},
+      {"date": "2026-05-03", "price": 1250, "inventory": 100},
+      {"date": "2026-05-04", "price": 1260, "inventory": 100},
+      {"date": "2026-05-05", "price": 1270, "inventory": 0},
+      {"date": "2026-05-06", "price": 1280, "inventory": 100},
+      {"date": "2026-05-07", "price": 1290, "inventory": 100}
     ],
     "attractionId": null,
     "image": "/images/product/Parent-Child-Bundle-Ticket-icon-20250311.jpg"
