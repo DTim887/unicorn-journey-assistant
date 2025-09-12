@@ -33,5 +33,5 @@ build/
 .vscode/
 
 ### mvn ###
-.mvn*
+.mvn/wrapper/*
 
