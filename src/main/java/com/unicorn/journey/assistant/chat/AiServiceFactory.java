@@ -51,6 +51,12 @@ public class AiServiceFactory extends BaseService<AiService> {
         return aiService;
     }
 
+    //重启会话
+    public void newConversation(String id) {
+        this.evict(id);
+    }
+
+
     private AiService createAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
             case WENNIE -> List.of(userService, orderService);
