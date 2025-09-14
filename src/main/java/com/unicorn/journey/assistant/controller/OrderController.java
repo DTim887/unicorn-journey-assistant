@@ -52,7 +52,7 @@ public class OrderController {
             OrderVO.PurchasedProductVO purchasedProductVO = new OrderVO.PurchasedProductVO();
             purchasedProductVO.setProductName(product.getProductName());
             purchasedProductVO.setQuantity(p.getQuantity());
-            Product.Calendar calendar = Arrays.stream(product.getCalendar())
+            Product.InventoryCalendar calendar = Arrays.stream(product.getInventoryCalendar())
                     .filter(calendar1 -> calendar1.getDate().equals(order.getVisitDate()))
                     .findFirst()
                     .orElse(null);
