@@ -20,7 +20,7 @@ public class Plan {
      * plan id
      */
     @Description("行程id")
-    private Integer id;
+    private Long id;
 
     /**
      * plan 名称

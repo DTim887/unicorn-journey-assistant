@@ -20,7 +20,7 @@
     "productName": "浪漫双人一日票套餐",
     "description": "可供2人畅玩上海迪士尼乐园一整天，一起解锁在迪士尼的浪慢约会，心动游园、高甜穿搭、甜蜜小食你能想到的约会体验都在这里啦！",
     "calendar": [
-      {"date": "2026-05-01", "price": 820, "inventory": 100},
+      {"date": "2026-05-01", "price": 820, "inventory": 8},
       {"date": "2026-05-02", "price": 810, "inventory": 0},
       {"date": "2026-05-03", "price": 830, "inventory": 0},
       {"date": "2026-05-04", "price": 840, "inventory": 100},
