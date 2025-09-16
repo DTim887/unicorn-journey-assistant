@@ -75,6 +75,18 @@ public class ChatController {
         return aiService.wennieChat(memoryId, userMessage, user);
     }
 
+    //和 woody 聊天
+    @GetMapping("/woody-chat")
+    public Flux<String> woodyChat(@RequestParam String userMessage) {
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
+        //Remembering the current logged-in user
+        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WENNIE);
+        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        return aiService.woodyChat(memoryId, userMessage, user);
+    }
+
     @PutMapping("/new-conversation")
     public Result newConversation() {
         User user = userService.currentUser();

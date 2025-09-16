@@ -22,6 +22,12 @@ public class AiServiceFactory extends BaseService<AiService> {
     private StreamingChatModel streamingChatModel;
 
     @Resource
+    private StreamingChatModel deepseekStreamingChatModel;
+
+//    @Resource
+//    private MessageWindowChatMemory messageWindowChatMemory;
+
+    @Resource
     private ChatModel chatModel;
 
     @Resource
@@ -42,6 +48,13 @@ public class AiServiceFactory extends BaseService<AiService> {
     //@Resource
     //private ContentRetriever contentRetriever;
 
+    public AiService getDeepseekAiService(String id, Assistants assistant) {
+        AiService aiService = this.get(id);
+        if (aiService == null) {
+            aiService = createDeepseekAiService(id, assistant);
+        }
+        return aiService;
+    }
 
     public AiService getAiService(String id, Assistants assistant) {
         AiService aiService = this.get(id);
@@ -62,6 +75,7 @@ public class AiServiceFactory extends BaseService<AiService> {
             case WENNIE -> List.of(userService, productService,orderService);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
+            case WOODY -> List.of(userService, productService, orderService);
         };
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
         AiService aiService = AiServices.builder(AiService.class)
@@ -77,4 +91,27 @@ public class AiServiceFactory extends BaseService<AiService> {
         this.put(id, aiService);
         return aiService;
     }
+
+    private AiService createDeepseekAiService(String id, Assistants assistant) {
+        List<Object> tools = switch (assistant) {
+            case WENNIE -> List.of(userService, productService,orderService);
+            case DUFFY -> List.of(userService, productService, orderService);
+            case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
+            case WOODY -> List.of(userService, productService, orderService);
+        };
+        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
+        AiService aiService = AiServices.builder(AiService.class)
+                .chatModel(chatModel)
+                .streamingChatModel(deepseekStreamingChatModel)
+                .chatMemory(chatMemory)
+                .chatMemoryProvider(memoryId -> chatMemory)
+//                .contentRetriever(contentRetriever)
+//               .toolProvider(mcpToolProvider)  //mcp tool
+                //register the tools
+                .tools(tools)
+                .build();
+        this.put(id, aiService);
+        return aiService;
+    }
+
 }
