@@ -7,8 +7,8 @@ import com.unicorn.journey.assistant.client.McpClient;
 import com.unicorn.journey.assistant.service.*;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
-import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,9 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     @Resource
     private StreamingChatModel streamingChatModel;
+
+    @Resource
+    private ChatModel chatModel;
 
     @Resource
     private UserService userService;
@@ -52,15 +55,21 @@ public class AiServiceFactory extends BaseService<AiService> {
         return aiService;
     }
 
+    //重启会话
+    public void newConversation(String id) {
+        this.evict(id);
+    }
+
+
     private AiService createAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
-            case WENNIE -> List.of(userService, orderService);
+            case WENNIE -> List.of(userService, productService,orderService);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
         };
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
         AiService aiService = AiServices.builder(AiService.class)
-//               .chatModel(chatModel())
+                .chatModel(chatModel)
                 .streamingChatModel(streamingChatModel)
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)

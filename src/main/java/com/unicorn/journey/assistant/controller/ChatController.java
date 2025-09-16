@@ -3,6 +3,7 @@ package com.unicorn.journey.assistant.controller;
 import com.unicorn.journey.assistant.chat.AiService;
 import com.unicorn.journey.assistant.chat.AiServiceFactory;
 import com.unicorn.journey.assistant.constant.Assistants;
+import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.AssistantService;
@@ -10,10 +11,7 @@ import com.unicorn.journey.assistant.service.STTService;
 import com.unicorn.journey.assistant.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
@@ -86,6 +84,15 @@ public class ChatController {
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.WENNIE);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.wennieChat(memoryId, userMessage, user);
+    }
+
+    @PutMapping("/new-conversation")
+    public Result newConversation() {
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
+        aiServiceFactory.newConversation(memoryId);
+        return Result.ok();
     }
 
 }
