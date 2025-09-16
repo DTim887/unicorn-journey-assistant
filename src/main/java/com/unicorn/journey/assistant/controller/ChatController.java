@@ -63,6 +63,18 @@ public class ChatController {
         return aiService.duffyChat(memoryId, userMessage, user);
     }
 
+    //和 Duffy 文字聊天
+    @GetMapping("/duffy-text")
+    public Flux<String> wennieTextChat(@RequestParam String userMessage) {
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
+        //Remembering the current logged-in user
+        AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.DUFFY);
+        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        return aiService.duffyChat(memoryId, userMessage, user);
+    }
+
     //和 Wennie 聊天
     @GetMapping("/wennie-chat")
     public Flux<String> wennieChat(@RequestParam String userMessage) {
@@ -75,6 +87,8 @@ public class ChatController {
         return aiService.wennieChat(memoryId, userMessage, user);
     }
 
+
+
     //和 woody 聊天
     @GetMapping("/woody-chat")
     public Flux<String> woodyChat(@RequestParam String userMessage) {
@@ -82,7 +96,7 @@ public class ChatController {
         Assistant assistant = assistantService.currentAssistant();
         String memoryId = assistant.getAssistantName() + user.getId();
         //Remembering the current logged-in user
-        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WENNIE);
+        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WOODY);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.woodyChat(memoryId, userMessage, user);
     }
