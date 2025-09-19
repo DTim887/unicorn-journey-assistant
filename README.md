@@ -34,6 +34,15 @@ curl -v -X POST \
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/judy-chat?userMessage=%E7%99%BB%E5%BD%95%E7%94%A8%E6%88%B7'
 ```
+#### Woody 聊天
+```shell
+curl --location 'http://localhost:8080/journey-assistant/woody-chat?userMessage=%E4%BD%A0%E5%A5%BD'
+```
+
+#### Duffy 文字聊天
+```shell
+curl --location 'http://localhost:8080/journey-assistant/duffy-text?userMessage=%E4%BD%A0%E5%A5%BD'
+```
 
 ### 开启新会话，根据当前用户和助手清空记忆
 ```shell

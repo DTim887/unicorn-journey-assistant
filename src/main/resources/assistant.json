@@ -26,5 +26,12 @@
     "avatar": "/images/assistant/wennie.png",
     "chatApi": "/wennie-chat",
     "description": "维尼会维尼排忧解难，让你开开心心游玩......"
+  },
+  {
+    "id": 4,
+    "assistantName": "胡迪牛仔(Tim 测试版)",
+    "avatar": "/images/assistant/woody.png",
+    "chatApi": "/woody-chat",
+    "description": "我是西部牛仔，测试大神，全能GQE，Functional testing 天花板......"
   }
 ]
