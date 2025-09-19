@@ -50,6 +50,9 @@ public class OrderService extends BaseService<Order> {
     @Tool("通过订单ID对订单进行退款的工具")
     public void refundOrder(String orderId) {
         Order order = this.get(orderId);
+        if (order == null) {
+            throw new IllegalArgumentException("Order not found with ID: " + orderId);
+        }
         order.setStatus(OrderStatus.REFUND.name());
         this.saveOrder(order);
     }
@@ -64,6 +67,7 @@ public class OrderService extends BaseService<Order> {
         return this.get(orderId);
     }
 
+    @Tool("通过用户ID来查询用户的订单列表的工具")
     public List<Order> retrieveOrdersByUserId(int userId) {
         List<Order> orders = this.getAll(Order.class);
         if (!CollectionUtils.isEmpty(orders)) {

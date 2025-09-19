@@ -1,19 +1,26 @@
 package com.unicorn.journey.assistant.chat;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.unicorn.journey.assistant.annotations.LocalCache;
+import com.unicorn.journey.assistant.client.McpClient;
 import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.constant.CacheName;
-import com.unicorn.journey.assistant.client.McpClient;
-import com.unicorn.journey.assistant.service.*;
+import com.unicorn.journey.assistant.service.AttractionService;
+import com.unicorn.journey.assistant.service.BaseService;
+import com.unicorn.journey.assistant.service.OrderService;
+import com.unicorn.journey.assistant.service.PlanService;
+import com.unicorn.journey.assistant.service.ProductService;
+import com.unicorn.journey.assistant.service.UserService;
+
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @LocalCache(value = CacheName.AISERVICE)
@@ -88,7 +95,6 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)
 //                .contentRetriever(contentRetriever)
-//               .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
                 .tools(tools)
                 .build();
@@ -98,7 +104,7 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     private AiService createDeepseekAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
-            case WENNIE -> List.of(userService, productService,orderService);
+            case WENNIE -> List.of(userService, productService, orderService, mcpClient);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
             case WOODY -> List.of(userService, productService, orderService);
@@ -110,7 +116,6 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)
 //                .contentRetriever(contentRetriever)
-//               .toolProvider(mcpToolProvider)  //mcp tool
                 //register the tools
                 .tools(tools)
                 .build();

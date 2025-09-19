@@ -99,6 +99,20 @@ curl --location 'http://localhost:8080/journey-assistant/order/create' \
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/detail/ab98c607-b5fc-4c60-9eac-befbc77bdc95'
 ```
+
+#### 订单退款
+通过订单ID对订单进行退款的工具
+```java
+/**
+ * orderId : 订单ID
+ */
+```
+```shell
+curl --location --request POST 'http://localhost:8080/journey-assistant/order/refund' \
+--header 'Content-Type: application/json' \
+--data '{"orderId": "ab98c607-b5fc-4c60-9eac-befbc77bdc95"}'
+```
+
 #### 根据用户ID获取订单列表
 返回的是一个 list
 ```shell

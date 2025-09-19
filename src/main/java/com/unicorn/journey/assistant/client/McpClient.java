@@ -38,7 +38,7 @@ public class McpClient {
      * @param visitDate 入园日期
      * @return 退款资格检查结果
      */
-    @Tool(name = "refund-policy")
+    @Tool(name = "check_refund_eligibility")
     public McpResponse checkRefundEligibility(String visitDate) {
         Map<String, Object> params = new HashMap<>();
         params.put("visitDate", visitDate);
@@ -51,7 +51,7 @@ public class McpClient {
      * @param visitDate 入园日期
      * @return 退款处理结果
      */
-    @Tool(name = "refund-policy")
+    @Tool(name = "process_refund")
     public McpResponse processRefund(String orderId, String visitDate) {
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", orderId);
