@@ -63,7 +63,7 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     private AiService createAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
-            case WENNIE -> List.of(userService, productService,orderService);
+            case WENNIE -> List.of(userService, productService, orderService, mcpClient);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
         };
