@@ -63,16 +63,7 @@ public class ChatController {
         return aiService.duffyChat(memoryId, userMessage, user);
     }
     
-    //和 Stella 聊天
-    @GetMapping("/stella-chat")
-    public Flux<String> stellaChat(@RequestParam String userMessage) {
-        User user = userService.currentUser();
-        Assistant assistant = assistantService.currentAssistant();
-        String memoryId = assistant.getAssistantName() + user.getId();
-        AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.JUDY); // 使用JUDY作为临时助理类型
-        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.stellaChat(memoryId, userMessage);
-    }
+
 
     //和 Duffy 文字聊天
     @GetMapping("/duffy-text")

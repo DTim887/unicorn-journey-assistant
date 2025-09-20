@@ -29,7 +29,7 @@ public class OrderVO {
 
     @Description("订单状态，示例: 待付款，已支付，已退款")
     private String status;
-
+   
     @Getter
     @Setter
     public static class PurchasedProductVO {

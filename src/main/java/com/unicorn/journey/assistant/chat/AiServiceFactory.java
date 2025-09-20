@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.unicorn.journey.assistant.annotations.LocalCache;
-import com.unicorn.journey.assistant.client.McpClient;
 import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.service.AttractionService;
@@ -13,6 +12,7 @@ import com.unicorn.journey.assistant.service.BaseService;
 import com.unicorn.journey.assistant.service.OrderService;
 import com.unicorn.journey.assistant.service.PlanService;
 import com.unicorn.journey.assistant.service.ProductService;
+import com.unicorn.journey.assistant.service.RefundMcpService;
 import com.unicorn.journey.assistant.service.UserService;
 
 import dev.langchain4j.memory.ChatMemory;
@@ -54,7 +54,7 @@ public class AiServiceFactory extends BaseService<AiService> {
     private ProductService productService;
     
     @Resource
-    private McpClient mcpClient;
+    private RefundMcpService refundMcpService;
 
     //@Resource
     //private ContentRetriever contentRetriever;
@@ -83,7 +83,7 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     private AiService createAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
-            case WENNIE -> List.of(userService, productService, orderService, mcpClient);
+            case WENNIE -> List.of(userService, productService, orderService, refundMcpService);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
             case WOODY -> List.of(userService, productService, orderService);
@@ -104,7 +104,7 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     private AiService createDeepseekAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
-            case WENNIE -> List.of(userService, productService, orderService, mcpClient);
+            case WENNIE -> List.of(userService, productService, orderService, refundMcpService);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
             case WOODY -> List.of(userService, productService, orderService);

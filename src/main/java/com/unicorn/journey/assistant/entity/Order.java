@@ -19,13 +19,16 @@ public class Order {
     private int userId;
 
     @Description("订单中包含的要购买产品列表")
-    private List<PurchasedProduct>  purchasedProducts;
+    private List<PurchasedProduct> purchasedProducts;
 
     @Description("订单中用户所购买的产品的入园日期，示例值: {\"visitDate\": \"2026-05-04\"}")
     private String visitDate;
 
     @Description("订单状态，示例: 待付款，已支付，已退款")
     private String status;
+
+    @Description("订单的总价格")
+    private int totalPrice;
 
     @Getter
     @Setter

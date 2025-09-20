@@ -1,4 +1,4 @@
-package com.unicorn.journey.assistant.client;
+package com.unicorn.journey.assistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.agent.tool.Tool;
@@ -14,17 +14,17 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * MCP客户端，用于调用MCP服务器接口
+ * MCP服务，用于调用MCP服务器接口
  */
 @Service
-public class McpClient {
+public class RefundMcpService {
 
-    private static final Logger logger = LoggerFactory.getLogger(McpClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(RefundMcpService.class);
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final String mcpServerUrl;
 
-    public McpClient(RestTemplate restTemplate, ObjectMapper objectMapper, 
+    public RefundMcpService(RestTemplate restTemplate, ObjectMapper objectMapper, 
                      @Value("${mcp.server.url:http://localhost:8002/unicorn-journey-assistant/system/rpc}") String mcpServerUrl) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
@@ -32,16 +32,19 @@ public class McpClient {
     }
 
 
-
     /**
      * 调用MCP接口检查退款资格
+     * @param orderId 订单ID
      * @param visitDate 入园日期
+     * @param orderAmount 订单金额
      * @return 退款资格检查结果
      */
     @Tool(name = "check_refund_eligibility")
-    public McpResponse checkRefundEligibility(String visitDate) {
+    public McpResponse checkRefundEligibility(String orderId, String visitDate, int orderAmount) {
         Map<String, Object> params = new HashMap<>();
+        params.put("orderId", orderId);
         params.put("visitDate", visitDate);
+        params.put("orderAmount", orderAmount);
         return callMcpMethod("checkRefundEligibility", params);
     }
 
@@ -49,13 +52,19 @@ public class McpClient {
      * 调用MCP接口处理退款
      * @param orderId 订单ID
      * @param visitDate 入园日期
-     * @return 退款处理结果
+     * @param orderAmount 订单金额
+     * @param refundAmount 退款金额
+     * @param refundType 退款类型：全额退，差价退
+     * @return 二次校验后退款处理结果
      */
     @Tool(name = "process_refund")
-    public McpResponse processRefund(String orderId, String visitDate) {
+    public McpResponse processRefund(String orderId, String visitDate, int orderAmount, int refundAmount, String refundType) {
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", orderId);
         params.put("visitDate", visitDate);
+        params.put("orderAmount", orderAmount);
+        params.put("refundAmount", refundAmount);
+        params.put("refundType", refundType);
         return callMcpMethod("processRefund", params);
     }
 
