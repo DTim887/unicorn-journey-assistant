@@ -15,6 +15,8 @@ Clone the repository and locate to the project directory
 ### Run JAR file
 ```terminaloutput
  java -jar target/unicorn-journey-assistant-1.0.0.jar 
+ ./mvnw spring-boot:run
+ ./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true'
 ```
 Open the bowser and visit : http://localhost:8088/journey-assistant
 
@@ -66,7 +68,7 @@ curl --location 'http://localhost:8080/journey-assistant/user/current'
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/user/all'
 ```
-### 3. 订单接口
+## 3. 订单接口
 #### 保存订单
 ```java
 /**
@@ -98,10 +100,42 @@ curl --location 'http://localhost:8080/journey-assistant/order/create' \
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/detail/ab98c607-b5fc-4c60-9eac-befbc77bdc95'
 ```
+
+#### 订单退款
+通过订单ID对订单进行退款的工具
+```java
+/**
+ * orderId : 订单ID
+ * refundPercentage : 退款百分比(0-100)，系统会自动计算退款金额并设置退款类型
+ *                    - refundPercentage = 100: 全额退款
+ *                    - 0 < refundPercentage < 100: 折扣退款
+ */
+```
+```shell
+curl --location --request POST 'http://localhost:8080/journey-assistant/order/refund' \
+--header 'Content-Type: application/json' \
+--data '{
+    "orderId": "ab98c607-b5fc-4c60-9eac-befbc77bdc95",
+    "refundPercentage": 50
+}'
+```
+
 #### 根据用户ID获取订单列表
 返回的是一个 list
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/list?userId=1'
+```
+
+#### 根据订单ID获取退款日志
+返回指定订单的退款日志列表
+```shell
+curl --location 'http://localhost:8080/journey-assistant/refund/log/ab98c607-b5fc-4c60-9eac-befbc77bdc95'
+```
+
+#### 获取所有退款日志
+返回系统中所有的退款日志列表
+```shell
+curl --location 'http://localhost:8080/journey-assistant/refund/log/all'
 ```
 ### 4. 产品接口
 #### 获取所有产品

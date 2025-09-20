@@ -17,6 +17,8 @@ public interface AiService  {
     //和 duffy 聊天
     @SystemMessage(fromResource = "duffy_prompt.txt")
     Flux<String> duffyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
+    
+
 
     //和 wennie 聊天
     @SystemMessage(fromResource = "wennie_prompt.txt")

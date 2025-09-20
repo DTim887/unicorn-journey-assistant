@@ -62,6 +62,8 @@ public class ChatController {
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.duffyChat(memoryId, userMessage, user);
     }
+    
+
 
     //和 Duffy 文字聊天
     @GetMapping("/duffy-text")

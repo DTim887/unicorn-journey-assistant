@@ -35,3 +35,8 @@ build/
 ### mvn ###
 .mvn/wrapper/*
 
+mvn.zip
+.mvn/.DS_Store
+.mvn/wrapper/maven-wrapper.properties
+__MACOSX/.mvn/._.DS_Store
+__MACOSX/.mvn/wrapper/._maven-wrapper.properties

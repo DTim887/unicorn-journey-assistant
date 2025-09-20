@@ -23,11 +23,11 @@ public class AudioRequest {
     private Request request;
 
     // 默认构造函数
-    public void SpeechRecognitionRequest() {
+    public AudioRequest() {
     }
 
-    // 带参数的构造函数 (可选，方便创建对象)
-    public void SpeechRecognitionRequest(User user, Audio audio, Request request) {
+    // 带参数的构造函数
+    public AudioRequest(User user, Audio audio, Request request) {
         this.user = user;
         this.audio = audio;
         this.request = request;
