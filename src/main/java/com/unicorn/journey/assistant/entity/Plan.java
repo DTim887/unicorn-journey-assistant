@@ -35,15 +35,29 @@ public class Plan {
     private LocalDate planDate;
 
     /**
-     * 景点列表 景点id 景点顺序就是景点id在list中的顺序
+     * 景点列表 包含景点id和景点游玩时间段 景点顺序就是PlanAttractionItem在list中的顺序
      */
-    @Description("景点列表")
-    private List<Integer> attractionIds;
+    @Description("景点列表 包含景点id和景点游玩时间段 景点顺序就是PlanAttractionItem在list中的顺序")
+    private List<PlanAttractionItem> attractionIds;
 
     /**
      * 所属人
      */
     @Description("所属人的用户id")
     private Integer userId;
+
+
+    @Data
+    static class PlanAttractionItem{
+        /**
+         * 景点id
+         */
+        private Integer attractionId;
+
+        /**
+         * 景点游玩时间段
+         */
+        private String visitTimeRange;
+    }
 
 }

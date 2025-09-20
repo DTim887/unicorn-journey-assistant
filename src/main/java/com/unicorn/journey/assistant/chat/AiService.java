@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 public interface AiService  {
 
     //和 judy 聊天
-    @SystemMessage(fromResource = "judy_qw3_max_prompt.txt")
+    @SystemMessage(fromResource = "judy_prompt.txt")
     Flux<String> judyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
 
 
