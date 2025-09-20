@@ -35,7 +35,7 @@ public class ChatModelConfiguration {
                 .apiKey("sk-d1cdeff51b17440089f5860dc6c1d04e")
                 .baseUrl("https://api.deepseek.com")
                 .modelName("deepseek-reasoner") //deepseek 3.1
-                .temperature(0.0)
+                .temperature(0.3)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
@@ -52,7 +52,7 @@ public class ChatModelConfiguration {
         return QwenStreamingChatModel.builder()
                 .modelName(streamModelName)
                 .apiKey(streamModelKey)
-                .temperature(0.0f)
+                .temperature(0.3f)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
@@ -62,7 +62,7 @@ public class ChatModelConfiguration {
         return QwenChatModel.builder()
                 .modelName(streamModelName)
                 .apiKey(streamModelKey)
-                .temperature(0.0f)
+                .temperature(0.3f)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }

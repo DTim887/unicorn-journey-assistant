@@ -77,7 +77,7 @@ public class AiServiceFactory extends BaseService<AiService> {
             case JUDY -> List.of(userService, attractionService, planService);
             case WOODY -> List.of(userService, productService, orderService);
         };
-        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
+        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(50);
         AiService aiService = AiServices.builder(AiService.class)
                 .chatModel(chatModel)
                 .streamingChatModel(streamingChatModel)
@@ -99,7 +99,7 @@ public class AiServiceFactory extends BaseService<AiService> {
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
             case WOODY -> List.of(userService, productService, orderService);
         };
-        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(20);
+        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(50);
         AiService aiService = AiServices.builder(AiService.class)
                 .chatModel(chatModel)
                 .streamingChatModel(deepseekStreamingChatModel)
