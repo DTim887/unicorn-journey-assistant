@@ -4,5 +4,5 @@ public enum Assistants {
     JUDY,
     DUFFY,
     WENNIE,
-    STELLA
+    WOODY
 }

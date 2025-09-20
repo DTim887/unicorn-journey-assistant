@@ -34,6 +34,20 @@ curl -v -X POST \
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/judy-chat?userMessage=%E7%99%BB%E5%BD%95%E7%94%A8%E6%88%B7'
 ```
+#### Woody 聊天
+```shell
+curl --location 'http://localhost:8080/journey-assistant/woody-chat?userMessage=%E4%BD%A0%E5%A5%BD'
+```
+
+#### Duffy 文字聊天
+```shell
+curl --location 'http://localhost:8080/journey-assistant/duffy-text?userMessage=%E4%BD%A0%E5%A5%BD'
+```
+
+### 开启新会话，根据当前用户和助手清空记忆
+```shell
+curl --location --request PUT 'http://localhost:8080/journey-assistant/new-conversation'
+```
 
 ### 2. 用户接口
 #### 用户登录
@@ -85,6 +99,20 @@ curl --location 'http://localhost:8080/journey-assistant/order/create' \
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/order/detail/ab98c607-b5fc-4c60-9eac-befbc77bdc95'
 ```
+
+#### 订单退款
+通过订单ID对订单进行退款的工具
+```java
+/**
+ * orderId : 订单ID
+ */
+```
+```shell
+curl --location --request POST 'http://localhost:8080/journey-assistant/order/refund' \
+--header 'Content-Type: application/json' \
+--data '{"orderId": "ab98c607-b5fc-4c60-9eac-befbc77bdc95"}'
+```
+
 #### 根据用户ID获取订单列表
 返回的是一个 list
 ```shell
@@ -103,7 +131,7 @@ curl --location 'http://localhost:8080/journey-assistant/product/1'
 ### 5. 景点接口
 #### 获取所有景点信息
 ```shell
-curl --location 'http://localhost:8080/journey-assistant/attraction/listAll'
+curl --location 'http://localhost:8080/journey-assistant/attraction/all'
 ```
 
 ### 6. 行程接口

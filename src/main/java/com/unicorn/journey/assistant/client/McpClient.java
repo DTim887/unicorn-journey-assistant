@@ -1,6 +1,7 @@
 package com.unicorn.journey.assistant.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.langchain4j.agent.tool.Tool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,7 @@ public class McpClient {
      * @param visitDate 入园日期
      * @return 退款资格检查结果
      */
+    @Tool(name = "check_refund_eligibility")
     public McpResponse checkRefundEligibility(String visitDate) {
         Map<String, Object> params = new HashMap<>();
         params.put("visitDate", visitDate);
@@ -49,6 +51,7 @@ public class McpClient {
      * @param visitDate 入园日期
      * @return 退款处理结果
      */
+    @Tool(name = "process_refund")
     public McpResponse processRefund(String orderId, String visitDate) {
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", orderId);

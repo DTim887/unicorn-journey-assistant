@@ -2,8 +2,11 @@ package com.unicorn.journey.assistant.config;
 
 
 import com.unicorn.journey.assistant.service.UserService;
+import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +29,17 @@ public class ChatModelConfiguration {
     private CustomChatModelListener customChatModelListener;
 
 
+    @Bean
+    public StreamingChatModel deepseekStreamingChatModel() {
+        return OpenAiStreamingChatModel.builder()
+                .apiKey("sk-d1cdeff51b17440089f5860dc6c1d04e")
+                .baseUrl("https://api.deepseek.com")
+                .modelName("deepseek-reasoner") //deepseek 3.1
+                .temperature(0.0)
+                .listeners(List.of(customChatModelListener))
+                .build();
+    }
+
 
     @Bean
     public StreamingChatModel streamingChatModel() {
@@ -43,13 +57,15 @@ public class ChatModelConfiguration {
                 .build();
     }
 
-//    @Bean
-//    public ChatModel chatModel() {
-//        return QwenChatModel.builder()
-//                .temperature(0.3f)
-////                .listeners(List.of(myChatModelListener))
-//                .build();
-//    }
+    @Bean
+    public ChatModel chatModel() {
+        return QwenChatModel.builder()
+                .modelName(streamModelName)
+                .apiKey(streamModelKey)
+                .temperature(0.0f)
+                .listeners(List.of(customChatModelListener))
+                .build();
+    }
 
 
 }

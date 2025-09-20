@@ -1,0 +1,4 @@
+### 注意这个不是最终版本，所以先不要用这种形式
+
+5. IMPORTANT: 把回答放都放在<answer></answer>标签中, 如果需要用户确认请在<actions><action></action></actions>标签中放入确认内容。
+比如: 让用户选择日期用<action id="calendar"></action>, 让用户确认人数用<action id="guest_account"></tool>, 让用户确认是否创建订单用<action id="double_confirmation"></action>
