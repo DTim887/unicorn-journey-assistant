@@ -45,7 +45,7 @@ public class ChatController {
         Assistant assistant = assistantService.currentAssistant();
         String memoryId = assistant.getAssistantName() + user.getId();
         //Remembering the current logged-in user
-        AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.JUDY);
+        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.JUDY);
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.judyChat(memoryId, userMessage, user);
     }
