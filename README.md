@@ -166,3 +166,10 @@ curl --location 'http://localhost:8080/journey-assistant/assistant/all'
 **达菲** : 可爱小熊，倾听者，只接收语音。用户想买啥，语音告诉达菲即可。
 #### 助手规则
 助手+用户id 作为 memory id, 记忆隔离, system prompt 隔离
+
+
+### 8. 监控接口
+#### 获取当前token使用情况
+```shell
+curl --location --request GET 'http://localhost:8080/journey-assistant/token-usage'
+```

@@ -1,10 +1,12 @@
 package com.unicorn.journey.assistant.config;
 
+import com.unicorn.journey.assistant.service.TokenUsageTracker;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.model.chat.listener.ChatModelErrorContext;
 import dev.langchain4j.model.chat.listener.ChatModelListener;
 import dev.langchain4j.model.chat.listener.ChatModelRequestContext;
 import dev.langchain4j.model.chat.listener.ChatModelResponseContext;
+import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,9 @@ import java.util.List;
 public class CustomChatModelListener implements ChatModelListener {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomChatModelListener.class);
+
+    @Resource
+    private TokenUsageTracker tokenUsageTracker;
 
     @Override
     public void onRequest(ChatModelRequestContext requestContext) {
@@ -35,6 +40,8 @@ public class CustomChatModelListener implements ChatModelListener {
         logger.info("Token Usage: {}", responseContext.chatResponse().tokenUsage());
         logger.info("Finish Reason: {}", responseContext.chatResponse().finishReason());
         logger.info("-----------------------------------------------");
+        // 核心：记录 Token 使用情况
+        tokenUsageTracker.recordTokenUsage(responseContext.chatResponse().tokenUsage());
         ChatModelListener.super.onResponse(responseContext);
     }
 
