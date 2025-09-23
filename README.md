@@ -168,6 +168,31 @@ curl --location 'http://localhost:8080/journey-assistant/assistant/all'
 助手+用户id 作为 memory id, 记忆隔离, system prompt 隔离
 
 
+### 8. 退款接口
+**退款工具**
+```java
+public void refundOrder(RefundOrderRequest refundOrderRequest);
+```
+#### 退款接口
+Parameter : 订单号，用户id，退款金额（可以通过AI自动计算）
+```shell
+curl --location 'http://localhost:8080/journey-assistant/refund/create' \
+--header 'Content-Type: application/json' \
+--data '{
+    "orderId":"64071c40-05c2-4eb7-8528-685713e7820b",
+    "userId":1,
+    "refundPrice":2000
+}'
+```
+#### 根据退款订单号查询退款详情
+```shell
+curl --location 'http://localhost:8080/journey-assistant/refund/detail/64071c40-05c2-4eb7-8528-685713e7820b'
+```
+
+#### 根据用户ID查询退款记录list
+```shell
+curl --location 'http://localhost:8080/journey-assistant/refund/list?userId=1'
+
 ### 8. 监控接口
 #### 获取当前token使用情况
 ```shell

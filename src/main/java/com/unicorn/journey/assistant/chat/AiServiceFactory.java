@@ -24,9 +24,6 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private StreamingChatModel deepseekStreamingChatModel;
 
-//    @Resource
-//    private MessageWindowChatMemory messageWindowChatMemory;
-
     @Resource
     private ChatModel chatModel;
 
@@ -44,6 +41,9 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     @Resource
     private ProductService productService;
+
+//    @Resource
+//    private McpToolProvider  mcpToolProvider;
 
     //@Resource
     //private ContentRetriever contentRetriever;

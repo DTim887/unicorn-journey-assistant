@@ -47,6 +47,13 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         // Load the JSON file from the classpath (src/main/resources)
+        warmupUser();
+        warmupAttraction();
+        warmupProduct();
+        warmupAssistant();
+    }
+
+    public void warmupUser() throws IOException {
         log.info("预热 user 缓存 Start");
         ClassPathResource resource = new ClassPathResource("user.json");
         if (!resource.exists()) {
@@ -54,7 +61,7 @@ public class DataInitializer implements ApplicationRunner {
             return;
         }
         try (InputStream inputStream = resource.getInputStream()) {
-            List<User> users = objectMapper.readValue(inputStream, new TypeReference<List<User>>() {
+            List<User> users = objectMapper.readValue(inputStream, new TypeReference<>() {
             });
             users.forEach(userService::saveUser);
             //预设当前Tim是登录用户
@@ -64,7 +71,9 @@ public class DataInitializer implements ApplicationRunner {
             }
             log.info("预热 user 缓存 End");
         }
+    }
 
+    public void warmupAttraction() throws IOException {
         log.info("预热 attraction 缓存 Start");
         ClassPathResource attractionResource = new ClassPathResource("attraction.json");
         if (!attractionResource.exists()) {
@@ -91,12 +100,8 @@ public class DataInitializer implements ApplicationRunner {
                 // 保存修改后的对象
                 attractionService.saveAttraction(attraction);
             });
-            log.info("最终景点信息为：{}", attractions);
             log.info("预热 attraction 缓存 End");
         }
-
-        warmupProduct();
-        warmupAssistant();
     }
 
     public void warmupAssistant() throws IOException {
