@@ -167,6 +167,7 @@ curl --location 'http://localhost:8080/journey-assistant/assistant/all'
 #### 助手规则
 助手+用户id 作为 memory id, 记忆隔离, system prompt 隔离
 
+
 ### 8. 退款接口
 **退款工具**
 ```java
@@ -191,4 +192,9 @@ curl --location 'http://localhost:8080/journey-assistant/refund/detail/64071c40-
 #### 根据用户ID查询退款记录list
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/refund/list?userId=1'
+
+### 8. 监控接口
+#### 获取当前token使用情况
+```shell
+curl --location --request GET 'http://localhost:8080/journey-assistant/token-usage'
 ```
