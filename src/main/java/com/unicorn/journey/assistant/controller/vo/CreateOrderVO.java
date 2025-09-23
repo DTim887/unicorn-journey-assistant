@@ -9,5 +9,4 @@ public class CreateOrderVO {
 
     private String orderId;
 
-    private String orderLink;
 }

@@ -66,12 +66,12 @@
             <version>1.3.0-beta9</version>
         </dependency>
 
-
-        <!--        <dependency>-->
-        <!--            <groupId>dev.langchain4j</groupId>-->
-        <!--            <artifactId>langchain4j-mcp</artifactId>-->
-        <!--            <version>1.3.0-beta9</version>-->
-        <!--        </dependency>-->
+        <!--mcp client 依赖 -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-mcp</artifactId>
+            <version>1.3.0-beta9</version>
+        </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>

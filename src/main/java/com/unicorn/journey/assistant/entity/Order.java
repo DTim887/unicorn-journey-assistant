@@ -27,6 +27,9 @@ public class Order {
     @Description("订单状态，示例: 待付款，已支付，已退款")
     private String status;
 
+    @Description("订单总价格")
+    private int totalPrice;
+
     @Getter
     @Setter
     public static class PurchasedProduct {

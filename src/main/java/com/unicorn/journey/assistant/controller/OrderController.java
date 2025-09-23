@@ -19,8 +19,8 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final ProductService productService;
 
+    private final ProductService productService;
 
     public OrderController(OrderService orderService, ProductService productService) {
         this.orderService = orderService;
@@ -61,7 +61,6 @@ public class OrderController {
             int price = calendar.getPrice() * purchasedProductVO.getQuantity();
             //单个产品价格
             purchasedProductVO.setPrice(price);
-            orderVO.setTotalPrice(orderVO.getTotalPrice() + price);
             purchasedProductVOs.add(purchasedProductVO);
         });
         orderVO.setPurchasedProductVOs(purchasedProductVOs);
