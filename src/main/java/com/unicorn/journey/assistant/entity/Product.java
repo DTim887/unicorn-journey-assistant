@@ -25,7 +25,7 @@ public class Product {
     private InventoryCalendar[] inventoryCalendar;
 
     @Description("可游玩的景点ID数组，如果为空则表示没有景点可用。示例值: {\"attractionId\": 2} ")
-    private Integer[] attractionId;
+    private int[] attractionId;
 
     @Description("用户的图片的相对路径，示例值: {\"image\": \"/images/product/20250530-shdr-theme-park-tickets-icon.jpg\"}")
     private String image;
@@ -38,9 +38,9 @@ public class Product {
         private String date;
 
         @Description("指定日期的价格，示例值: {\"price\": 400.00}")
-        private Integer price;
+        private int price;
 
         @Description("指定日期的库存，为0则表示当日没有库存，示例值: {\"inventory\": 20}")
-        private Integer inventory;
+        private int inventory;
     }
 }

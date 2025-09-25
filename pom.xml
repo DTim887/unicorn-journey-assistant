@@ -127,6 +127,34 @@
             <version>1.5.5.Final</version>
         </dependency>
 
+
+        <!-- A2A 协议依赖 Start -->
+        <!-- A2A 协议 Server 端, HTTP Restful -->
+<!--        <dependency>-->
+<!--            <groupId>io.github.a2asdk</groupId>-->
+<!--            <artifactId>a2a-java-sdk-reference-rest</artifactId>-->
+<!--            &lt;!&ndash; Use a released version from https://github.com/a2aproject/a2a-java/releases &ndash;&gt;-->
+<!--            <version>0.3.0.Beta1</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>io.github.a2asdk</groupId>-->
+<!--            <artifactId>a2a-java-sdk-client</artifactId>-->
+<!--            &lt;!&ndash; Use a released version from https://github.com/a2aproject/a2a-java/releases &ndash;&gt;-->
+<!--            <version>0.3.0.Beta1</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash; A2A 协议 客户 端, HTTP Restful &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>io.github.a2asdk</groupId>-->
+<!--            <artifactId>a2a-java-sdk-client-transport-rest</artifactId>-->
+<!--            &lt;!&ndash; Use a released version from https://github.com/a2aproject/a2a-java/releases &ndash;&gt;-->
+<!--            <version>0.3.0.Beta1</version>-->
+<!--        </dependency>-->
+
+
+        <!-- A2A 协议依赖 End -->
+
     </dependencies>
 
     <build>
