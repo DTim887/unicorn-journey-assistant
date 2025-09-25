@@ -125,12 +125,25 @@ curl --location 'http://localhost:8080/journey-assistant/attraction/all'
 curl --location --request POST 'localhost:8080/journey-assistant/plan/create' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "id": 1,
-    "planName" : "一日游",
-    "planDate" : "2025-08-29",
-    "attractionIds": [1,2,3],
-    "userId":1
-}'
+            "id": 1,
+            "planName": "迪士尼梦幻一日游",
+            "planDate": "2023-10-15",
+            "attractionIds": [
+                {
+                    "attractionId": 1,
+                    "visitTimeRange": "09:00-11:00"
+                },
+                {
+                    "attractionId": 2,
+                    "visitTimeRange": "11:30-13:00"
+                },
+                {
+                    "attractionId": 3,
+                    "visitTimeRange": "14:00-16:30"
+                }
+            ],
+            "userId": 1
+        }'
 ```
 
 #### 根据用户ID获取用户的所有plan信息
