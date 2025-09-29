@@ -21,8 +21,8 @@ public class AttractionService extends BaseService<Attraction> {
         this.put(attraction.getAttractionId(), attraction);
     }
 
-//    @Tool("Get attraction by attractionId")
-    public Attraction retrieveAttractionById(String attractionId) {
+    @Tool("Get attraction by attractionId")
+    public Attraction retrieveAttractionById(Integer attractionId) {
         return this.get(attractionId);
     }
 

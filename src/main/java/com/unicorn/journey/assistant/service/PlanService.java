@@ -1,15 +1,10 @@
 package com.unicorn.journey.assistant.service;
 
-import cn.hutool.core.collection.CollUtil;
 import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.entity.Plan;
 import dev.langchain4j.agent.tool.Tool;
-
-import java.util.Collections;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @LocalCache(value = CacheName.PLAN)
 @Service
@@ -20,15 +15,13 @@ public class PlanService extends BaseService<Plan>{
         put(plan.getUserId(), plan);
     }
 
-    @Tool("为单个指定用户，查询其所有行程")
-    public List<Plan> retrievePlansByUserId(int userId) {
-        List<Plan> plans = this.getAll(Plan.class);
-        if(CollUtil.isNotEmpty(plans)){
-            return plans.stream()
-                    .filter(plan -> userId == plan.getUserId())
-                    .toList();
-        }
-        return Collections.emptyList();
+    /**
+     * 查询单个用户的行程, 每个用户只能有一个行程
+     * @param userId
+     * @return
+     */
+    public Plan retrievePlanByUserId(int userId) {
+        return this.get(userId);
     }
 
 
