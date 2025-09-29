@@ -1,11 +1,16 @@
 package com.unicorn.journey.assistant.controller;
 
+import com.unicorn.journey.assistant.controller.vo.PlanVO;
 import com.unicorn.journey.assistant.controller.vo.Result;
+import com.unicorn.journey.assistant.entity.Attraction;
 import com.unicorn.journey.assistant.entity.Plan;
+import com.unicorn.journey.assistant.entity.mappers.PlanMapper;
+import com.unicorn.journey.assistant.service.AttractionService;
 import com.unicorn.journey.assistant.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -14,6 +19,7 @@ public class PlanController {
 
     private final PlanService planService;
 
+    private final AttractionService attractionService;
 
     /**
      * 创建plan
@@ -29,8 +35,22 @@ public class PlanController {
      */
     @GetMapping("/plan/get")
     public Result getPlansByUser(@RequestParam int userId) {
-        List<Plan> plans = planService.retrievePlansByUserId(userId);
-        return Result.ok(plans);
+        Plan plan = planService.retrievePlanByUserId(userId);
+        PlanVO planVO = PlanMapper.INSTANCE.convertToPlanVO(plan);
+        List<PlanVO.PlanAttractionItemVO> planAttractionItemVOS = new ArrayList<>();
+        plan.getAttractionIds().forEach(attractionId -> {
+            PlanVO.PlanAttractionItemVO planAttractionItemVO = new PlanVO.PlanAttractionItemVO();
+            Attraction attraction = attractionService.retrieveAttractionById(attractionId.getAttractionId());
+            planAttractionItemVO.setAttractionId(attraction.getAttractionId());
+            planAttractionItemVO.setAttractionName(attraction.getAttractionName());
+            planAttractionItemVO.setImage(attraction.getImage());
+            planAttractionItemVO.setQueueTime(attraction.getQueueTime());
+            planAttractionItemVO.setVisitTimeRange(attractionId.getVisitTimeRange());
+            planAttractionItemVO.setTags(attraction.getTags());
+            planAttractionItemVOS.add(planAttractionItemVO);
+        });
+        planVO.setPlanAttractionItemVO(planAttractionItemVOS);
+        return Result.ok(planVO);
     }
 
     /**
