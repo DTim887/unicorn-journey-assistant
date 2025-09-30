@@ -36,6 +36,7 @@ public class PlanController {
     @GetMapping("/plan/get")
     public Result getPlansByUser(@RequestParam int userId) {
         Plan plan = planService.retrievePlanByUserId(userId);
+        if (plan == null) return Result.ok();
         PlanVO planVO = PlanMapper.INSTANCE.convertToPlanVO(plan);
         List<PlanVO.PlanAttractionItemVO> planAttractionItemVOS = new ArrayList<>();
         plan.getAttractionIds().forEach(attractionId -> {
