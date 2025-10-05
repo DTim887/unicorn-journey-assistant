@@ -206,7 +206,7 @@ curl --location 'http://localhost:8080/journey-assistant/refund/detail/64071c40-
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/refund/list?userId=1'
 
-### 8. 监控接口
+###  监控接口
 #### 获取当前token使用情况
 ```shell
 curl --location --request GET 'http://localhost:8080/journey-assistant/token-usage'
