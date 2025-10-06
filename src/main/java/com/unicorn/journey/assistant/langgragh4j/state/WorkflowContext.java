@@ -1,5 +1,6 @@
 package com.unicorn.journey.assistant.langgragh4j.state;
 
+import com.unicorn.journey.assistant.langgragh4j.enums.BusinessTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,6 +48,11 @@ public class WorkflowContext implements Serializable {
      * 订单 id
      */
     private String orderId;
+
+    /**
+     * 业务类型
+     */
+    private BusinessTypeEnum businessTypeEnum;
 
     // ========== 上下文操作方法 ==========
 
