@@ -6,6 +6,7 @@ import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,10 +33,21 @@ public class ChatModelConfiguration {
     @Bean
     public StreamingChatModel deepseekStreamingChatModel() {
         return OpenAiStreamingChatModel.builder()
-                .apiKey("sk-d1cdeff51b17440089f5860dc6c1d04e")
+                .apiKey(streamModelKey)
                 .baseUrl("https://api.deepseek.com/v3.1_terminus_expires_on_20251015")
                 .modelName("deepseek-reasoner") //deepseek 3.1
                 .temperature(0.3)
+                .listeners(List.of(customChatModelListener))
+                .build();
+    }
+
+    @Bean
+    public ChatModel deepSeekChatModel() {
+        return OpenAiChatModel.builder()
+                .modelName(streamModelName)
+                .apiKey(streamModelKey)
+                .baseUrl("https://api.deepseek.com/v3.1_terminus_expires_on_20251015")
+                .temperature(0.3d)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }

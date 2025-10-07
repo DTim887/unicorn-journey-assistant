@@ -4,17 +4,19 @@ import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 图片收集规划服务工厂
+ * 智能路由工厂
  */
 @Configuration
 public class RouterServiceFactory {
 
     @Resource
-    private ChatModel chatModel;
+    @Qualifier("deepSeekChatModel")
+    private ChatModel deepSeekChatModel;
 
     @Resource
     private StreamingChatModel deepseekStreamingChatModel;
@@ -22,7 +24,7 @@ public class RouterServiceFactory {
     @Bean
     public RouterService createRouterService() {
         return AiServices.builder(RouterService.class)
-                .chatModel(chatModel)
+                .chatModel(deepSeekChatModel)
                 .streamingChatModel(deepseekStreamingChatModel)
                 .build();
     }
