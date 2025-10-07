@@ -1,5 +1,6 @@
 package com.unicorn.journey.assistant.langgragh4j.state;
 
+import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.langgragh4j.enums.BusinessTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +38,7 @@ public class WorkflowContext implements Serializable {
     /**
      * 用户 id
      */
-    private String userId;
+    private User user;
 
     /**
      * plan id

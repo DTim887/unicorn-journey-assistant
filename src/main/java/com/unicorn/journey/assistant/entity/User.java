@@ -3,13 +3,18 @@ package com.unicorn.journey.assistant.entity;
 import dev.langchain4j.model.output.structured.Description;
 import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @Builder
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 4L;
 
     @Description("用户的ID，字段类型是整形，示例值{\"id\": 2}")
     private int id;

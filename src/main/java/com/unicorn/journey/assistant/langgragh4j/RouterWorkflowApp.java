@@ -1,6 +1,7 @@
 package com.unicorn.journey.assistant.langgragh4j;
 
 import cn.hutool.json.JSONUtil;
+import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.exception.BusinessException;
 import com.unicorn.journey.assistant.exception.ErrorCode;
 import com.unicorn.journey.assistant.langgragh4j.enums.BusinessTypeEnum;
@@ -9,6 +10,9 @@ import com.unicorn.journey.assistant.langgragh4j.node.CreatePlanNode;
 import com.unicorn.journey.assistant.langgragh4j.node.RefundNode;
 import com.unicorn.journey.assistant.langgragh4j.node.RouterNode;
 import com.unicorn.journey.assistant.langgragh4j.state.WorkflowContext;
+import com.unicorn.journey.assistant.service.UserService;
+import com.unicorn.journey.assistant.utils.SpringBeanUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphRepresentation;
@@ -31,6 +35,7 @@ import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
  * 用户不需要选择助手，系统会根据用户提示词自动选择最合适的助手进行任务处理
  */
 @Slf4j
+@RequiredArgsConstructor
 public class RouterWorkflowApp {
 
     /**
@@ -107,9 +112,12 @@ public class RouterWorkflowApp {
             Thread.startVirtualThread(() -> {
                 try {
                     CompiledGraph<MessagesState<String>> workflow = createWorkflow();
+                    UserService userService = SpringBeanUtils.getBean(UserService.class);
+                    User user = userService.currentUser();
                     WorkflowContext initialContext = WorkflowContext.builder()
                             .originalPrompt(originalPrompt)
                             .currentStep("初始化")
+                            .user(user)
                             .build();
                     sink.next(formatSseEvent("workflow_start", Map.of(
                             "message", "开始执行工作流",
