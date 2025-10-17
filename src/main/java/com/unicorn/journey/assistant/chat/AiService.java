@@ -13,7 +13,6 @@ public interface AiService  {
     @SystemMessage(fromResource = "judy_prompt.txt")
     Flux<String> judyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
 
-
     //和 duffy 聊天
     @SystemMessage(fromResource = "duffy_prompt.txt")
     Flux<String> duffyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
@@ -25,4 +24,5 @@ public interface AiService  {
     //和 胡迪 聊天
     @SystemMessage(fromResource = "duffy_prompt.txt")
     Flux<String> woodyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
+
 }
