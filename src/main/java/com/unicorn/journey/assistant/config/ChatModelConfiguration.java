@@ -1,12 +1,12 @@
 package com.unicorn.journey.assistant.config;
 
 
-import com.unicorn.journey.assistant.service.UserService;
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiLanguageModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,44 +23,53 @@ public class ChatModelConfiguration {
     @Value("${langchain4j.community.dashscope.streaming-chat-model.api-key}")
     private String streamModelKey;
 
-    @Resource
-    private UserService userService;
+    @Value("${deepseek.base-url}")
+    private String deepseekBaseUrl;
+    @Value("${deepseek.api-key}")
+    private String deepseekApiKey;
+    @Value("${deepseek.model-name}")
+    private String deepseekModelName;
 
     @Resource
     private CustomChatModelListener customChatModelListener;
 
 
     @Bean
+    public OpenAiLanguageModel openAiLanguageModel() {
+        return OpenAiLanguageModel.builder()
+                .apiKey(deepseekApiKey)
+                .baseUrl(deepseekBaseUrl)
+                .modelName(deepseekModelName)
+                .temperature(0.3)
+                .build();
+    }
+
+
+    @Bean
     public StreamingChatModel deepseekStreamingChatModel() {
         return OpenAiStreamingChatModel.builder()
-                .apiKey(streamModelKey)
-                .baseUrl("https://api.deepseek.com/v3.1_terminus_expires_on_20251015")
-                .modelName("deepseek-reasoner") //deepseek 3.1
+                .apiKey(deepseekApiKey)
+                .baseUrl(deepseekBaseUrl)
+                .modelName(deepseekModelName) //deepseek 3.1
                 .temperature(0.3)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
 
     @Bean
-    public ChatModel deepSeekChatModel() {
+    public ChatModel deepseekChatModel() {
         return OpenAiChatModel.builder()
-                .modelName(streamModelName)
-                .apiKey(streamModelKey)
-                .baseUrl("https://api.deepseek.com/v3.1_terminus_expires_on_20251015")
-                .temperature(0.3d)
+                .apiKey(deepseekApiKey)
+                .baseUrl(deepseekBaseUrl)
+                .modelName(deepseekModelName) //deepseek 3.1
+                .temperature(0.3)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
 
 
     @Bean
-    public StreamingChatModel streamingChatModel() {
-//        return GoogleAiGeminiStreamingChatModel.builder()
-//                .modelName("gemini-2.5-flash-lite")
-//                .apiKey("AIzaSyDxySH9-KCJb1F9Ec2SSMeqyb0jdEKd3yA")
-//                .temperature(0.0)
-//                .listeners(List.of(customChatModelListener))
-//                .build();
+    public StreamingChatModel   streamingChatModel() {
         return QwenStreamingChatModel.builder()
                 .modelName(streamModelName)
                 .apiKey(streamModelKey)

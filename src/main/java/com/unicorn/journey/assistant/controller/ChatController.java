@@ -6,6 +6,7 @@ import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.User;
+import com.unicorn.journey.assistant.langgraph.tour.PlannerApp;
 import com.unicorn.journey.assistant.service.AssistantService;
 import com.unicorn.journey.assistant.service.STTService;
 import com.unicorn.journey.assistant.service.UserService;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -39,15 +41,18 @@ public class ChatController {
     }
 
     //和朱迪聊天
-    @GetMapping("/judy-chat")
-    public Flux<String> judyChat(@RequestParam String userMessage) {
-        User user = userService.currentUser();
-        Assistant assistant = assistantService.currentAssistant();
-        String memoryId = assistant.getAssistantName() + user.getId();
-        //Remembering the current logged-in user
-        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.JUDY);
-        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.judyChat(memoryId, userMessage, user);
+    @GetMapping(value = "/judy-chat")
+    public SseEmitter judyChat(@RequestParam String userMessage) {
+        SseEmitter sseEmitter = new SseEmitter(300_000L); // 5分钟超时
+        new PlannerApp().startWorkflow(sseEmitter, null);
+        return sseEmitter;
+////        User user = userService.currentUser();
+////        Assistant assistant = assistantService.currentAssistant();
+////        String memoryId = assistant.getAssistantName() + user.getId();
+////        //Remembering the current logged-in user
+////        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.JUDY);
+////        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+////        return aiService.judyChat(memoryId, userMessage, user);
     }
 
     //和 Duffy 聊天
@@ -86,7 +91,6 @@ public class ChatController {
         logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.wennieChat(memoryId, userMessage, user);
     }
-
 
 
     //和 woody 聊天

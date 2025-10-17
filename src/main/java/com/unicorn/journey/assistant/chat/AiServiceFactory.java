@@ -42,12 +42,6 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private ProductService productService;
 
-//    @Resource
-//    private McpToolProvider  mcpToolProvider;
-
-    //@Resource
-    //private ContentRetriever contentRetriever;
-
     public AiService getDeepseekAiService(String id, Assistants assistant) {
         AiService aiService = this.get(id);
         if (aiService == null) {
@@ -72,10 +66,12 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     private AiService createAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
-            case WENNIE -> List.of(userService, productService,orderService);
-            case DUFFY -> List.of(userService, productService, orderService);
-            case JUDY -> List.of(userService, attractionService, planService);
-            case WOODY -> List.of(userService, productService, orderService);
+            case WENNIE, DUFFY, WOODY -> {
+                yield List.of(productService,orderService);
+            }
+            case JUDY -> {
+                yield List.of(attractionService, planService);
+            }
         };
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(50);
         AiService aiService = AiServices.builder(AiService.class)
@@ -83,9 +79,6 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .streamingChatModel(streamingChatModel)
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)
-//                .contentRetriever(contentRetriever)
-//               .toolProvider(mcpToolProvider)  //mcp tool
-                //register the tools
                 .tools(tools)
                 .build();
         this.put(id, aiService);
@@ -105,9 +98,6 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .streamingChatModel(deepseekStreamingChatModel)
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)
-//                .contentRetriever(contentRetriever)
-//               .toolProvider(mcpToolProvider)  //mcp tool
-                //register the tools
                 .tools(tools)
                 .build();
         this.put(id, aiService);
