@@ -5,12 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class Order {
+public class Order implements Serializable {
 
     @Description("订单ID，是一个随机生成的UUID")
     private String id;
@@ -32,7 +33,7 @@ public class Order {
 
     @Getter
     @Setter
-    public static class PurchasedProduct {
+    public static class PurchasedProduct implements Serializable{
         @Description("订单中所包含的商品ID，示例值: {\"productId\": 2}")
         private int productId;
 
