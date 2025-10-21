@@ -211,3 +211,8 @@ curl --location 'http://localhost:8080/journey-assistant/refund/list?userId=1'
 ```shell
 curl --location --request GET 'http://localhost:8080/journey-assistant/token-usage'
 ```
+
+#### 获取所有保存的小红书笔记
+```shell
+curl --location 'http://localhost:8080/journey-assistant/xiaohongshu/all'
+```

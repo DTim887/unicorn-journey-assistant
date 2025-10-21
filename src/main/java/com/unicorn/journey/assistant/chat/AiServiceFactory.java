@@ -4,6 +4,7 @@ import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.service.*;
+import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
@@ -41,6 +42,12 @@ public class AiServiceFactory extends BaseService<AiService> {
 
     @Resource
     private ProductService productService;
+
+    @Resource
+    private McpToolProvider mcpToolProvider;
+
+    @Resource
+    private RedNoteService redNoteService;
 
     public AiService getDeepseekAiService(String id, Assistants assistant) {
         AiService aiService = this.get(id);
@@ -90,7 +97,7 @@ public class AiServiceFactory extends BaseService<AiService> {
             case WENNIE -> List.of(userService, productService,orderService);
             case DUFFY -> List.of(userService, productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
-            case WOODY -> List.of(userService, productService, orderService);
+            case WOODY -> List.of(redNoteService);
         };
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(50);
         AiService aiService = AiServices.builder(AiService.class)
@@ -102,6 +109,18 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .build();
         this.put(id, aiService);
         return aiService;
+    }
+
+    public AiService getXiaoHongShuAiService() {
+        ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(100);
+        return AiServices.builder(AiService.class)
+//                .chatModel(chatModel)
+                .streamingChatModel(deepseekStreamingChatModel)
+                .chatMemory(chatMemory)
+                .chatMemoryProvider(memoryId -> chatMemory)
+                .tools(List.of(redNoteService))
+                .toolProvider(mcpToolProvider)
+                .build();
     }
 
 }

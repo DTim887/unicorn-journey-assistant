@@ -13,7 +13,8 @@ public enum CacheName{
     PLAN("PLAN", Plan.class),
     PRODUCT("PRODUCT", Product.class),
     ASSISTANT("ASSISTANT", Assistant.class),
-    REFUND("REFUND", Refund.class)
+    REFUND("REFUND", Refund.class),
+    REDNOTE("REDNOTE", RedNote.class)
     ;
     private final String cacheName;
     private final Class<?> clazz;

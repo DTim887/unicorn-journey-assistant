@@ -10,8 +10,7 @@ import com.unicorn.journey.assistant.langgraph.tour.PlannerApp;
 import com.unicorn.journey.assistant.service.AssistantService;
 import com.unicorn.journey.assistant.service.STTService;
 import com.unicorn.journey.assistant.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -19,9 +18,11 @@ import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 
+@Log4j2
 @RestController
 public class ChatController {
 
+    private static final String XIAOHONGSHU = "XIAOHONGSHU_";
 
     private final AiServiceFactory aiServiceFactory;
 
@@ -30,8 +31,6 @@ public class ChatController {
     private final STTService sttService;
 
     private final AssistantService assistantService;
-
-    private final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     public ChatController(AiServiceFactory aiServiceFactory, UserService userService, STTService sttService, AssistantService assistantService) {
         this.aiServiceFactory = aiServiceFactory;
@@ -64,7 +63,7 @@ public class ChatController {
         String memoryId = assistant.getAssistantName() + user.getId();
         //把语音转文字作为大模型的输入
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.DUFFY);
-        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.duffyChat(memoryId, userMessage, user);
     }
 
@@ -76,7 +75,7 @@ public class ChatController {
         String memoryId = assistant.getAssistantName() + user.getId();
         //Remembering the current logged-in user
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.DUFFY);
-        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.duffyChat(memoryId, userMessage, user);
     }
 
@@ -88,7 +87,7 @@ public class ChatController {
         String memoryId = assistant.getAssistantName() + user.getId();
         //Remembering the current logged-in user
         AiService aiService = aiServiceFactory.getAiService(memoryId, Assistants.WENNIE);
-        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.wennieChat(memoryId, userMessage, user);
     }
 
@@ -96,13 +95,19 @@ public class ChatController {
     //和 woody 聊天
     @GetMapping("/woody-chat")
     public Flux<String> woodyChat(@RequestParam String userMessage) {
+//        User user = userService.currentUser();
+//        Assistant assistant = assistantService.currentAssistant();
+//        String memoryId = assistant.getAssistantName() + user.getId();
+//        //Remembering the current logged-in user
+//        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WOODY);
+//        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+//        return aiService.woodyChat(memoryId, userMessage, user);
         User user = userService.currentUser();
-        Assistant assistant = assistantService.currentAssistant();
-        String memoryId = assistant.getAssistantName() + user.getId();
-        //Remembering the current logged-in user
-        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WOODY);
-        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.woodyChat(memoryId, userMessage, user);
+        String memoryId = XIAOHONGSHU + user.getId();
+        AiService aiService = aiServiceFactory.getXiaoHongShuAiService();
+        userMessage = "帮我查询小红书的笔记，关键字是\"迪士尼\", 并分析并总结有舆情风险的笔记";
+        log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        return aiService.xiaoHongShu(memoryId, userMessage);
     }
 
     @PutMapping("/new-conversation")
