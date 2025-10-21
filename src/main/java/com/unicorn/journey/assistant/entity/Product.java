@@ -9,7 +9,6 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Product {
 
     @Description("产品的ID，示例值: {\"id\": 2}")

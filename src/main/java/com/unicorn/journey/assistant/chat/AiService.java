@@ -25,4 +25,7 @@ public interface AiService  {
     @SystemMessage(fromResource = "duffy_prompt.txt")
     Flux<String> woodyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
 
+    @SystemMessage(fromResource = "prompt/xiaohongshu-prompt.txt")
+    Flux<String> xiaoHongShu (@MemoryId String memoryId , @UserMessage String userMessage);
+
 }

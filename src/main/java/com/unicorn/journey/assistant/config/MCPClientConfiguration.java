@@ -4,8 +4,9 @@ import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.mcp.client.DefaultMcpClient;
 import dev.langchain4j.mcp.client.McpClient;
 import dev.langchain4j.mcp.client.transport.McpTransport;
-import dev.langchain4j.mcp.client.transport.http.HttpMcpTransport;
+import dev.langchain4j.mcp.client.transport.http.StreamableHttpMcpTransport;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
@@ -14,21 +15,21 @@ import java.time.Duration;
 public class MCPClientConfiguration {
 
 
-    @Value("${mcp.refund.sse-url}")
+    @Value("${mcp.rednode.sse-url}")
     private String sseUrl;
 
-//    @Bean
+    @Bean
     public McpToolProvider mcpToolProvider() {
 
-        McpTransport mcpTransport = new HttpMcpTransport.Builder()
-                .sseUrl(sseUrl)
+        McpTransport mcpTransport = new StreamableHttpMcpTransport.Builder()
+                .url(sseUrl)
                 .timeout(Duration.ofSeconds(30))
                 .logRequests(true)
                 .logResponses(true)
                 .build();
 
         McpClient mcpClient = new DefaultMcpClient.Builder()
-                .key("refundMcpClient")
+                .key("red_note")
 //                .logHandler(McpLogMessageHandler)
                 .transport(mcpTransport)
                 .build();
@@ -36,5 +37,8 @@ public class MCPClientConfiguration {
         return new McpToolProvider.Builder()
                 .mcpClients(mcpClient)
                 .build();
+
+
+
     }
 }
