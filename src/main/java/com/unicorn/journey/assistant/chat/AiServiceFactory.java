@@ -95,9 +95,9 @@ public class AiServiceFactory extends BaseService<AiService> {
     private AiService createDeepseekAiService(String id, Assistants assistant) {
         List<Object> tools = switch (assistant) {
             case WENNIE -> List.of(userService, productService,orderService);
-            case DUFFY -> List.of(userService, productService, orderService);
+            case DUFFY -> List.of(productService, orderService);
             case JUDY -> List.of(userService, attractionService, planService, productService, orderService);
-            case WOODY -> List.of(redNoteService);
+            case WOODY -> List.of(productService,orderService);
         };
         ChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(50);
         AiService aiService = AiServices.builder(AiService.class)

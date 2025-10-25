@@ -6,14 +6,12 @@ import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.User;
-import com.unicorn.journey.assistant.langgraph.tour.PlannerApp;
 import com.unicorn.journey.assistant.service.AssistantService;
 import com.unicorn.journey.assistant.service.STTService;
 import com.unicorn.journey.assistant.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -41,17 +39,14 @@ public class ChatController {
 
     //和朱迪聊天
     @GetMapping(value = "/judy-chat")
-    public SseEmitter judyChat(@RequestParam String userMessage) {
-        SseEmitter sseEmitter = new SseEmitter(300_000L); // 5分钟超时
-        new PlannerApp().startWorkflow(sseEmitter, null);
-        return sseEmitter;
-////        User user = userService.currentUser();
-////        Assistant assistant = assistantService.currentAssistant();
-////        String memoryId = assistant.getAssistantName() + user.getId();
-////        //Remembering the current logged-in user
-////        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.JUDY);
-////        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-////        return aiService.judyChat(memoryId, userMessage, user);
+    public Flux<String> judyChat(@RequestParam String userMessage) {
+        User user = userService.currentUser();
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
+        //Remembering the current logged-in user
+        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.JUDY);
+        log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
+        return aiService.judyChat(memoryId, userMessage, user);
     }
 
     //和 Duffy 聊天
@@ -95,19 +90,13 @@ public class ChatController {
     //和 woody 聊天
     @GetMapping("/woody-chat")
     public Flux<String> woodyChat(@RequestParam String userMessage) {
-//        User user = userService.currentUser();
-//        Assistant assistant = assistantService.currentAssistant();
-//        String memoryId = assistant.getAssistantName() + user.getId();
-//        //Remembering the current logged-in user
-//        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WOODY);
-//        logger.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-//        return aiService.woodyChat(memoryId, userMessage, user);
         User user = userService.currentUser();
-        String memoryId = XIAOHONGSHU + user.getId();
-        AiService aiService = aiServiceFactory.getXiaoHongShuAiService();
-        userMessage = "帮我查询小红书的笔记，关键字是\"迪士尼\", 并分析并总结有舆情风险的笔记";
+        Assistant assistant = assistantService.currentAssistant();
+        String memoryId = assistant.getAssistantName() + user.getId();
+        //Remembering the current logged-in user
+        AiService aiService = aiServiceFactory.getDeepseekAiService(memoryId, Assistants.WOODY);
         log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
-        return aiService.xiaoHongShu(memoryId, userMessage);
+        return aiService.woodyChat(memoryId, userMessage, user);
     }
 
     @PutMapping("/new-conversation")
