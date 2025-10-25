@@ -2,14 +2,8 @@ package com.unicorn.journey.assistant.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unicorn.journey.assistant.entity.Assistant;
-import com.unicorn.journey.assistant.entity.Attraction;
-import com.unicorn.journey.assistant.entity.Product;
-import com.unicorn.journey.assistant.entity.User;
-import com.unicorn.journey.assistant.service.AssistantService;
-import com.unicorn.journey.assistant.service.AttractionService;
-import com.unicorn.journey.assistant.service.ProductService;
-import com.unicorn.journey.assistant.service.UserService;
+import com.unicorn.journey.assistant.entity.*;
+import com.unicorn.journey.assistant.service.*;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +36,9 @@ public class DataInitializer implements ApplicationRunner {
     @Resource
     private AssistantService assistantService;
 
+    @Resource
+    private RedNoteService redNoteService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -51,6 +48,7 @@ public class DataInitializer implements ApplicationRunner {
         warmupAttraction();
         warmupProduct();
         warmupAssistant();
+        wrmupRednote();
     }
 
     public void warmupUser() throws IOException {
@@ -136,6 +134,21 @@ public class DataInitializer implements ApplicationRunner {
             });
             products.forEach(product -> productService.saveProduct(product));
             log.info("预热 product 缓存 End, size:{}", products.size());
+        }
+    }
+
+    private void wrmupRednote() throws IOException {
+        log.info("预热 rednote 缓存 Start");
+        ClassPathResource rednoteResource = new ClassPathResource("rednote.json");
+        if (!rednoteResource.exists()) {
+            log.error("文件不存在: rednote.json");
+            return;
+        }
+        try (InputStream rednoteResourceInputStream = rednoteResource.getInputStream()) {
+            List<RedNote> redNotes = objectMapper.readValue(rednoteResourceInputStream, new TypeReference<>() {
+            });
+            redNotes.forEach(redNote -> redNoteService.saveRedNote(redNote));
+            log.info("预热 rednote 缓存 End, size:{}", redNotes.size());
         }
     }
 }

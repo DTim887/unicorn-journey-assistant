@@ -11,6 +11,6 @@ public class FeignInterceptorConfiguration {
 
     @Bean
     public RequestInterceptor uuidHeaderRequestInterceptor() {
-        return new UuidHeaderRequestInterceptor(); // 返回你的 Interceptor 实例
+        return new UuidHeaderRequestInterceptor(); // 返回 Interceptor 实例
     }
 }
