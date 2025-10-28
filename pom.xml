@@ -146,13 +146,13 @@
         <dependency>
             <groupId>org.bsc.langgraph4j</groupId>
             <artifactId>langgraph4j-core</artifactId>
-            <version>1.6.5</version>
+            <version>1.7.0-beta3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.bsc.langgraph4j/langgraph4j-agent-executor -->
         <dependency>
             <groupId>org.bsc.langgraph4j</groupId>
             <artifactId>langgraph4j-agent-executor</artifactId>
-            <version>1.6.5</version>
+            <version>1.7.0-beta3</version>
             <scope>test</scope>
         </dependency>
 

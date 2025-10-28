@@ -1,97 +1,56 @@
 package com.unicorn.journey.assistant.langgragh4j.node;
 
-import com.unicorn.journey.assistant.entity.Plan;
-import com.unicorn.journey.assistant.langgragh4j.state.WorkflowContext;
+import cn.hutool.core.lang.UUID;
+import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
- * 创建行程节点（需要等待确认）
- * 该节点会创建行程并等待用户确认
+ * 创建行程节点
+ * 该节点专门负责创建行程，不包含确认逻辑
  */
 @Slf4j
 public class CreatePlanWithConfirmNode {
 
     public static AsyncNodeAction<MessagesState<String>> create() {
         return node_async(state -> {
-            WorkflowContext context = WorkflowContext.getContext(state);
-            log.info("执行节点: 创建行程（等待确认）, sessionId={}", context.getSessionId());
+            ConfirmWorkflowContext context = ConfirmWorkflowContext.getContext(state);
 
-            // 模拟创建行程
-            Plan plan = createMockPlan(context);
-            String planId = String.valueOf(plan.getId());
-            context.setPlan(plan);
+            log.info("执行节点: 创建行程");
+
+            // 生成行程ID
+            String planId = "PLAN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             context.setPlanId(planId);
-            context.setCurrentStep("wait_confirm_plan");
-            // 设置为未确认状态
-            context.setPlanConfirmed(false);
-            
-            log.info("行程创建完成，等待用户确认: planId={}", planId);
 
-            return WorkflowContext.saveContext(context);
+            // TODO: 创建行程
+            // Mock 行程数据 - 模拟 AI 生成的行程信息
+            StringBuilder planDetails = new StringBuilder();
+            planDetails.append("上海迪士尼乐园一日游行程\n\n");
+            planDetails.append("日期：2025年10月23日（周四）\n");
+            planDetails.append("时间：09:00 - 21:00\n\n");
+            planDetails.append("推荐路线：\n");
+            planDetails.append("1. 09:00 - 入园，前往探险岛\n");
+            planDetails.append("2. 09:30 - 飞跃地平线（FastPass）\n");
+            planDetails.append("3. 10:30 - 雷鸣山漂流\n");
+            planDetails.append("4. 12:00 - 午餐：巴波萨烧烤\n");
+            planDetails.append("5. 14:00 - 宝藏湾-加勒比海盗\n");
+            planDetails.append("6. 15:30 - 梦幻世界-七个小矮人矿山车\n");
+            planDetails.append("7. 17:00 - 晚餐：皇家宴会厅\n");
+            planDetails.append("8. 19:30 - 观看烟花表演\n\n");
+            planDetails.append("💰 预估费用：\n");
+            planDetails.append("- 门票：¥599/人\n");
+            planDetails.append("- 餐饮：¥200/人\n");
+            planDetails.append("- 总计：¥799/人\n");
+
+            context.setCurrentStep("创建行程" + planDetails);
+
+            log.info("行程创建完成，行程ID: {}", planId);
+
+            return ConfirmWorkflowContext.saveContext(context);
         });
-    }
-
-    /**
-     * 模拟创建行程
-     */
-    private static Plan createMockPlan(WorkflowContext context) {
-        Plan plan = new Plan();
-        plan.setId(System.currentTimeMillis()); // 使用时间戳作为ID
-        plan.setUserId(context.getUser() != null ? context.getUser().getId() : 1);
-        plan.setPlanName("上海迪士尼一日游");
-        plan.setPlanDate(java.time.LocalDate.now().plusDays(7));
-        
-        // 添加景点
-        List<Plan.PlanAttractionItem> attractions = new ArrayList<>();
-        Plan.PlanAttractionItem item1 = new Plan.PlanAttractionItem();
-        item1.setAttractionId(1);
-        item1.setVisitTimeRange("09:00-11:00");
-        attractions.add(item1);
-        
-        Plan.PlanAttractionItem item2 = new Plan.PlanAttractionItem();
-        item2.setAttractionId(2);
-        item2.setVisitTimeRange("11:00-13:00");
-        attractions.add(item2);
-        
-        plan.setAttractionIds(attractions);
-        
-        return plan;
-    }
-
-    /**
-     * 获取行程摘要信息（用于流式输出）
-     */
-    public static String getPlanSummary(Plan plan) {
-        if (plan == null) {
-            return "行程信息为空";
-        }
-        
-        StringBuilder summary = new StringBuilder();
-        summary.append(" **行程信息**\n\n");
-        summary.append("- **行程ID**: ").append(plan.getId()).append("\n");
-        summary.append("- **行程名称**: ").append(plan.getPlanName()).append("\n");
-        summary.append("- **游玩日期**: ").append(plan.getPlanDate()).append("\n");
-        summary.append("- **用户ID**: ").append(plan.getUserId()).append("\n\n");
-        
-        if (plan.getAttractionIds() != null && !plan.getAttractionIds().isEmpty()) {
-            summary.append("**景点列表**:\n");
-            for (int i = 0; i < plan.getAttractionIds().size(); i++) {
-                Plan.PlanAttractionItem item = plan.getAttractionIds().get(i);
-                summary.append((i + 1)).append(". 景点ID: ").append(item.getAttractionId())
-                       .append(" (时间: ").append(item.getVisitTimeRange()).append(")\n");
-            }
-        }
-        
-        summary.append("\n⏳ **等待您的确认...**");
-        
-        return summary.toString();
     }
 }
 

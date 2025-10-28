@@ -3,7 +3,6 @@ package com.unicorn.journey.assistant.langgragh4j.state;
 import com.unicorn.journey.assistant.entity.Order;
 import com.unicorn.journey.assistant.entity.Plan;
 import com.unicorn.journey.assistant.entity.User;
-import com.unicorn.journey.assistant.langgragh4j.enums.BusinessTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class WorkflowContext implements Serializable {
+public class ConfirmWorkflowContext implements Serializable {
     @Serial
     private static final long serialVersionUID = 123L;
 
@@ -31,11 +30,6 @@ public class WorkflowContext implements Serializable {
      * 当前执行步骤
      */
     private String currentStep;
-
-    /**
-     * 用户原始输入的提示词
-     */
-    private String originalPrompt;
 
     /**
      * 用户 id
@@ -53,11 +47,6 @@ public class WorkflowContext implements Serializable {
     private Order order;
 
     /**
-     * 业务类型
-     */
-    private BusinessTypeEnum businessTypeEnum;
-
-    /**
      * 是否需要用户确认
      */
     private boolean needConfirmation;
@@ -73,12 +62,12 @@ public class WorkflowContext implements Serializable {
     private String confirmationResult;
 
     /**
-     * 行程ID (临时存储，用于演示)
+     * 行程ID
      */
     private String planId;
 
     /**
-     * 订单ID (临时存储，用于演示)
+     * 订单ID
      */
     private String orderId;
 
@@ -87,19 +76,29 @@ public class WorkflowContext implements Serializable {
      */
     private String sessionId;
 
+    /**
+     * 暂停时所在的节点名称 - 用于恢复时直接跳转
+     */
+    private String pausedAtNode;
+
+    /**
+     * 是否为恢复执行模式
+     */
+    private boolean isResuming;
+
     // ========== 上下文操作方法 ==========
 
     /**
      * 从 MessagesState 中获取 WorkflowContext
      */
-    public static WorkflowContext getContext(MessagesState<String> state) {
-        return (WorkflowContext) state.data().get(WORKFLOW_CONTEXT_KEY);
+    public static ConfirmWorkflowContext getContext(MessagesState<String> state) {
+        return (ConfirmWorkflowContext) state.data().get(WORKFLOW_CONTEXT_KEY);
     }
 
     /**
      * 将 WorkflowContext 保存到 MessagesState 中
      */
-    public static Map<String, Object> saveContext(WorkflowContext context) {
+    public static Map<String, Object> saveContext(ConfirmWorkflowContext context) {
         return Map.of(WORKFLOW_CONTEXT_KEY, context);
     }
 }
