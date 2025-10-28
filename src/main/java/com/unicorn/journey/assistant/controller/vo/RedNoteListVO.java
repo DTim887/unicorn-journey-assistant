@@ -1,6 +1,5 @@
 package com.unicorn.journey.assistant.controller.vo;
 
-import com.unicorn.journey.assistant.entity.RedNote;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +17,7 @@ import java.util.stream.Stream;
 @Builder
 public class RedNoteListVO {
 
-    private List<RedNote> redNoteList;
+    private List<RedNoteVO> redNoteList;
 
     private TagCount[] tagCounts;
 
@@ -47,7 +46,7 @@ public class RedNoteListVO {
         Map<Integer, Long> labelMap = this.redNoteList.stream()
                 .filter(Objects::nonNull)  // 过滤掉null值
                 .collect(Collectors.groupingBy(
-                        RedNote::getRiskLevel,
+                        RedNoteVO::getRiskLevel,
                         Collectors.counting()
                 ));
         this.riskLevelCounts = labelMap.entrySet().stream()
