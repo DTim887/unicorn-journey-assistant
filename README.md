@@ -216,3 +216,11 @@ curl --location --request GET 'http://localhost:8080/journey-assistant/token-usa
 ```shell
 curl --location 'http://localhost:8080/journey-assistant/xiaohongshu/all'
 ```
+
+#### 怎么对接小红书 mcp
+1. 解压 xiaohongshu-mcp-darwin-amd64.tar.gz
+2. 进入目录 ./xiaohongshu-login-darwin-amd64 先验证登录
+3. 登录成功后退出 ./xiaohongshu-mcp-darwin-amd64  启动 MCP
+4. MCP inspector : npx @modelcontextprotocol/inspector
+5. 最后启动 jar 包, 否则会报错
+6. 小红书 Dashboard 接口 : curl --location 'http://localhost:8080/journey-assistant/xiaohongshu/all'
