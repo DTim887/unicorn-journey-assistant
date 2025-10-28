@@ -1,26 +1,27 @@
 [
   {
     "id": "68d100770000000013013092",
-    "xsecToken": "ABN9sUpUGfzRfInNXeQKw3NsAfz17FxnNAvZUgbThp61U=",
+    "xsecToken": "ABN9sUpUGfzRfInNXeQKw3NrjF0mAKhBwTWyYxr_mlOLw=",
     "title": "迪士尼游客被盘查，日票大爷or年卡小卡拉米",
     "riskTags": [
       "投诉",
       "黄牛",
       "品牌声誉"
     ],
-    "desc": "涉及游客权益争议，商拍管控政策引发大量负面评论，用户反映被误判为商拍、年卡被封等问题",
+    "desc": "涉及商拍管控政策引发游客权益争议，年卡用户被误判为商拍导致封卡，引发大量负面评论",
     "riskLevel": 8
   },
   {
     "id": "683c34dd0000000020028f16",
-    "xsecToken": "ABUvvwl3nF5kSb21oa8pcdEY3VpDRomm7Iq0iTwA97Zl4=",
+    "xsecToken": "ABUvvwl3nF5kSb21oa8pcdEXtcPmXTqvIyRj7uCzphiLg=",
     "title": "哪里能投诉上海迪士尼的工作人员",
     "riskTags": [
       "投诉",
+      "服务质量差",
       "品牌声誉"
     ],
-    "desc": "上海迪士尼的工作人员真让人无语，我们在安迪游戏盒核销买的票，因为机器故障让我们等了半个小时就不说啥了，关键是明明是我们先来的，却让别人插队比我们先核销，他们机器出问题给每人核销一次要等好久！让别人插队又让我们多等了好久，迪士尼不是宗旨是不让插队吗，怎么自己还随便让人插队！！！！！一整天的好心情都被破坏了！！！！！！真让人无语！！！！！！#上海迪士尼[话题]# #投诉迪士尼[话题]#",
-    "riskLevel": 6
+    "desc": "工作人员处理问题不当，机器故障导致长时间等待，存在插队现象",
+    "riskLevel": 5
   },
   {
     "id": "67e52ae7000000001201ee0d",
@@ -91,6 +92,30 @@
     "riskLevel": 9
   },
   {
+    "id": "686c4f7a00000000230044b3",
+    "xsecToken": "AB7KyuulJT1yvvypYIZGh-OOByKYFr5WaTV3yJ6ae_BrE=",
+    "title": "迪士尼小镇天降刀子😱",
+    "riskTags": [
+      "安全事故",
+      "投诉",
+      "品牌声誉"
+    ],
+    "desc": "迪士尼小镇招牌被风吹落，锐利亚克力材料掉入人群，存在严重安全隐患",
+    "riskLevel": 9
+  },
+  {
+    "id": "689c029d000000001d0086c5",
+    "xsecToken": "ABM98u-7uvIN0vPEUVkUuZVUNi_R3kmri41_XcH1N4P14=",
+    "title": "上海迪士尼：立即离园，2年内禁止再次入园！",
+    "riskTags": [
+      "违规",
+      "品牌声誉",
+      "服务质量差"
+    ],
+    "desc": "游客冲上舞台影响演出，迪士尼处罚措施引发争议，部分评论认为处罚力度不足",
+    "riskLevel": 7
+  },
+  {
     "id": "68f35b51000000000703193b",
     "xsecToken": "ABiVb-s1JyDw6IMswNowfN2Su_J8i8U1BvlQKIx3LkbiQ=",
     "title": "迪士尼受害者",
@@ -103,27 +128,63 @@
     "riskLevel": 6
   },
   {
+    "id": "6860b8f500000000220312d0",
+    "xsecToken": "ABFEbPO5gElopBouooMpDVKHMgoo9pRPFtD3Eyk-7Nq2E=",
+    "title": "负债累累 清仓迪士尼求生",
+    "riskTags": [
+      "经营问题",
+      "黄牛",
+      "品牌声誉"
+    ],
+    "desc": "迪士尼周边商家因负债被迫清仓，反映迪士尼周边市场经营困境",
+    "riskLevel": 4
+  },
+  {
+    "id": "67e8ef690000000007035cda",
+    "xsecToken": "ABFIWNrmEDhdCc2oBfLAhrufR33-zKJLlLPFuwkTyCxUs=",
+    "title": "上海迪士尼乐园投诉后续",
+    "riskTags": [
+      "投诉",
+      "服务质量差",
+      "品牌声誉"
+    ],
+    "desc": "游客投诉疯狂动物城互动体验差，迪士尼客服处理不当，引发对服务质量的质疑",
+    "riskLevel": 8
+  },
+  {
+    "id": "6805ce4f000000001c0293bc",
+    "xsecToken": "AB_oU6Wd5_eBhp0Byorl7H3XZpB9dugSzEVREvgu38QXU=",
+    "title": "事发上海迪士尼，7人刑拘！贝儿竟是偷来的",
+    "riskTags": [
+      "欺诈",
+      "黄牛",
+      "法律纠纷"
+    ],
+    "desc": "盗窃团伙在迪士尼小镇疯狂作案，涉案金额50余万元，暴露安全管理漏洞",
+    "riskLevel": 8
+  },
+  {
     "id": "68a2f1a9000000001d00b6e3",
-    "xsecToken": "ABp3OluqMPlZl6XlzhQ1V3O1di1IyqVdm4rCD-M1_G6mY=",
+    "xsecToken": "ABp3OluqMPlZl6XlzhQ1V3O0fiQytV6J-XfizdZzbZqbo=",
     "title": "退坑迪士尼 100w 货缩水 50w 恐怖如斯😱",
     "riskTags": [
       "黄牛",
       "经营问题",
       "品牌声誉"
     ],
-    "desc": "涉及黄牛囤货问题，投资损失严重，评论区大量用户质疑黄牛行为",
-    "riskLevel": 9
+    "desc": "大量囤货黄牛退坑，100万货物缩水50万，反映迪士尼周边市场泡沫和投机问题",
+    "riskLevel": 7
   },
   {
     "id": "681060940000000009039c4f",
-    "xsecToken": "ABJPA8ZomCOk01jQ9hEsSoffP4DS6jAcOT5arT51pnqrc=",
+    "xsecToken": "ABJPA8ZomCOk01jQ9hEsSofe0aQfjS_AiXGvjtZ6pTb5s=",
     "title": "迪士尼你不缺钱，但我缺",
     "riskTags": [
-      "投诉",
       "黄牛",
+      "投诉",
       "服务质量差"
     ],
-    "desc": "涉及代结账黄牛问题，用户对园区管理措施不满，认为迪士尼纯粹以赚钱为目的",
-    "riskLevel": 7
+    "desc": "代结账黄牛问题引发争议，游客对迪士尼价格政策和服务态度不满",
+    "riskLevel": 6
   }
 ]

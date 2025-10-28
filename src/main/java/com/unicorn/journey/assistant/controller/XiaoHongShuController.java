@@ -2,7 +2,9 @@ package com.unicorn.journey.assistant.controller;
 
 import com.unicorn.journey.assistant.chat.AiService;
 import com.unicorn.journey.assistant.chat.AiServiceFactory;
+import com.unicorn.journey.assistant.controller.vo.RedNoteListVO;
 import com.unicorn.journey.assistant.controller.vo.Result;
+import com.unicorn.journey.assistant.entity.RedNote;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.RedNoteService;
 import com.unicorn.journey.assistant.service.UserService;
@@ -11,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -21,7 +25,7 @@ public class XiaoHongShuController {
     @Resource
     private UserService userService;
     @Resource
-    private AiServiceFactory  aiServiceFactory;
+    private AiServiceFactory aiServiceFactory;
     @Resource
     private RedNoteService redNoteService;
 
@@ -40,6 +44,13 @@ public class XiaoHongShuController {
 
     @GetMapping("/xiaohongshu/all")
     public Result getAll() {
-        return Result.ok(redNoteService.getAllRedNote());
+        List<RedNote> redNoteList = redNoteService.getAllRedNote();
+        log.info("总共查到:{} 篇笔记", redNoteList.size());
+        RedNoteListVO redNoteListVO = RedNoteListVO.builder()
+                .redNoteList(redNoteList)
+                .build();
+        redNoteListVO.calculateTagCounts();
+        redNoteListVO.calculateRiskLevelCounts();
+        return Result.ok(redNoteListVO);
     }
 }
