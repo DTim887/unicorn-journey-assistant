@@ -1,15 +1,9 @@
-package com.unicorn.journey.assistant.entity;
+package com.unicorn.journey.assistant.controller.vo;
 
+import lombok.Data;
 
-import lombok.*;
-
-@Builder
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
-public class RedNote {
+@Data
+public class RedNoteVO {
 
     private String id;
 

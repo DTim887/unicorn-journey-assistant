@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.unicorn</groupId>
     <artifactId>unicorn-journey-assistant</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <name>unicorn-journey-assistant</name>
     <description>unicorn-journey-assistant</description>
