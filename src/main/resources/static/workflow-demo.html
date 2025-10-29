@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作流事件监控</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .session-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .events-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .events-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .events-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .events-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .events-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .events-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .event-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event-item.workflow_start {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .event-item.step_update {
+            border-left-color: #8b5cf6;
+            background: #f5f3ff;
+        }
+
+        .event-item.confirmation_required {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .event-item.workflow_completed {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .event-item.workflow_error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .event-type {
+            font-weight: 700;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .event-time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .event-data {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .event-data pre {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .confirmation-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 20px;
+        }
+
+        .confirmation-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .confirmation-content {
+            display: none;
+        }
+
+        .confirmation-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .confirmation-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-info .info-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .confirmation-info .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 13px;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirmation-actions button {
+            flex: 1;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-plan {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-order {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部控制区 -->
+        <div class="header">
+            <h1>🚀 工作流事件监控台</h1>
+            <div class="controls">
+                <div class="input-group">
+                    <label for="userId">用户ID</label>
+                    <input type="text" id="userId" placeholder="请输入用户ID" value="user123">
+                </div>
+                <div class="input-group">
+                    <label for="baseUrl">服务地址</label>
+                    <input type="text" id="baseUrl" placeholder="http://localhost:8080" value="http://localhost:8080">
+                </div>
+                <button id="startBtn" class="btn-primary" onclick="startWorkflow()">启动工作流</button>
+                <button id="stopBtn" class="btn-danger" onclick="stopWorkflow()" style="display: none;">停止连接</button>
+            </div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">未连接</span>
+            </div>
+            <div class="session-info" id="sessionInfo">等待启动...</div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 事件列表 -->
+            <div class="events-panel">
+                <h2>📋 事件流</h2>
+                <div class="events-container" id="eventsContainer">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <p>暂无事件，请启动工作流</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 确认面板 -->
+            <div class="confirmation-panel">
+                <h2>✅ 确认操作</h2>
+                <div class="confirmation-content" id="confirmationContent">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p>等待确认请求...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let currentSessionId = null;
+        let currentConfirmationType = null;
+
+        /**
+         * 启动工作流
+         */
+        async function startWorkflow() {
+            const userId = document.getElementById('userId').value.trim();
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+
+            if (!userId) {
+                alert('请输入用户ID');
+                return;
+            }
+
+            if (!baseUrl) {
+                alert('请输入服务地址');
+                return;
+            }
+
+            // 清空之前的事件
+            clearEvents();
+
+            // 更新UI状态
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').style.display = 'inline-block';
+            updateStatus('connecting', '正在连接...');
+
+            try {
+                // 建立SSE连接
+                const url = `${baseUrl}/workflow/stream-confirm/start`;
+                
+                eventSource = new EventSource(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId: userId })
+                });
+
+                // 由于浏览器原生 EventSource 不支持 POST，我们使用 fetch 流式读取
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId: userId })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                updateStatus('connected', '已连接');
+
+                // 使用流式读取
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // 保留最后一个不完整的行
+
+                    for (const line of lines) {
+                        if (line.startsWith('event:')) {
+                            currentEventType = line.substring(6).trim();
+                        } else if (line.startsWith('data:')) {
+                            const data = line.substring(5).trim();
+                            if (data && currentEventType) {
+                                handleSseEvent(currentEventType, data);
+                            }
+                        }
+                    }
+                }
+
+                updateStatus('disconnected', '连接已关闭');
+                resetUI();
+
+            } catch (error) {
+                console.error('连接失败:', error);
+                addEvent('error', { error: error.message, message: '连接失败' });
+                updateStatus('disconnected', '连接失败');
+                resetUI();
+            }
+        }
+
+        let currentEventType = null;
+
+        /**
+         * 处理SSE事件
+         */
+        function handleSseEvent(eventType, dataStr) {
+            console.log('收到事件:', eventType, dataStr);
+
+            try {
+                const data = JSON.parse(dataStr);
+
+                // 添加到事件列表
+                addEvent(eventType, data);
+
+                // 根据事件类型处理
+                switch (eventType) {
+                    case 'workflow_start':
+                        handleWorkflowStart(data);
+                        break;
+                    case 'step_update':
+                        handleStepUpdate(data);
+                        break;
+                    case 'confirmation_required':
+                        handleConfirmationRequired(data);
+                        break;
+                    case 'workflow_completed':
+                        handleWorkflowCompleted(data);
+                        break;
+                    case 'workflow_error':
+                        handleWorkflowError(data);
+                        break;
+                }
+            } catch (error) {
+                console.error('解析事件数据失败:', error, dataStr);
+            }
+        }
+
+        /**
+         * 处理工作流启动事件
+         */
+        function handleWorkflowStart(data) {
+            currentSessionId = data.sessionId;
+            updateSessionInfo(data.sessionId, data.userId);
+        }
+
+        /**
+         * 处理步骤更新事件
+         */
+        function handleStepUpdate(data) {
+            // 只是显示，不需要特殊处理
+        }
+
+        /**
+         * 处理确认请求事件
+         */
+        function handleConfirmationRequired(data) {
+            currentConfirmationType = data.confirmationType;
+            showConfirmationPanel(data);
+        }
+
+        /**
+         * 处理工作流完成事件
+         */
+        function handleWorkflowCompleted(data) {
+            updateStatus('disconnected', '工作流已完成');
+            hideConfirmationPanel();
+            setTimeout(() => {
+                resetUI();
+            }, 2000);
+        }
+
+        /**
+         * 处理工作流错误事件
+         */
+        function handleWorkflowError(data) {
+            updateStatus('disconnected', '工作流出错');
+            hideConfirmationPanel();
+            setTimeout(() => {
+                resetUI();
+            }, 3000);
+        }
+
+        /**
+         * 添加事件到列表
+         */
+        function addEvent(type, data) {
+            const container = document.getElementById('eventsContainer');
+            
+            // 移除空状态
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // 创建事件项
+            const eventItem = document.createElement('div');
+            eventItem.className = `event-item ${type}`;
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+
+            let displayData = '';
+            if (type === 'workflow_start') {
+                displayData = `会话ID: ${data.sessionId}<br>用户ID: ${data.userId}`;
+            } else if (type === 'step_update') {
+                displayData = `节点: ${data.nodeName}<br>步骤: ${data.currentStep}`;
+                if (data.needConfirmation) {
+                    displayData += `<br>需要确认: ${data.confirmationType}`;
+                }
+            } else if (type === 'confirmation_required') {
+                displayData = `<span class="badge badge-${data.confirmationType.toLowerCase()}">${data.confirmationType}</span><br>`;
+                displayData += `${data.message}<br>`;
+                displayData += `详情: ${data.details}`;
+            } else if (type === 'workflow_completed') {
+                displayData = `${data.message}<br>最终步骤: ${data.finalStep}`;
+                if (data.planId) displayData += `<br>计划ID: ${data.planId}`;
+                if (data.orderId) displayData += `<br>订单ID: ${data.orderId}`;
+            } else if (type === 'workflow_error' || type === 'error') {
+                displayData = `错误: ${data.error || data.message}`;
+            } else {
+                displayData = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+
+            eventItem.innerHTML = `
+                <div class="event-header">
+                    <span class="event-type">${getEventTypeName(type)}</span>
+                    <span class="event-time">${timeStr}</span>
+                </div>
+                <div class="event-data">${displayData}</div>
+            `;
+
+            container.insertBefore(eventItem, container.firstChild);
+
+            // 限制最多显示50个事件
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        /**
+         * 获取事件类型名称
+         */
+        function getEventTypeName(type) {
+            const names = {
+                'workflow_start': '🚀 工作流启动',
+                'step_update': '📝 步骤更新',
+                'confirmation_required': '⏸️ 需要确认',
+                'workflow_completed': '✅ 工作流完成',
+                'workflow_error': '❌ 工作流错误',
+                'error': '❌ 错误'
+            };
+            return names[type] || type;
+        }
+
+        /**
+         * 显示确认面板
+         */
+        function showConfirmationPanel(data) {
+            const panel = document.getElementById('confirmationContent');
+            
+            const confirmTypeText = data.confirmationType === 'PLAN' ? '行程计划' : '订单';
+            const confirmTypeClass = data.confirmationType === 'PLAN' ? 'plan' : 'order';
+
+            panel.innerHTML = `
+                <div class="confirmation-info">
+                    <div class="info-item">
+                        <span class="info-label">确认类型</span>
+                        <span class="badge badge-${confirmTypeClass}">${confirmTypeText}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">消息</span>
+                        <span class="info-value">${data.message}</span>
+                    </div>
+                    ${data.planId ? `
+                    <div class="info-item">
+                        <span class="info-label">计划ID</span>
+                        <span class="info-value">${data.planId}</span>
+                    </div>
+                    ` : ''}
+                    ${data.orderId ? `
+                    <div class="info-item">
+                        <span class="info-label">订单ID</span>
+                        <span class="info-value">${data.orderId}</span>
+                    </div>
+                    ` : ''}
+                    ${data.details ? `
+                    <div class="info-item">
+                        <span class="info-label">详情</span>
+                        <span class="info-value">${data.details}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="confirmation-actions">
+                    <button class="btn-success" onclick="sendConfirmation(true)">✓ 确认</button>
+                    <button class="btn-reject" onclick="sendConfirmation(false)">✗ 拒绝</button>
+                </div>
+            `;
+
+            panel.classList.add('active');
+        }
+
+        /**
+         * 隐藏确认面板
+         */
+        function hideConfirmationPanel() {
+            const panel = document.getElementById('confirmationContent');
+            panel.classList.remove('active');
+            panel.innerHTML = `
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>等待确认请求...</p>
+                </div>
+            `;
+        }
+
+        /**
+         * 发送确认结果
+         */
+        async function sendConfirmation(confirmed) {
+            if (!currentSessionId || !currentConfirmationType) {
+                alert('会话信息丢失');
+                return;
+            }
+
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const url = `${baseUrl}/workflow/stream-confirm/confirm/${currentSessionId}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        confirmed: confirmed,
+                        confirmType: currentConfirmationType
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    addEvent('confirmation_result', {
+                        confirmed: confirmed,
+                        confirmationType: currentConfirmationType,
+                        message: result.message
+                    });
+                    hideConfirmationPanel();
+                } else {
+                    alert('确认失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('发送确认失败:', error);
+                alert('发送确认失败: ' + error.message);
+            }
+        }
+
+        /**
+         * 停止工作流
+         */
+        function stopWorkflow() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            updateStatus('disconnected', '已断开连接');
+            resetUI();
+        }
+
+        /**
+         * 更新状态
+         */
+        function updateStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            dot.className = 'status-dot ' + status;
+            statusText.textContent = text;
+        }
+
+        /**
+         * 更新会话信息
+         */
+        function updateSessionInfo(sessionId, userId) {
+            const sessionInfo = document.getElementById('sessionInfo');
+            sessionInfo.textContent = `会话: ${sessionId} | 用户: ${userId}`;
+        }
+
+        /**
+         * 清空事件
+         */
+        function clearEvents() {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <p>暂无事件，请启动工作流</p>
+                </div>
+            `;
+            hideConfirmationPanel();
+        }
+
+        /**
+         * 重置UI
+         */
+        function resetUI() {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').style.display = 'none';
+            currentSessionId = null;
+            currentConfirmationType = null;
+        }
+
+        // 页面关闭时清理
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>
+
