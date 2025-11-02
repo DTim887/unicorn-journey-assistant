@@ -3,7 +3,7 @@ package com.unicorn.journey.assistant.langgragh4j.service;
 import cn.hutool.json.JSONUtil;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.langgragh4j.StreamConfirmWorkflowApp;
-import com.unicorn.journey.assistant.langgragh4j.enums.ConfirmTypeEnum;
+import com.unicorn.journey.assistant.langgragh4j.enums.SSEEventTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import com.unicorn.journey.assistant.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +15,13 @@ import org.bsc.langgraph4j.NodeOutput;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @Service
@@ -35,7 +39,7 @@ public class WorkflowHandleService {
             log.info("首次启动工作流: sessionId={}, userId={}", sessionId, userId);
 
             // 发送开始事件
-            sendSseEvent(sessionId, emitter, "workflow_start", Map.of(
+            sendSseEvent(sessionId, emitter, SSEEventTypeEnum.WORKFLOW_START, Map.of(
                     "message", "启动工作流",
                     "sessionId", sessionId,
                     "userId", userId
@@ -65,7 +69,7 @@ public class WorkflowHandleService {
 
         } catch (Exception e) {
             log.error("工作流执行失败: sessionId={}, error={}", sessionId, e.getMessage(), e);
-            sendSseEvent(sessionId, emitter, "workflow_error", Map.of(
+            sendSseEvent(sessionId, emitter, SSEEventTypeEnum.WORKFLOW_ERROR, Map.of(
                     "error", e.getMessage() != null ? e.getMessage() : e.getClass().getName(),
                     "message", "工作流执行失败"
             ));
@@ -88,16 +92,12 @@ public class WorkflowHandleService {
         try {
             // 初始化工作流最终状态
             MessagesState<String> lastState = null;
-            int stepCounter = 1;
-            int nodeCounter = 0;
 
             log.info("=== 开始执行工作流 ===");
             
             // 流式执行工作流
             for (NodeOutput<MessagesState<String>> step : workflow.stream(
                     ConfirmWorkflowContext.saveContext(context))) {
-
-                nodeCounter++;
                 
                 // 跳过 START 和 END
                 if (step.isSTART() || step.isEND()) {
@@ -113,8 +113,14 @@ public class WorkflowHandleService {
 
                     log.info("当前步骤: {}", currentContext.getCurrentStep());
 
+                    // 如果是create_plan或create_order节点，则流式发送详细信息
+                    if ("create_plan".equals(nodeName) || "create_order".equals(nodeName)) {
+                        log.info("检测到{}节点，开始流式发送详细信息", nodeName);
+                        sendDetailsAsFlux(sessionId, emitter, currentContext, nodeName);
+                    }
+
                     String currentStepInfo = currentContext.getCurrentStep();
-                    sendSseEvent(sessionId, emitter, "step_update", Map.of(
+                    sendSseEvent(sessionId, emitter, SSEEventTypeEnum.STEP_UPDATE, Map.of(
                             "nodeName", nodeName,
                             "currentStep", currentStepInfo != null ? currentStepInfo : "",
                             "needConfirmation", currentContext.isNeedConfirmation(),
@@ -148,7 +154,7 @@ public class WorkflowHandleService {
                     String currentStepDetails = finalContext.getCurrentStep();
 
                     // 发送确认请求事件
-                    sendSseEvent(sessionId, emitter, "confirmation_required", Map.of(
+                    sendSseEvent(sessionId, emitter, SSEEventTypeEnum.CONFIRMATION_REQUIRED, Map.of(
                             "confirmationType", finalContext.getConfirmationType() != null ? finalContext.getConfirmationType() : "",
                             "planId", finalContext.getPlanId() != null ? finalContext.getPlanId() : "",
                             "orderId", finalContext.getOrderId()!= null ? finalContext.getOrderId() : "",
@@ -163,7 +169,7 @@ public class WorkflowHandleService {
                 } else {
                     // 工作流正常结束
                     log.info("工作流正常结束");
-                    sendSseEvent(sessionId, emitter, "workflow_completed", Map.of(
+                    sendSseEvent(sessionId, emitter, SSEEventTypeEnum.WORKFLOW_COMPLETE, Map.of(
                             "message", "工作流执行完成",
                             "finalStep", finalContext.getCurrentStep(),
                             "planId", finalContext.getPlanId() != null ? finalContext.getPlanId() : "",
@@ -222,7 +228,7 @@ public class WorkflowHandleService {
 
         } catch (Exception e) {
             log.error("恢复工作流失败: sessionId={}, error={}", sessionId, e.getMessage(), e);
-            sendSseEvent(sessionId, emitter, "workflow_error", Map.of(
+            sendSseEvent(sessionId, emitter, SSEEventTypeEnum.WORKFLOW_ERROR, Map.of(
                     "error", e.getMessage(),
                     "message", "恢复工作流失败"
             ));
@@ -264,8 +270,14 @@ public class WorkflowHandleService {
 
                     log.info("当前步骤: {}", currentContext.getCurrentStep());
 
+                    // 如果是create_plan或create_order节点，则流式发送详细信息
+                    if ("create_plan".equals(nodeName) || "create_order".equals(nodeName)) {
+                        log.info("检测到{}节点，开始流式发送详细信息", nodeName);
+                        sendDetailsAsFlux(sessionId, emitter, currentContext, nodeName);
+                    }
+
                     String currentStepInfo = currentContext.getCurrentStep();
-                    sendSseEvent(sessionId, emitter, "step_update", Map.of(
+                    sendSseEvent(sessionId, emitter, SSEEventTypeEnum.STEP_UPDATE, Map.of(
                             "nodeName", nodeName,
                             "currentStep", currentStepInfo != null ? currentStepInfo : "",
                             "needConfirmation", currentContext.isNeedConfirmation(),
@@ -304,8 +316,9 @@ public class WorkflowHandleService {
                     String currentStepDetails = finalContext.getCurrentStep();
 
                     log.info("工作流需要二次暂停： sessionId={}, 当前步骤: {}", sessionId, finalContext.getCurrentStep());
+
                     // 发送确认请求事件，包含详细信息mock数据
-                    sendSseEvent(sessionId, emitter, "confirmation_required", Map.of(
+                    sendSseEvent(sessionId, emitter, SSEEventTypeEnum.CONFIRMATION_REQUIRED, Map.of(
                             "confirmationType", finalContext.getConfirmationType() != null ? finalContext.getConfirmationType() : "",
                             "planId", finalContext.getPlanId() != null ? finalContext.getPlanId() : "",
                             "orderId", finalContext.getOrderId()!= null ? finalContext.getOrderId() : "",
@@ -320,7 +333,7 @@ public class WorkflowHandleService {
                 } else {
                     // 工作流正常结束
                     log.info("工作流正常结束");
-                    sendSseEvent(sessionId, emitter, "workflow_completed", Map.of(
+                    sendSseEvent(sessionId, emitter, SSEEventTypeEnum.WORKFLOW_COMPLETE, Map.of(
                             "message", "工作流执行完成",
                             "finalStep", finalContext.getCurrentStep(),
                             "planId", finalContext.getPlanId() != null ? finalContext.getPlanId() : "",
@@ -343,19 +356,120 @@ public class WorkflowHandleService {
     /**
      * 发送 SSE 事件
      */
-    private void sendSseEvent(String sessionId, SseEmitter emitter, String eventType, Object data) {
+    private void sendSseEvent(String sessionId, SseEmitter emitter, SSEEventTypeEnum eventType, Object data) {
         try {
             String jsonData = JSONUtil.toJsonStr(data);
-            log.info("发送SSE事件: eventType={}, sessionId={}", eventType, sessionId);
+            log.info("发送SSE事件: eventType={}, sessionId={}", eventType.getCode(), sessionId);
             
             emitter.send(SseEmitter.event()
-                    .name(eventType)
+                    .name(eventType.getCode())
                     .data(jsonData));
             
-            log.info("SSE事件发送成功: eventType={}", eventType);
+            log.info("SSE事件发送成功: eventType={}", eventType.getCode());
         } catch (IOException e) {
-            log.error("发送SSE事件失败: eventType={}, error={}", eventType, e.getMessage(), e);
+            log.error("发送SSE事件失败: eventType={}, error={}", eventType.getCode(), e.getMessage(), e);
         }
+    }
+
+    /**
+     * 根据节点类型从currentStep中提取details并流式发送
+     * 
+     * @param sessionId 会话ID
+     * @param emitter SSE发送器
+     * @param context 工作流上下文
+     * @param nodeName 节点名称
+     */
+    private void sendDetailsAsFlux(String sessionId, SseEmitter emitter, ConfirmWorkflowContext context, String nodeName) {
+        String currentStep = context.getCurrentStep();
+        if (currentStep == null || currentStep.isEmpty()) {
+            log.warn("currentStep为空，无法生成Flux: sessionId={}, nodeName={}", sessionId, nodeName);
+            return;
+        }
+
+        // 从currentStep中提取details（去除前缀）
+        String details = "";
+        if ("create_plan".equals(nodeName) && currentStep.startsWith("创建行程")) {
+            details = currentStep.substring("创建行程".length());
+        } else if ("create_order".equals(nodeName) && currentStep.startsWith("创建订单完成")) {
+            details = currentStep.substring("创建订单完成".length());
+        }
+
+        if (details.isEmpty()) {
+            log.warn("无法提取details: sessionId={}, nodeName={}", sessionId, nodeName);
+            return;
+        }
+
+        // 将details按行分块
+        String[] lines = details.split("\n");
+        List<String> chunks = new java.util.ArrayList<>();
+        
+        // 将每2-3行合并为一个chunk，模拟流式输出
+        StringBuilder chunkBuilder = new StringBuilder();
+        int lineCount = 0;
+        for (String line : lines) {
+            chunkBuilder.append(line).append("\n");
+            lineCount++;
+            if (lineCount >= 2) {
+                chunks.add(chunkBuilder.toString());
+                chunkBuilder = new StringBuilder();
+                lineCount = 0;
+            }
+        }
+        // 添加剩余的行
+        if (chunkBuilder.length() > 0) {
+            chunks.add(chunkBuilder.toString());
+        }
+
+        log.info("开始流式发送details: sessionId={}, nodeName={}, chunks数量={}", sessionId, nodeName, chunks.size());
+
+        // 创建Flux并订阅发送
+        Flux<String> detailsFlux = Flux.fromIterable(chunks)
+                .delayElements(Duration.ofMillis(200));
+
+        // 使用CountDownLatch等待Flux完成
+        CountDownLatch latch = new CountDownLatch(1);
+        
+        // 订阅Flux并发送每个chunk
+        detailsFlux.subscribe(
+                chunk -> {
+                    // 发送每个chunk
+                    try {
+                        sendSseEvent(sessionId, emitter, SSEEventTypeEnum.OUTPUT_CHUNK, Map.of(
+                                "chunk", chunk,
+                                "nodeName", nodeName,
+                                "confirmationType", "create_plan".equals(nodeName) ? "PLAN" : "ORDER",
+                                "planId", context.getPlanId() != null ? context.getPlanId() : "",
+                                "orderId", context.getOrderId() != null ? context.getOrderId() : ""
+                        ));
+                        log.debug("Flux chunk已发送: sessionId={}, chunk长度={}", sessionId, chunk.length());
+                    } catch (Exception e) {
+                        log.error("发送Flux chunk失败: sessionId={}, error={}", sessionId, e.getMessage(), e);
+                    }
+                },
+                error -> {
+                    // 错误处理
+                    log.error("Flux订阅出错: sessionId={}, error={}", sessionId, error.getMessage(), error);
+                    latch.countDown();
+                },
+                () -> {
+                    // 完成处理
+                    log.info("Flux流式发送完成: sessionId={}, nodeName={}", sessionId, nodeName);
+                    latch.countDown();
+                }
+        );
+
+        // 等待Flux完成（最多等待30秒）
+        try {
+            boolean completed = latch.await(30, java.util.concurrent.TimeUnit.SECONDS);
+            if (!completed) {
+                log.warn("Flux流式发送超时: sessionId={}", sessionId);
+            }
+        } catch (InterruptedException e) {
+            log.error("等待Flux完成时被中断: sessionId={}", sessionId, e);
+            Thread.currentThread().interrupt();
+        }
+
+        log.info("Details流式输出完成: sessionId={}, nodeName={}", sessionId, nodeName);
     }
 
 }

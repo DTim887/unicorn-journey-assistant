@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
@@ -31,24 +34,32 @@ public class CreateOrderWithConfirmNode {
             context.setOrderId(orderId);
 
             // TODO: 创建订单
-            // Mock 订单数据
-            StringBuilder orderDetails = new StringBuilder();
-            orderDetails.append("订单详情\n\n");
-            orderDetails.append("订单号：").append(orderId).append("\n");
-            orderDetails.append("关联行程：").append(context.getPlanId()).append("\n\n");
-            orderDetails.append("订单内容：\n");
-            orderDetails.append("上海迪士尼乐园门票 x2\n");
-            orderDetails.append("FastPass 快速通行证 x2\n");
-            orderDetails.append("餐饮券套餐 x2\n\n");
-            orderDetails.append("费用明细：\n");
-            orderDetails.append("门票费用：¥1,198\n");
-            orderDetails.append("FastPass：¥300\n");
-            orderDetails.append("餐饮券：¥400\n");
-            orderDetails.append("服务费：¥50\n");
-            orderDetails.append("总计：¥1,948\n\n");
-            orderDetails.append("使用日期：2025年10月23日\n");
-            orderDetails.append("游客人数：2人\n");
+            // Mock 订单数据（分块模拟流式输出）
+            List<String> orderChunks = Arrays.asList(
+                    "订单详情\n\n",
+                    "订单号：" + orderId + "\n",
+                    "关联行程：" + context.getPlanId() + "\n\n",
+                    "订单内容：\n",
+                    "上海迪士尼乐园门票 x2\n",
+                    "FastPass 快速通行证 x2\n",
+                    "餐饮券套餐 x2\n\n",
+                    "费用明细：\n",
+                    "门票费用：¥1,198\n",
+                    "FastPass：¥300\n",
+                    "餐饮券：¥400\n",
+                    "服务费：¥50\n",
+                    "总计：¥1,948\n\n",
+                    "使用日期：2025年10月23日\n",
+                    "游客人数：2人\n"
+            );
 
+            // 拼接完整的details内容（保持原有业务逻辑）
+            StringBuilder orderDetails = new StringBuilder();
+            for (String chunk : orderChunks) {
+                orderDetails.append(chunk);
+            }
+
+            // 保存完整的details到currentStep（保持原有业务）
             context.setCurrentStep("创建订单完成" + orderDetails);
 
             log.info("订单创建完成，订单ID: {}, 关联行程ID: {}", orderId, context.getPlanId());
