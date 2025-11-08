@@ -3,6 +3,7 @@ package com.unicorn.journey.assistant.langgragh4j.service;
 import cn.hutool.json.JSONUtil;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.langgragh4j.StreamConfirmWorkflowApp;
+import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.enums.SSEEventTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import com.unicorn.journey.assistant.service.UserService;
@@ -29,14 +30,16 @@ import java.util.concurrent.CountDownLatch;
 public class WorkflowHandleService {
     private final UserService userService;
     private final WorkflowCheckpointService checkpointService;
+    private final WorkflowAgentFactory agentFactory;
     
 
     /**
      * 执行工作流（首次启动）
      */
-    public void executeWorkflow(String sessionId, String userId, SseEmitter emitter) {
+    public void executeWorkflow(String sessionId, String userId, String visitDate, Integer visitorCount, SseEmitter emitter) {
         try {
-            log.info("首次启动工作流: sessionId={}, userId={}", sessionId, userId);
+            log.info("首次启动工作流: sessionId={}, userId={}, visitDate={}, visitorCount={}", 
+                sessionId, userId, visitDate, visitorCount);
 
             // 发送开始事件
             sendSseEvent(sessionId, emitter, SSEEventTypeEnum.WORKFLOW_START, Map.of(
@@ -49,19 +52,21 @@ public class WorkflowHandleService {
 
             // 创建工作流
             log.info("开始创建工作流...");
-            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp();
+            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp(agentFactory);
             CompiledGraph<MessagesState<String>> workflow = app.createWorkflow();
-            log.info("工作流图:/n{}", workflow.getGraph(GraphRepresentation.Type.MERMAID).content());
+            log.info("工作流图:\n{}", workflow.getGraph(GraphRepresentation.Type.MERMAID).content());
 
             // 获取用户信息
             User user = userService.currentUser();
             log.info("获取到当前用户: {}-{}", user.getId(), user.getNickname());
 
-            // 初始化上下文
+            // 初始化上下文，包含日期和人数（如果提供）
             ConfirmWorkflowContext initialContext = ConfirmWorkflowContext.builder()
                     .currentStep("初始化")
                     .user(user)
                     .sessionId(sessionId)
+                    .visitDate(visitDate)  // 设置游玩日期
+                    .visitorCount(visitorCount)  // 设置游玩人数
                     .build();
 
             // 执行工作流并处理结果
@@ -153,14 +158,22 @@ public class WorkflowHandleService {
                     // 获取当前步骤的详细信息
                     String currentStepDetails = finalContext.getCurrentStep();
 
+                    // 根据确认类型生成提示消息
+                    String message = switch (finalContext.getConfirmationType()) {
+                        case "INPUT_DATE" -> "请提供游玩日期";
+                        case "INPUT_COUNT" -> "请提供游玩人数";
+                        case "PLAN" -> "请确认行程信息";
+                        case "ORDER" -> "请确认订单信息";
+                        default -> "请确认";
+                    };
+                    
                     // 发送确认请求事件
                     sendSseEvent(sessionId, emitter, SSEEventTypeEnum.CONFIRMATION_REQUIRED, Map.of(
                             "confirmationType", finalContext.getConfirmationType() != null ? finalContext.getConfirmationType() : "",
                             "planId", finalContext.getPlanId() != null ? finalContext.getPlanId() : "",
                             "orderId", finalContext.getOrderId()!= null ? finalContext.getOrderId() : "",
                             "details", currentStepDetails != null ? currentStepDetails : "",
-                            "message", "PLAN".equals(finalContext.getConfirmationType()) ?
-                                    "请确认行程信息" : "请确认订单信息"
+                            "message", message
                     ));
 
                     log.info("已发送确认请求事件: sessionId={}, type={}",
@@ -194,7 +207,7 @@ public class WorkflowHandleService {
     public void resumeWorkflow(String sessionId, MessagesState<String> pausedState, SseEmitter emitter) {
         try {
             // 创建工作流
-            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp();
+            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp(agentFactory);
             CompiledGraph<MessagesState<String>> workflow = app.createWorkflow();
 
             log.info("恢复工作流图:\n {}", workflow.getGraph(GraphRepresentation.Type.MERMAID).content());
@@ -317,14 +330,22 @@ public class WorkflowHandleService {
 
                     log.info("工作流需要二次暂停： sessionId={}, 当前步骤: {}", sessionId, finalContext.getCurrentStep());
 
+                    // 根据确认类型生成提示消息
+                    String resumeMessage = switch (finalContext.getConfirmationType()) {
+                        case "INPUT_DATE" -> "请提供游玩日期";
+                        case "INPUT_COUNT" -> "请提供游玩人数";
+                        case "PLAN" -> "请确认行程信息";
+                        case "ORDER" -> "请确认订单信息";
+                        default -> "请确认";
+                    };
+                    
                     // 发送确认请求事件，包含详细信息mock数据
                     sendSseEvent(sessionId, emitter, SSEEventTypeEnum.CONFIRMATION_REQUIRED, Map.of(
                             "confirmationType", finalContext.getConfirmationType() != null ? finalContext.getConfirmationType() : "",
                             "planId", finalContext.getPlanId() != null ? finalContext.getPlanId() : "",
                             "orderId", finalContext.getOrderId()!= null ? finalContext.getOrderId() : "",
                             "details", currentStepDetails != null ? currentStepDetails : "",
-                            "message", "PLAN".equals(finalContext.getConfirmationType()) ?
-                                    "请确认行程信息" : "请确认订单信息"
+                            "message", resumeMessage
                     ));
 
                     log.info("已发送确认请求事件到前端（二次暂停）: sessionId={}, type={}",

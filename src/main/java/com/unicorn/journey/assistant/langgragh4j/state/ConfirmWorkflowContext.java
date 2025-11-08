@@ -86,6 +86,21 @@ public class ConfirmWorkflowContext implements Serializable {
      */
     private boolean isResuming;
 
+    /**
+     * 游玩日期
+     */
+    private String visitDate;
+
+    /**
+     * 游玩人数
+     */
+    private Integer visitorCount;
+
+    /**
+     * 用户输入的消息内容（用于AI处理）
+     */
+    private String userMessage;
+
     // ========== 上下文操作方法 ==========
 
     /**
