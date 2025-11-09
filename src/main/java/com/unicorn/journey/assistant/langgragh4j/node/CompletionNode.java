@@ -1,5 +1,6 @@
 package com.unicorn.journey.assistant.langgragh4j.node;
 
+import com.unicorn.journey.assistant.langgragh4j.enums.ActionTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.enums.ConfirmTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class CompletionNode {
             log.info("执行节点: 工作流完成");
 
             // 根据确认状态设置完成信息
-            if (ConfirmTypeEnum.REJECTED.getCode().equalsIgnoreCase(context.getConfirmationResult())) {
+            if (ActionTypeEnum.REJECTED.getCode().equalsIgnoreCase(context.getConfirmationResult())) {
                 context.setCurrentStep("工作流已取消");
                 log.info("工作流已取消 - 用户拒绝确认");
             } else {

@@ -100,6 +100,16 @@ public class ConfirmWorkflowContext implements Serializable {
      * 用户输入的消息内容（用于AI处理）
      */
     private String userMessage;
+    
+    /**
+     * AI 生成的 Plan 内容（纯文本）
+     */
+    private String planContent;
+    
+    /**
+     * AI 生成的 Order 内容（纯文本）
+     */
+    private String orderContent;
 
     // ========== 上下文操作方法 ==========
 

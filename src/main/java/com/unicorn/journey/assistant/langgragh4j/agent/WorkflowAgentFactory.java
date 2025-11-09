@@ -1,12 +1,15 @@
 package com.unicorn.journey.assistant.langgragh4j.agent;
 
+import com.unicorn.journey.assistant.service.*;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,11 +24,29 @@ public class WorkflowAgentFactory {
     @Resource
     private ChatModel chatModel;
 
+    @Resource
+    private StreamingChatModel streamingChatModel;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private AttractionService attractionService;
+
+    @Resource
+    private PlanService planService;
+
+    @Resource
+    private OrderService orderService;
+
+    @Resource
+    private ProductService productService;
+
     // Agent 缓存，key: sessionId + agentType
     private static final Map<String, Object> agentCache = new ConcurrentHashMap<>();
 
     /**
-     * 获取行程创建 Agent
+     * 获取plan创建 Agent
      */
     public WorkflowPlanAgent getPlanAgent(String sessionId) {
         String cacheKey = sessionId + "_PLAN";
@@ -74,12 +95,14 @@ public class WorkflowAgentFactory {
     }
 
     /**
-     * 创建行程 Agent
+     * 创建plan Agent
      */
     private WorkflowPlanAgent createPlanAgent() {
         return AiServices.builder(WorkflowPlanAgent.class)
                 .chatModel(chatModel)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .streamingChatModel(streamingChatModel)
+                .tools(List.of(userService, attractionService, planService))
                 .build();
     }
 
@@ -89,7 +112,9 @@ public class WorkflowAgentFactory {
     private WorkflowOrderAgent createOrderAgent() {
         return AiServices.builder(WorkflowOrderAgent.class)
                 .chatModel(chatModel)
+                .streamingChatModel(streamingChatModel)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .tools(List.of(userService,planService, productService, orderService))
                 .build();
     }
 
@@ -99,7 +124,8 @@ public class WorkflowAgentFactory {
     private OrchestratorAgent createOrchestratorAgent() {
         return AiServices.builder(OrchestratorAgent.class)
                 .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(3))
+                .streamingChatModel(streamingChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
                 .build();
     }
 }

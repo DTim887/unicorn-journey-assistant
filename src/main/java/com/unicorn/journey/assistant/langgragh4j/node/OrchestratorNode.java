@@ -11,9 +11,9 @@ import org.bsc.langgraph4j.prebuilt.MessagesState;
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
- * 统筹节点
+ * 统筹节点（监督节点）
  * 该节点负责整体流程控制，检查游玩日期和人数，协调各个环节
- * 集成 AI 大模型来智能判断和处理用户输入
+ * 集成 AI 大模型来智能判断用户输入、处理流程
  */
 @Slf4j
 public class OrchestratorNode {
@@ -78,11 +78,30 @@ public class OrchestratorNode {
                 return ConfirmWorkflowContext.saveContext(context);
             }
 
-            // 日期和人数都齐全
+            // 日期和人数都齐全，检查是否需要创建Plan
             log.info("游玩信息已完整: 日期={}, 人数={}", context.getVisitDate(), context.getVisitorCount());
-            context.setCurrentStep("游玩信息已完整，准备创建行程");
+            
+            // 检查是否已有Plan
+            if (context.getPlan() == null) {
+                log.info("未找到Plan信息，需要创建行程");
+                context.setCurrentStep("游玩信息已完整，准备创建行程");
+                context.setNeedConfirmation(false);
+                return ConfirmWorkflowContext.saveContext(context);
+            }
+            
+            // 已有Plan，检查是否已有Order
+            if (context.getOrder() == null) {
+                log.info("已有Plan信息，但未找到Order信息，需要创建订单");
+                context.setCurrentStep("行程已创建，准备创建订单");
+                context.setNeedConfirmation(false);
+                return ConfirmWorkflowContext.saveContext(context);
+            }
+            
+            // Plan和Order都已创建，准备汇总
+            log.info("Plan和Order都已创建，准备生成汇总");
+            context.setCurrentStep("行程和订单都已创建，准备生成汇总");
             context.setNeedConfirmation(false);
-
+            
             return ConfirmWorkflowContext.saveContext(context);
         });
     }

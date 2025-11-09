@@ -58,7 +58,7 @@ public interface OrchestratorAgent {
             📋 行程ID：PLAN-XXXXXXXX
             🛍️ 订单ID：ORDER-XXXXXXXX
             
-            祝您玩得开心，留下美好回忆！✨
+            感谢和祝福~~✨
             """)
     String generateSummary(@V("visitDate") String visitDate,
                           @V("visitorCount") Integer visitorCount,

@@ -1,9 +1,11 @@
 package com.unicorn.journey.assistant.langgragh4j.node;
 
 import cn.hutool.core.lang.UUID;
+import com.unicorn.journey.assistant.entity.Plan;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowPlanAgent;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
+import com.unicorn.journey.assistant.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
@@ -20,9 +22,11 @@ import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 public class CreatePlanWithConfirmNode {
 
     private final WorkflowAgentFactory agentFactory;
+    private final PlanService planService;
 
-    public CreatePlanWithConfirmNode(WorkflowAgentFactory agentFactory) {
+    public CreatePlanWithConfirmNode(WorkflowAgentFactory agentFactory, PlanService planService) {
         this.agentFactory = agentFactory;
+        this.planService = planService;
     }
 
     public AsyncNodeAction<MessagesState<String>> create() {
@@ -30,6 +34,18 @@ public class CreatePlanWithConfirmNode {
             ConfirmWorkflowContext context = ConfirmWorkflowContext.getContext(state);
 
             log.info("执行节点: 创建行程 - AI生成");
+
+            // 检查用户是否已有 plan
+            if (context.getUser() != null) {
+                Plan existingPlan = planService.retrievePlanByUserId(context.getUser().getId());
+                if (existingPlan != null) {
+                    log.info("用户已存在 plan: planId={}, userId={}", existingPlan.getId(), context.getUser().getId());
+                    context.setPlan(existingPlan);
+                    context.setPlanId("PLAN-" + existingPlan.getId());
+                    context.setCurrentStep("检测到用户已有行程，将使用现有行程");
+                    return ConfirmWorkflowContext.saveContext(context);
+                }
+            }
 
             // 生成行程ID
             String planId = "PLAN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -57,19 +73,18 @@ public class CreatePlanWithConfirmNode {
                 log.info("AI 行程生成完成，行程ID: {}", planId);
 
             } catch (Exception e) {
-                log.error("AI 生成行程失败，使用默认模板", e);
-                // 如果 AI 调用失败，使用默认模板
-                String defaultPlan = generateDefaultPlan(context);
-                context.setCurrentStep("创建行程完成\n\n行程ID: " + planId + "\n\n" + defaultPlan);
+                log.error("AI 生成行程失败", e);
+                //String defaultPlan = generateDefaultPlan(context);
+                context.setCurrentStep("创建行程失败");
             }
 
             return ConfirmWorkflowContext.saveContext(context);
         });
     }
 
-    /**
+   /* *//**
      * 生成默认行程模板（AI 失败时的备选方案）
-     */
+     *//*
     private String generateDefaultPlan(ConfirmWorkflowContext context) {
         return String.format("""
             🎉 上海迪士尼乐园一日游行程
@@ -105,6 +120,6 @@ public class CreatePlanWithConfirmNode {
             context.getVisitorCount(), context.getVisitorCount() * 200,
             context.getVisitorCount() * 799
         );
-    }
+    }*/
 }
 

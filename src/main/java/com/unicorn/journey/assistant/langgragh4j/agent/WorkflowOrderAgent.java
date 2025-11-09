@@ -15,7 +15,6 @@ public interface WorkflowOrderAgent {
             @V("planId") String planId,
             @V("visitDate") String visitDate,
             @V("visitorCount") Integer visitorCount,
-            @V("currentTime") String currentTime,
             @UserMessage String userMessage
     );
 }

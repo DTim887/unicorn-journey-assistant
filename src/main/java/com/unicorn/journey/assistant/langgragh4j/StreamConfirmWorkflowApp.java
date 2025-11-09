@@ -6,6 +6,8 @@ import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.enums.ConfirmTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.node.*;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
+import com.unicorn.journey.assistant.service.PlanService;
+import com.unicorn.journey.assistant.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bsc.langgraph4j.CompiledGraph;
@@ -39,9 +41,15 @@ import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
 public class StreamConfirmWorkflowApp {
 
     private final WorkflowAgentFactory agentFactory;
+    private final PlanService planService;
+    private final OrderService orderService;
 
-    public StreamConfirmWorkflowApp(WorkflowAgentFactory agentFactory) {
+    public StreamConfirmWorkflowApp(WorkflowAgentFactory agentFactory, 
+                                   PlanService planService,
+                                   OrderService orderService) {
         this.agentFactory = agentFactory;
+        this.planService = planService;
+        this.orderService = orderService;
     }
 
     /**
@@ -56,10 +64,10 @@ public class StreamConfirmWorkflowApp {
                     // 添加节点 - 创建节点和确认节点完全分开
                     .addNode("resume_router", ResumeRouterNode.create())  // 恢复路由节点
                     .addNode("orchestrator_check", orchestratorNode.createCheckInput())  // 统筹节点-检查输入（AI）
-                    .addNode("create_plan", new CreatePlanWithConfirmNode(agentFactory).create())  // 创建行程（AI）
-                    .addNode("confirm_plan", ConfirmPlanNode.create())  // 确认行程
-                    .addNode("create_order", new CreateOrderWithConfirmNode(agentFactory).create())  // 创建订单（AI）
-                    .addNode("confirm_order", ConfirmOrderNode.create())  // 确认订单
+                    .addNode("create_plan", new CreatePlanWithConfirmNode(agentFactory, planService).create())  // 创建行程（AI）
+                    .addNode("confirm_plan", new ConfirmPlanNode(planService).create())  // 确认行程
+                    .addNode("create_order", new CreateOrderWithConfirmNode(agentFactory, orderService).create())  // 创建订单（AI）
+                    .addNode("confirm_order", new ConfirmOrderNode(orderService).create())  // 确认订单
                     .addNode("orchestrator_summary", orchestratorNode.createSummary())  // 统筹节点-汇总（AI）
                     .addNode("completion", CompletionNode.create())  // 完成节点（保持兼容）
 
@@ -81,6 +89,8 @@ public class StreamConfirmWorkflowApp {
                             edge_async(this::routeAfterOrchestratorCheck),
                             Map.of(
                                     "create_plan", "create_plan",
+                                    "create_order", "create_order",
+                                    "orchestrator_summary", "orchestrator_summary",
                                     END, END  // 等待用户输入时暂停
                             ))
                     
@@ -91,7 +101,7 @@ public class StreamConfirmWorkflowApp {
                     .addConditionalEdges("confirm_plan",
                             edge_async(this::routeAfterPlanConfirmation),
                             Map.of(
-                                    ConfirmTypeEnum.APPROVED.getCode(), "create_order",
+                                    ConfirmTypeEnum.APPROVED.getCode(), "orchestrator_check",  // 确认后回到统筹节点
                                     ConfirmTypeEnum.REJECTED.getCode(), "orchestrator_summary",
                                     ConfirmTypeEnum.REGENERATE.getCode(), "create_plan",  // 重新生成
                                     END, END  // 等待用户时直接进入 END 节点，暂停
@@ -104,7 +114,7 @@ public class StreamConfirmWorkflowApp {
                     .addConditionalEdges("confirm_order",
                             edge_async(this::routeAfterOrderConfirmation),
                             Map.of(
-                                    ConfirmTypeEnum.APPROVED.getCode(), "orchestrator_summary",
+                                    ConfirmTypeEnum.APPROVED.getCode(), "orchestrator_check",  // 确认后回到统筹节点
                                     ConfirmTypeEnum.REJECTED.getCode(), "orchestrator_summary",
                                     ConfirmTypeEnum.REGENERATE.getCode(), "create_order",  // 重新生成
                                     END, END  // 等待用户时直接进入 END 节点，暂停
@@ -154,23 +164,39 @@ public class StreamConfirmWorkflowApp {
      * <p>
      * 判断逻辑：
      * 1. 如果需要用户输入（日期或人数缺失）-> 返回 END，暂停等待
-     * 2. 如果信息完整 -> 返回 "create_plan"，继续创建行程
+     * 2. 如果没有Plan -> 返回 "create_plan"，创建行程
+     * 3. 如果有Plan但没有Order -> 返回 "create_order"，创建订单
+     * 4. 如果Plan和Order都有 -> 返回 "orchestrator_summary"，生成汇总
      */
     private String routeAfterOrchestratorCheck(MessagesState<String> state) {
         ConfirmWorkflowContext context = ConfirmWorkflowContext.getContext(state);
         
-        log.info("统筹路由判断: needConfirmation={}, visitDate={}, visitorCount={}", 
-            context.isNeedConfirmation(), context.getVisitDate(), context.getVisitorCount());
+        log.info("统筹路由判断: needConfirmation={}, plan={}, order={}", 
+            context.isNeedConfirmation(), 
+            context.getPlan() != null ? "存在" : "不存在",
+            context.getOrder() != null ? "存在" : "不存在");
 
-        // 如果需要用户输入
+        // 如果需要用户输入（日期或人数）
         if (context.isNeedConfirmation()) {
             log.info("需要用户输入信息，暂停工作流");
             return END;
         }
 
-        // 信息完整，继续创建行程
-        log.info("信息完整，继续创建行程");
-        return "create_plan";
+        // 检查Plan是否存在
+        if (context.getPlan() == null) {
+            log.info("未找到Plan，继续创建行程");
+            return "create_plan";
+        }
+        
+        // 检查Order是否存在
+        if (context.getOrder() == null) {
+            log.info("已有Plan，未找到Order，继续创建订单");
+            return "create_order";
+        }
+        
+        // Plan和Order都存在，生成汇总
+        log.info("Plan和Order都已存在，生成汇总");
+        return "orchestrator_summary";
     }
 
     /**

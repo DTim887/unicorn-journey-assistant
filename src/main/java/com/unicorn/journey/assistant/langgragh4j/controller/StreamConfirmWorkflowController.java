@@ -1,8 +1,8 @@
 package com.unicorn.journey.assistant.langgragh4j.controller;
 
-import com.unicorn.journey.assistant.langgragh4j.enums.ConfirmTypeEnum;
+import com.unicorn.journey.assistant.langgragh4j.enums.ActionTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.model.request.StartWorkflowRequest;
-import com.unicorn.journey.assistant.langgragh4j.model.response.ConfirmRequest;
+import com.unicorn.journey.assistant.langgragh4j.model.request.ConfirmRequest;
 import com.unicorn.journey.assistant.langgragh4j.service.WorkflowCheckpointService;
 import com.unicorn.journey.assistant.langgragh4j.service.WorkflowHandleService;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
@@ -82,9 +82,8 @@ public class StreamConfirmWorkflowController {
     public Map<String, Object> confirmAction(
             @PathVariable String sessionId,
             @RequestBody ConfirmRequest confirmRequest) {
-        log.info("收到用户操作: sessionId={}, action={}, confirmed={}, type={}, visitDate={}, visitorCount={}", 
-            sessionId, confirmRequest.getAction(), confirmRequest.isConfirmed(), 
-            confirmRequest.getConfirmType(), confirmRequest.getVisitDate(), confirmRequest.getVisitorCount());
+        log.info("收到用户操作: sessionId={}, action={}, confirmType={}, visitDate={}, visitorCount={}",
+            sessionId, confirmRequest.getAction(), confirmRequest.getConfirmType(), confirmRequest.getVisitDate(), confirmRequest.getVisitorCount());
 
         // 获取暂停的工作流状态
         MessagesState<String> pausedState = checkpointService.removePausedState(sessionId);
@@ -98,13 +97,7 @@ public class StreamConfirmWorkflowController {
         // 更新上下文
         ConfirmWorkflowContext context = ConfirmWorkflowContext.getContext(pausedState);
         
-        // 优先使用 action 字段，如果没有则使用 confirmed 字段兼容旧版本
         String action = confirmRequest.getAction();
-        if (action == null) {
-            action = confirmRequest.isConfirmed() ? 
-                ConfirmTypeEnum.APPROVED.getCode() : ConfirmTypeEnum.REJECTED.getCode();
-        }
-        
         // 处理不同的操作类型
         String message = "处理中...";
         
@@ -130,15 +123,15 @@ public class StreamConfirmWorkflowController {
             // 处理确认/拒绝/重新生成
             switch (action.toLowerCase()) {
                 case "approved":
-                    context.setConfirmationResult(ConfirmTypeEnum.APPROVED.getCode());
+                    context.setConfirmationResult(ActionTypeEnum.APPROVED.getCode());
                     message = "确认成功";
                     break;
                 case "rejected":
-                    context.setConfirmationResult(ConfirmTypeEnum.REJECTED.getCode());
+                    context.setConfirmationResult(ActionTypeEnum.REJECTED.getCode());
                     message = "已拒绝";
                     break;
                 case "regenerate":
-                    context.setConfirmationResult(ConfirmTypeEnum.REGENERATE.getCode());
+                    context.setConfirmationResult(ActionTypeEnum.REGENERATE.getCode());
                     message = "正在重新生成...";
                     break;
                 default:

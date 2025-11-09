@@ -1,21 +1,35 @@
 package com.unicorn.journey.assistant.langgragh4j.node;
 
+import cn.hutool.core.lang.Snowflake;
+import com.unicorn.journey.assistant.entity.Plan;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
+import com.unicorn.journey.assistant.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
+
+import java.time.LocalDate;
 
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
  * 行程确认节点
  * 该节点专门负责处理行程确认逻辑，会在需要确认时暂停工作流
+ * 确认通过后保存Plan到数据库
  */
 @Slf4j
 public class ConfirmPlanNode {
 
-    public static AsyncNodeAction<MessagesState<String>> create() {
+    private final PlanService planService;
+    private final Snowflake snowflake;
+
+    public ConfirmPlanNode(PlanService planService) {
+        this.planService = planService;
+        this.snowflake = new Snowflake();
+    }
+
+    public AsyncNodeAction<MessagesState<String>> create() {
         return node_async(state -> {
             ConfirmWorkflowContext context = ConfirmWorkflowContext.getContext(state);
             log.info("执行节点: 行程确认");
@@ -32,12 +46,64 @@ public class ConfirmPlanNode {
                 context.setPausedAtNode("confirm_plan");
                 log.info("记录暂停位置: {}", "confirm_plan");
             } else {
-                // 如果已经有确认结果，重置确认标志
-                log.info("用户已确认行程: {}", context.getConfirmationResult());
+                // 如果已经有确认结果
+                String result = context.getConfirmationResult();
+                log.info("用户已确认行程: {}", result);
+                
+                // 只有在确认通过时才保存Plan
+                if ("approved".equalsIgnoreCase(result)) {
+                    log.info("用户确认通过，检查Plan是否已保存");
+                    
+                    // 检查用户是否已有 plan
+                    Plan existingPlan = planService.retrievePlanByUserId(context.getUser().getId());
+                    if (existingPlan != null) {
+                        log.info("Plan已存在，使用现有Plan: planId={}, userId={}", existingPlan.getId(), context.getUser().getId());
+                        context.setPlan(existingPlan);
+                        context.setPlanId("PLAN-" + existingPlan.getId());
+                        context.setCurrentStep("行程确认完成，已使用现有行程");
+                    } else {
+                        log.info("Plan不存在，创建新Plan并保存到数据库");
+                        // 创建Plan实体并保存
+                        Plan plan = Plan.builder()
+                                .id(snowflake.nextId())
+                                .planName("迪士尼行程-" + context.getVisitDate())
+                                .planDate(LocalDate.parse(context.getVisitDate()))
+                                .userId(context.getUser().getId())
+                                .build();
+                        
+                        // 保存到数据库
+                        planService.createPlan(plan);
+                        
+                        // 保存到上下文
+                        context.setPlan(plan);
+                        context.setPlanId("PLAN-" + plan.getId());
+                        context.setCurrentStep("行程确认完成，已保存到数据库");
+                        log.info("Plan已保存: planId={}, userId={}", plan.getId(), plan.getUserId());
+                    }
+                } else if ("rejected".equalsIgnoreCase(result) || "regenerate".equalsIgnoreCase(result)) {
+                    // 用户拒绝或要求重新生成，删除已生成的 plan
+                    if (context.getUser() != null) {
+                        Plan existingPlan = planService.retrievePlanByUserId(context.getUser().getId());
+                        if (existingPlan != null) {
+                            log.info("删除已生成的Plan: planId={}, userId={}", existingPlan.getId(), context.getUser().getId());
+                            planService.evict(context.getUser().getId());
+                            context.setPlan(null);
+                            context.setPlanId(null);
+                        }
+                    }
+                    
+                    if ("rejected".equalsIgnoreCase(result)) {
+                        log.info("用户拒绝行程");
+                        context.setCurrentStep("行程已拒绝");
+                    } else {
+                        log.info("用户要求重新生成行程");
+                        context.setCurrentStep("准备重新生成行程");
+                    }
+                }
+                
                 context.setNeedConfirmation(false);
                 context.setConfirmationType(null);
                 context.setConfirmationResult(null);
-                context.setCurrentStep("行程确认完成");
             }
 
             return ConfirmWorkflowContext.saveContext(context);

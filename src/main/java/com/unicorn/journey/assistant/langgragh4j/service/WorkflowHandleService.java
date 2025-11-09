@@ -7,6 +7,8 @@ import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.enums.SSEEventTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import com.unicorn.journey.assistant.service.UserService;
+import com.unicorn.journey.assistant.service.PlanService;
+import com.unicorn.journey.assistant.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +33,8 @@ public class WorkflowHandleService {
     private final UserService userService;
     private final WorkflowCheckpointService checkpointService;
     private final WorkflowAgentFactory agentFactory;
+    private final PlanService planService;
+    private final OrderService orderService;
     
 
     /**
@@ -52,7 +56,7 @@ public class WorkflowHandleService {
 
             // 创建工作流
             log.info("开始创建工作流...");
-            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp(agentFactory);
+            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp(agentFactory, planService, orderService);
             CompiledGraph<MessagesState<String>> workflow = app.createWorkflow();
             log.info("工作流图:\n{}", workflow.getGraph(GraphRepresentation.Type.MERMAID).content());
 
@@ -207,7 +211,7 @@ public class WorkflowHandleService {
     public void resumeWorkflow(String sessionId, MessagesState<String> pausedState, SseEmitter emitter) {
         try {
             // 创建工作流
-            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp(agentFactory);
+            StreamConfirmWorkflowApp app = new StreamConfirmWorkflowApp(agentFactory, planService, orderService);
             CompiledGraph<MessagesState<String>> workflow = app.createWorkflow();
 
             log.info("恢复工作流图:\n {}", workflow.getGraph(GraphRepresentation.Type.MERMAID).content());
