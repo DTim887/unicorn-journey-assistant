@@ -12,7 +12,10 @@ public enum SSEEventTypeEnum {
     OUTPUT_CHUNK("output_chunk", "输出流块"),
     CONFIRMATION_REQUIRED("confirmation_required", "待确认请求"),
     WORKFLOW_COMPLETE("workflow_complete", "工作流完成"),
-    WORKFLOW_ERROR("workflow_error", "工作流异常");
+    WORKFLOW_ERROR("workflow_error", "工作流异常"),
+    // 输入请求类型
+    INPUT_DATE("INPUT_DATE", "输入日期"),
+    INPUT_COUNT("INPUT_COUNT", "输入人数");
 
     public final String code;
     public final String description;

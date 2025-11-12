@@ -923,43 +923,33 @@
 
     // 显示确认对话框
     function showConfirmationModal(confirmationType, data) {
+        console.log('🔔 ========== showConfirmationModal 被调用 ==========');
+        console.log('📍 confirmationType:', confirmationType);
+        console.log('📍 data:', data);
+        
         currentConfirmationType = confirmationType;
         currentConfirmationData = data;
 
         // 默认隐藏重新生成按钮
         regenerateBtn.style.display = 'none';
 
-        if (confirmationType === 'INPUT_DATE') {
-            // 输入游玩日期
-            modalIcon.textContent = '📅';
-            modalTitle.textContent = '游玩日期';
-            modalSubtitle.textContent = '请输入您的游玩日期';
+        if (confirmationType === 'INPUT_DATE' || confirmationType === 'INPUT_COUNT') {
+            console.log('👉 处理输入类型:', confirmationType);
+            // 输入游玩信息（日期 + 人数）
+            modalIcon.textContent = '🎫';
+            modalTitle.textContent = '游玩信息';
+            modalSubtitle.textContent = '请输入您的游玩日期和人数';
 
             modalContent.innerHTML = `
                 <div class="input-form">
                     <div class="form-group">
-                        <label class="form-label" for="visitDateInput">请选择游玩日期：</label>
+                        <label class="form-label" for="visitDateInput">📅 请选择游玩日期：</label>
                         <input type="date" id="visitDateInput" class="form-input" 
                                min="${new Date().toISOString().split('T')[0]}" 
                                required>
                     </div>
-                </div>
-            `;
-
-            // 修改按钮文本
-            confirmBtn.textContent = '✓ 确认';
-            rejectBtn.style.display = 'none';
-
-        } else if (confirmationType === 'INPUT_COUNT') {
-            // 输入游玩人数
-            modalIcon.textContent = '👥';
-            modalTitle.textContent = '游玩人数';
-            modalSubtitle.textContent = '请输入游玩人数';
-
-            modalContent.innerHTML = `
-                <div class="input-form">
                     <div class="form-group">
-                        <label class="form-label" for="visitorCountInput">请输入游玩人数：</label>
+                        <label class="form-label" for="visitorCountInput">👥 请输入游玩人数：</label>
                         <input type="number" id="visitorCountInput" class="form-input" 
                                min="1" max="20" value="1" 
                                placeholder="请输入1-20人" required>
@@ -1020,6 +1010,7 @@
         }
 
         modalOverlay.classList.add('active');
+        console.log('✅ 模态框已显示，等待用户输入...');
 
         // 检测内容是否可滚动
         setTimeout(() => {
@@ -1084,33 +1075,40 @@
             confirmType: currentConfirmationType
         };
 
-        // 处理输入类型的确认
-        if (currentConfirmationType === 'INPUT_DATE') {
+        // 处理输入类型的确认（日期和人数一起提交）
+        if (currentConfirmationType === 'INPUT_DATE' || currentConfirmationType === 'INPUT_COUNT') {
             const visitDateInput = document.getElementById('visitDateInput');
+            const visitorCountInput = document.getElementById('visitorCountInput');
+            
+            // 验证日期
             if (!visitDateInput || !visitDateInput.value) {
                 alert('请选择游玩日期！');
                 confirmBtn.disabled = false;
                 return;
             }
-            requestBody.visitDate = visitDateInput.value;
-            console.log('📅 设置游玩日期:', requestBody.visitDate);
-            addMessage(`📅 已设置游玩日期: ${visitDateInput.value}`, 'success');
-        } else if (currentConfirmationType === 'INPUT_COUNT') {
-            const visitorCountInput = document.getElementById('visitorCountInput');
+            
+            // 验证人数
             if (!visitorCountInput || !visitorCountInput.value) {
                 alert('请输入游玩人数！');
                 confirmBtn.disabled = false;
                 return;
             }
+            
             const count = parseInt(visitorCountInput.value);
             if (count < 1 || count > 20) {
                 alert('游玩人数必须在1-20人之间！');
                 confirmBtn.disabled = false;
                 return;
             }
+            
+            // 同时提交日期和人数
+            requestBody.visitDate = visitDateInput.value;
             requestBody.visitorCount = count;
+            
+            console.log('📅 设置游玩日期:', requestBody.visitDate);
             console.log('👥 设置游玩人数:', requestBody.visitorCount);
-            addMessage(`👥 已设置游玩人数: ${count}人`, 'success');
+            addMessage(`🎫 已设置游玩信息: ${visitDateInput.value}, ${count}人`, 'success');
+            
         } else {
             // 行程或订单确认
             const actionText = action === 'approved' ? '确认' : 
@@ -1123,7 +1121,7 @@
         console.log('📤 发送确认请求到后端:', JSON.stringify(requestBody, null, 2));
 
         // 发送确认请求
-        fetch(`/workflow/stream-confirm/confirm/${currentSessionId}`, {
+        fetch(`/journey-assistant/workflow/stream-confirm/confirm/${currentSessionId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1182,10 +1180,10 @@
         // 添加启动消息
         addMessage('🪄 <strong>魔法启动！</strong><br>正在连接工作流系统...', 'system');
         
-        console.log('📡 发送SSE请求到: /workflow/stream-confirm/start');
+        console.log('📡 发送SSE请求到: /journey-assistant/workflow/stream-confirm/start');
 
         // 发送请求
-        fetch('/workflow/stream-confirm/start', {
+        fetch('/journey-assistant/workflow/stream-confirm/start', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1231,10 +1229,9 @@
                         }
 
                         buffer += decoder.decode(value, { stream: true });
+                        
                         const lines = buffer.split('\n');
                         buffer = lines.pop();
-                        
-                        console.debug('📦 收到数据块，行数:', lines.length);
 
                         let currentEvent = null;
                         let currentData = '';
@@ -1243,7 +1240,6 @@
                         for (const line of lines) {
                             if (line.startsWith('event:')) {
                                 currentEvent = line.substring(6).trim();
-                                console.debug('📋 解析到event:', currentEvent);
                             } else if (line.startsWith('data:')) {
                                 // 支持多行data字段
                                 const dataLine = line.substring(5).trim();
@@ -1252,18 +1248,14 @@
                                 } else {
                                     currentData = dataLine;
                                 }
-                                console.debug('📋 解析到data行，当前长度:', currentData.length);
                             } else if (line.startsWith('id:')) {
                                 currentId = line.substring(3).trim();
-                                console.debug('📋 解析到id:', currentId);
                             } else if (line.startsWith(':')) {
                                 // 注释行，忽略
-                                console.debug('📋 解析到注释');
                             } else if (line.trim() === '') {
                                 // 空行表示一个完整的事件
                                 if (currentEvent && currentData) {
                                     eventCount++;
-                                    console.log(`✅ [事件 #${eventCount}] 解析成功:`, currentEvent, '数据长度:', currentData.length);
                                     handleSseEvent(currentEvent, currentData);
                                     currentEvent = null;
                                     currentData = '';
@@ -1271,7 +1263,6 @@
                                 } else if (currentData) {
                                     // 没有event名称，使用默认的 'message'
                                     eventCount++;
-                                    console.log(`✅ [事件 #${eventCount}] 默认事件 (message)`);
                                     handleSseEvent('message', currentData);
                                     currentEvent = null;
                                     currentData = '';
@@ -1303,13 +1294,13 @@
 
     // 处理 SSE 事件
     function handleSseEvent(eventType, dataStr) {
-        console.log('📨 收到事件:', eventType, '数据长度:', dataStr.length);
-
         try {
             const data = JSON.parse(dataStr);
-            console.log('📦 解析后数据:', data);
             
-            switch(eventType) {
+            // 优先使用 data.sseEventType 作为事件类型
+            const actualEventType = data.sseEventType || eventType;
+            
+            switch(actualEventType) {
                 case 'workflow_start':
                     currentSessionId = data.sessionId;
                     console.log('✅ 会话ID:', currentSessionId);
@@ -1348,50 +1339,44 @@
                     break;
 
                 case 'output_chunk':
-                    // 流式输出行程或订单详情
-                    if (!currentStreamingMessage) {
-                        console.log('🌊 创建新的流式消息容器');
-                        currentStreamingMessage = addStreamingMessage();
-                    }
-                    if (data.chunk) {
-                        console.log('📝 追加chunk内容，长度:', data.chunk.length);
-                        appendToStreamingMessage(currentStreamingMessage, data.chunk);
+                    // output_chunk 展示在对话框内（聊天消息区域）
+                    if (data.content) {
+                        addMessage(data.content, 'assistant');
                     }
                     break;
 
-                case 'confirmation_required':
-                    console.log('🔔 需要确认:', data.confirmationType);
-                    
-                    // 清除当前的流式消息（如果有）
-                    if (currentStreamingMessage) {
-                        removeStreamingCursor(currentStreamingMessage);
-                        currentStreamingMessage = null;
+                case 'INPUT_DATE':
+                    // 显示AI生成的提示信息
+                    if (data.content) {
+                        addMessage('📅 ' + data.content, 'assistant');
                     }
-                    
-                    // 根据不同的确认类型显示不同的提示
+                    updateWorkflowStatus('active', '等待输入日期');
+                    showConfirmationModal('INPUT_DATE', data);
+                    break;
+
+                case 'INPUT_COUNT':
+                    // 显示AI生成的提示信息
+                    if (data.content) {
+                        addMessage('👥 ' + data.content, 'assistant');
+                    }
+                    updateWorkflowStatus('active', '等待输入人数');
+                    showConfirmationModal('INPUT_COUNT', data);
+                    break;
+
+                case 'confirmation_required':
+                    // 根据不同的确认类型显示不同的提示（仅针对 PLAN 和 ORDER）
                     let confirmMessage = data.message || '请确认';
-                    if (data.confirmationType === 'INPUT_DATE') {
-                        addMessage('📅 ' + confirmMessage, 'system');
-                    } else if (data.confirmationType === 'INPUT_COUNT') {
-                        addMessage('👥 ' + confirmMessage, 'system');
-                    } else if (data.confirmationType === 'PLAN') {
+                    if (data.confirmationType === 'PLAN') {
                         addMessage('📋 ' + confirmMessage, 'system');
                     } else if (data.confirmationType === 'ORDER') {
                         addMessage('🛍️ ' + confirmMessage, 'system');
-                    } else {
-                        addMessage('⏸️ ' + confirmMessage, 'system');
                     }
-                    
                     updateWorkflowStatus('active', '等待确认');
                     showConfirmationModal(data.confirmationType, data);
                     break;
 
                 case 'confirmation_result':
-                    console.log('✅ 收到确认结果:', data);
-                    // 显示后端发送的确认消息
                     addMessage(data.message, data.confirmed ? 'success' : 'error');
-                    
-                    // 更新工作流状态
                     if (data.confirmed) {
                         updateWorkflowStatus('active', '继续执行');
                     } else {
@@ -1400,12 +1385,6 @@
                     break;
 
                 case 'workflow_complete':
-                    // 清除流式消息
-                    if (currentStreamingMessage) {
-                        removeStreamingCursor(currentStreamingMessage);
-                        currentStreamingMessage = null;
-                    }
-                    
                     addMessage('✅ ' + data.message +
                         (data.planId ? `<br>📋 行程ID: ${data.planId}` : '') +
                         (data.orderId ? `<br>🛍️ 订单ID: ${data.orderId}` : ''),
@@ -1423,12 +1402,11 @@
                     break;
 
                 default:
-                    console.log('⚠️ 未知事件类型:', eventType, '数据:', dataStr.substring(0, 100));
+                    console.warn('[SSE] 未知事件:', actualEventType);
+                    break;
             }
         } catch (error) {
-            console.error('❌ 解析事件数据失败:', error);
-            console.error('原始数据:', dataStr);
-            console.error('事件类型:', eventType);
+            console.error('[SSE] 解析失败:', error);
         }
     }
 
@@ -1440,6 +1418,8 @@
         console.log('  - workflow_start: 工作流启动');
         console.log('  - step_update: 步骤更新');
         console.log('  - output_chunk: 流式输出块');
+        console.log('  - INPUT_DATE: 输入游玩日期');
+        console.log('  - INPUT_COUNT: 输入游玩人数');
         console.log('  - confirmation_required: 需要确认');
         console.log('  - workflow_complete: 工作流完成');
         console.log('  - workflow_error: 工作流错误');

@@ -12,10 +12,6 @@ public enum ConfirmTypeEnum {
     REJECTED("rejected", "拒绝"),
     REGENERATE("regenerate", "重新生成"),
     
-    // 输入请求类型
-    INPUT_DATE("INPUT_DATE", "输入日期"),
-    INPUT_COUNT("INPUT_COUNT", "输入人数"),
-    
     // 确认请求类型
     PLAN("PLAN", "行程确认"),
     ORDER("ORDER", "订单确认");

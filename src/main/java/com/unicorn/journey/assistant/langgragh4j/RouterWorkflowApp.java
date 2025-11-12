@@ -242,12 +242,15 @@ public class RouterWorkflowApp {
         WorkflowContext context = WorkflowContext.getContext(state);
         BusinessTypeEnum businessTypeEnum = context.getBusinessTypeEnum();
 
-        return switch (businessTypeEnum) {
-            case CREATE_PLAN -> "create_plan";
-            case CREATE_ORDER -> "create_order";
-            case REFUND -> "refund";
-            default -> throw new BusinessException(ErrorCode.SYSTEM_ERROR, "未知的业务类型");
-        };
+        if (businessTypeEnum == BusinessTypeEnum.CREATE_PLAN) {
+            return "create_plan";
+        } else if (businessTypeEnum == BusinessTypeEnum.CREATE_ORDER) {
+            return "create_order";
+        } else if (businessTypeEnum == BusinessTypeEnum.REFUND) {
+            return "refund";
+        } else {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "未知的业务类型");
+        }
     }
 
 }

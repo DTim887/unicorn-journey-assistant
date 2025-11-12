@@ -1,15 +1,26 @@
 package com.unicorn.journey.assistant.langgragh4j.node;
 
 import cn.hutool.core.lang.UUID;
+import cn.hutool.json.JSONUtil;
 import com.unicorn.journey.assistant.entity.Plan;
+import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowPlanAgent;
+import com.unicorn.journey.assistant.langgragh4j.enums.SSEEventTypeEnum;
+import com.unicorn.journey.assistant.langgragh4j.service.WorkflowCheckpointService;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import com.unicorn.journey.assistant.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
+
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
@@ -23,10 +34,12 @@ public class CreatePlanWithConfirmNode {
 
     private final WorkflowAgentFactory agentFactory;
     private final PlanService planService;
+    private final WorkflowCheckpointService checkpointService;
 
-    public CreatePlanWithConfirmNode(WorkflowAgentFactory agentFactory, PlanService planService) {
+    public CreatePlanWithConfirmNode(WorkflowAgentFactory agentFactory, PlanService planService, WorkflowCheckpointService checkpointService) {
         this.agentFactory = agentFactory;
         this.planService = planService;
+        this.checkpointService = checkpointService;
     }
 
     public AsyncNodeAction<MessagesState<String>> create() {
@@ -54,27 +67,54 @@ public class CreatePlanWithConfirmNode {
             try {
                 // 使用 AI Agent 生成行程
                 WorkflowPlanAgent planAgent = agentFactory.getPlanAgent(context.getSessionId());
-                
-                String userMessage = StringUtils.isNotBlank(context.getUserMessage()) 
-                    ? context.getUserMessage() 
-                    : "请为我创建一份详细的上海迪士尼乐园游玩行程";
-                
-                log.info("调用 AI 生成行程: visitDate={}, visitorCount={}", 
-                    context.getVisitDate(), context.getVisitorCount());
-                
-                String planContent = planAgent.createPlan(
-                    context.getVisitDate(),
-                    context.getVisitorCount(),
-                    userMessage
-                );
 
+                String userMessage = StringUtils.isNotBlank(context.getUserMessage())
+                        ? context.getUserMessage()
+                        : "请为我创建一份详细的上海迪士尼乐园游玩行程";
+
+                log.info("调用 AI 生成行程: user={}, visitDate={}, visitorCount={}, userMessage={}",
+                        context.getUser() != null ? context.getUser().getNickname() : "null",
+                        context.getVisitDate(),
+                        context.getVisitorCount(),
+                        userMessage);
+
+                // 直接调用非流式 API 获取完整内容
+                String planContent = planAgent.createPlan(
+                        context.getUser(),
+                        context.getVisitDate(),
+                        context.getVisitorCount(),
+                        context.getSessionId(),
+                        userMessage
+                );
+                
+                log.info("AI 行程生成完成，内容长度: {}", planContent.length());
+                
+                // 发送 SSE 事件给前端
+                SseEmitter emitter = checkpointService.getEmitter(context.getSessionId());
+                String sessionId = context.getSessionId();
+                if (emitter != null) {
+                    try {
+                        String jsonData = JSONUtil.toJsonStr(Map.of(
+                                "sseEventType", SSEEventTypeEnum.OUTPUT_CHUNK.getCode(),
+                                "content", planContent,
+                                "nodeName", "create_plan",
+                                "confirmationType", "PLAN",
+                                "planId", planId
+                        ));
+                        emitter.send(SseEmitter.event()
+                                .name(SSEEventTypeEnum.OUTPUT_CHUNK.getCode())
+                                .data(jsonData));
+                        log.info("发送行程生成结果 SSE 事件: sessionId={}", sessionId);
+                    } catch (Exception e) {
+                        log.error("发送 SSE 事件失败: sessionId={}", sessionId, e);
+                    }
+                }
+                
                 // 保存 AI 生成的行程内容
                 context.setCurrentStep("创建行程完成\n\n行程ID: " + planId + "\n\n" + planContent);
-                log.info("AI 行程生成完成，行程ID: {}", planId);
 
             } catch (Exception e) {
                 log.error("AI 生成行程失败", e);
-                //String defaultPlan = generateDefaultPlan(context);
                 context.setCurrentStep("创建行程失败");
             }
 
@@ -82,7 +122,7 @@ public class CreatePlanWithConfirmNode {
         });
     }
 
-   /* *//**
+    /* *//**
      * 生成默认行程模板（AI 失败时的备选方案）
      *//*
     private String generateDefaultPlan(ConfirmWorkflowContext context) {

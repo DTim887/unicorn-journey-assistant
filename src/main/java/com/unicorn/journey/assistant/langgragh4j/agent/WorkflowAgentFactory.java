@@ -100,9 +100,9 @@ public class WorkflowAgentFactory {
     private WorkflowPlanAgent createPlanAgent() {
         return AiServices.builder(WorkflowPlanAgent.class)
                 .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
                 .streamingChatModel(streamingChatModel)
-                .tools(List.of(userService, attractionService, planService))
+                //.tools(List.of(userService, attractionService, planService))
                 .build();
     }
 
@@ -113,7 +113,7 @@ public class WorkflowAgentFactory {
         return AiServices.builder(WorkflowOrderAgent.class)
                 .chatModel(chatModel)
                 .streamingChatModel(streamingChatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(50))
                 .tools(List.of(userService,planService, productService, orderService))
                 .build();
     }
@@ -125,7 +125,8 @@ public class WorkflowAgentFactory {
         return AiServices.builder(OrchestratorAgent.class)
                 .chatModel(chatModel)
                 .streamingChatModel(streamingChatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(50))
+                .tools(List.of(userService,planService, productService, orderService))
                 .build();
     }
 }

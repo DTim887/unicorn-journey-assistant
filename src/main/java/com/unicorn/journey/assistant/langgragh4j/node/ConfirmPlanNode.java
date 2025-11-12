@@ -50,35 +50,24 @@ public class ConfirmPlanNode {
                 String result = context.getConfirmationResult();
                 log.info("用户已确认行程: {}", result);
                 
-                // 只有在确认通过时才保存Plan
+                // 只有在确认通过时才真正保存Plan
                 if ("approved".equalsIgnoreCase(result)) {
                     log.info("用户确认通过，检查Plan是否已保存");
                     
                     // 检查用户是否已有 plan
                     Plan existingPlan = planService.retrievePlanByUserId(context.getUser().getId());
-                    if (existingPlan != null) {
-                        log.info("Plan已存在，使用现有Plan: planId={}, userId={}", existingPlan.getId(), context.getUser().getId());
-                        context.setPlan(existingPlan);
-                        context.setPlanId("PLAN-" + existingPlan.getId());
+                    if (existingPlan == null) {
+                        log.info("Plan已存在，使用现有Plan: planId={}, userId={}", "1", context.getUser().getId());
+                        context.setPlan(new Plan());// TODO
+                        context.setPlanId("PLAN-1");
+                        //context.setPlanId("PLAN-1" + existingPlan.getId());
+
                         context.setCurrentStep("行程确认完成，已使用现有行程");
                     } else {
-                        log.info("Plan不存在，创建新Plan并保存到数据库");
-                        // 创建Plan实体并保存
-                        Plan plan = Plan.builder()
-                                .id(snowflake.nextId())
-                                .planName("迪士尼行程-" + context.getVisitDate())
-                                .planDate(LocalDate.parse(context.getVisitDate()))
-                                .userId(context.getUser().getId())
-                                .build();
-                        
-                        // 保存到数据库
-                        planService.createPlan(plan);
-                        
-                        // 保存到上下文
-                        context.setPlan(plan);
-                        context.setPlanId("PLAN-" + plan.getId());
-                        context.setCurrentStep("行程确认完成，已保存到数据库");
-                        log.info("Plan已保存: planId={}, userId={}", plan.getId(), plan.getUserId());
+                        log.info("Plan不存在，等待重新生成");
+                        context.setPlan(null);
+                        context.setPlanId(null);
+                        context.setCurrentStep("生成plan失败，等待重新生成");
                     }
                 } else if ("rejected".equalsIgnoreCase(result) || "regenerate".equalsIgnoreCase(result)) {
                     // 用户拒绝或要求重新生成，删除已生成的 plan

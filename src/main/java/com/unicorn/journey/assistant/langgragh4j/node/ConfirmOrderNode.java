@@ -48,38 +48,25 @@ public class ConfirmOrderNode {
                 String result = context.getConfirmationResult();
                 log.info("用户已确认订单: {}", result);
                 
-                // 只有在确认通过时才保存Order
+                // 只有在确认通过时才真正保存Order
                 if ("approved".equalsIgnoreCase(result)) {
                     log.info("用户确认通过，检查Order是否已保存");
                     
                     // 检查用户是否已有 order
                     List<Order> existingOrders = orderService.retrieveOrdersByUserId(context.getUser().getId());
-                    if (existingOrders != null && !existingOrders.isEmpty()) {
-                        log.info("Order已存在，使用现有Order: orderCount={}, userId={}", existingOrders.size(), context.getUser().getId());
-                        // 使用最新的订单
-                        Order latestOrder = existingOrders.get(existingOrders.size() - 1);
-                        context.setOrder(latestOrder);
-                        context.setOrderId(latestOrder.getId());
-                        context.setCurrentStep("订单确认完成，已使用现有订单");
+                    if (existingOrders == null || existingOrders.isEmpty()) {
+                        log.info("Order不存在，等待重新生成");
+                        context.setOrder(new Order());// TODO
+                        context.setOrderId("111");
+                        context.setCurrentStep("生成订单失败，等待重新生成");
                     } else {
-                        log.info("Order不存在，创建新Order并保存到数据库");
-                        // 创建Order实体并保存
-                        Order order = new Order();
-                        order.setId(UUID.randomUUID().toString());
-                        order.setUserId(context.getUser().getId());
-                        order.setVisitDate(context.getVisitDate());
-                        order.setStatus("PENDING");
-                        // 注意：这里简化处理，实际应该从orderContent中解析产品信息
-                        // 或者在创建订单节点时构建完整的Order对象
-                        
-                        // 保存到数据库
-                        orderService.saveOrder(order);
-                        
+                        log.info("Order存在，保存到上下文中");
+                        Order order = existingOrders.getLast();
                         // 保存到上下文
                         context.setOrder(order);
-                        context.setOrderId(order.getId());
-                        context.setCurrentStep("订单确认完成，已保存到数据库");
-                        log.info("Order已保存: orderId={}, userId={}", order.getId(), order.getUserId());
+                        context.setOrderId("ORDER-" + order.getId());
+                        context.setCurrentStep("订单确认完成");
+                        log.info("Order已确认: orderId={}, userId={}", order.getId(), order.getUserId());
                     }
                 } else if ("rejected".equalsIgnoreCase(result) || "regenerate".equalsIgnoreCase(result)) {
                     // 用户拒绝或要求重新生成，删除已生成的 order

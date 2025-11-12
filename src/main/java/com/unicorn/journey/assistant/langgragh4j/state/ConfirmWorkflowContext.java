@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -32,7 +33,7 @@ public class ConfirmWorkflowContext implements Serializable {
     private String currentStep;
 
     /**
-     * 用户 id
+     * 用户
      */
     private User user;
 
@@ -57,7 +58,7 @@ public class ConfirmWorkflowContext implements Serializable {
     private String confirmationType;
 
     /**
-     * 用户确认结果 (approved / rejected / null)
+     * 用户确认结果 (approved / rejected / regenerate)
      */
     private String confirmationResult;
 
@@ -100,16 +101,11 @@ public class ConfirmWorkflowContext implements Serializable {
      * 用户输入的消息内容（用于AI处理）
      */
     private String userMessage;
-    
+
     /**
-     * AI 生成的 Plan 内容（纯文本）
+     * SSE发射器（非序列化字段，用于节点内实时发送事件）
      */
-    private String planContent;
-    
-    /**
-     * AI 生成的 Order 内容（纯文本）
-     */
-    private String orderContent;
+    private transient SseEmitter sseEmitter;
 
     // ========== 上下文操作方法 ==========
 

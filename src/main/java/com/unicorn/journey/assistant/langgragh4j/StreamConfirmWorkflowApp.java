@@ -5,6 +5,7 @@ import com.unicorn.journey.assistant.exception.ErrorCode;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.enums.ConfirmTypeEnum;
 import com.unicorn.journey.assistant.langgragh4j.node.*;
+import com.unicorn.journey.assistant.langgragh4j.service.WorkflowCheckpointService;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import com.unicorn.journey.assistant.service.PlanService;
 import com.unicorn.journey.assistant.service.OrderService;
@@ -43,13 +44,16 @@ public class StreamConfirmWorkflowApp {
     private final WorkflowAgentFactory agentFactory;
     private final PlanService planService;
     private final OrderService orderService;
+    private final WorkflowCheckpointService checkpointService;
 
     public StreamConfirmWorkflowApp(WorkflowAgentFactory agentFactory, 
                                    PlanService planService,
-                                   OrderService orderService) {
+                                   OrderService orderService,
+                                   WorkflowCheckpointService checkpointService) {
         this.agentFactory = agentFactory;
         this.planService = planService;
         this.orderService = orderService;
+        this.checkpointService = checkpointService;
     }
 
     /**
@@ -58,15 +62,15 @@ public class StreamConfirmWorkflowApp {
     public CompiledGraph<MessagesState<String>> createWorkflow() {
         try {
             // 创建统筹节点实例
-            OrchestratorNode orchestratorNode = new OrchestratorNode(agentFactory);
+            OrchestratorNode orchestratorNode = new OrchestratorNode(agentFactory, checkpointService);
             
             return new MessagesStateGraph<String>()
                     // 添加节点 - 创建节点和确认节点完全分开
                     .addNode("resume_router", ResumeRouterNode.create())  // 恢复路由节点
                     .addNode("orchestrator_check", orchestratorNode.createCheckInput())  // 统筹节点-检查输入（AI）
-                    .addNode("create_plan", new CreatePlanWithConfirmNode(agentFactory, planService).create())  // 创建行程（AI）
+                    .addNode("create_plan", new CreatePlanWithConfirmNode(agentFactory, planService, checkpointService).create())  // 创建行程（AI）
                     .addNode("confirm_plan", new ConfirmPlanNode(planService).create())  // 确认行程
-                    .addNode("create_order", new CreateOrderWithConfirmNode(agentFactory, orderService).create())  // 创建订单（AI）
+                    .addNode("create_order", new CreateOrderWithConfirmNode(agentFactory, orderService, checkpointService).create())  // 创建订单（AI）
                     .addNode("confirm_order", new ConfirmOrderNode(orderService).create())  // 确认订单
                     .addNode("orchestrator_summary", orchestratorNode.createSummary())  // 统筹节点-汇总（AI）
                     .addNode("completion", CompletionNode.create())  // 完成节点（保持兼容）

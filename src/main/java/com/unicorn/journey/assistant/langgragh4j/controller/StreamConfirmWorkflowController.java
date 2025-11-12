@@ -86,7 +86,7 @@ public class StreamConfirmWorkflowController {
             sessionId, confirmRequest.getAction(), confirmRequest.getConfirmType(), confirmRequest.getVisitDate(), confirmRequest.getVisitorCount());
 
         // 获取暂停的工作流状态
-        MessagesState<String> pausedState = checkpointService.removePausedState(sessionId);
+        MessagesState<String> pausedState = checkpointService.getPausedState(sessionId);
         SseEmitter emitter = checkpointService.getEmitter(sessionId);
 
         if (pausedState == null || emitter == null) {

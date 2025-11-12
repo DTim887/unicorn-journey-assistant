@@ -1,16 +1,25 @@
 package com.unicorn.journey.assistant.langgragh4j.node;
 
 import cn.hutool.core.lang.UUID;
+import cn.hutool.json.JSONUtil;
 import com.unicorn.journey.assistant.entity.Order;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowAgentFactory;
 import com.unicorn.journey.assistant.langgragh4j.agent.WorkflowOrderAgent;
+import com.unicorn.journey.assistant.langgragh4j.enums.SSEEventTypeEnum;
+import com.unicorn.journey.assistant.langgragh4j.service.WorkflowCheckpointService;
 import com.unicorn.journey.assistant.langgragh4j.state.ConfirmWorkflowContext;
 import com.unicorn.journey.assistant.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
@@ -23,10 +32,12 @@ public class CreateOrderWithConfirmNode {
 
     private final WorkflowAgentFactory agentFactory;
     private final OrderService orderService;
+    private final WorkflowCheckpointService checkpointService;
 
-    public CreateOrderWithConfirmNode(WorkflowAgentFactory agentFactory, OrderService orderService) {
+    public CreateOrderWithConfirmNode(WorkflowAgentFactory agentFactory, OrderService orderService, WorkflowCheckpointService checkpointService) {
         this.agentFactory = agentFactory;
         this.orderService = orderService;
+        this.checkpointService = checkpointService;
     }
 
     public AsyncNodeAction<MessagesState<String>> create() {
@@ -48,7 +59,7 @@ public class CreateOrderWithConfirmNode {
                 if (existingOrders != null && !existingOrders.isEmpty()) {
                     log.info("用户已存在 {} 个订单, userId={}", existingOrders.size(), context.getUser().getId());
                     // 使用最新的订单
-                    Order latestOrder = existingOrders.get(existingOrders.size() - 1);
+                    Order latestOrder = existingOrders.getLast();
                     context.setOrder(latestOrder);
                     context.setOrderId(latestOrder.getId());
                     context.setCurrentStep("检测到用户已有订单，将使用现有订单");
@@ -64,24 +75,48 @@ public class CreateOrderWithConfirmNode {
                 // 使用 AI Agent 生成订单
                 WorkflowOrderAgent orderAgent = agentFactory.getOrderAgent(context.getSessionId());
 
-                log.info("调用 AI 生成订单: planId={}, visitDate={}, visitorCount={}", 
-                    context.getPlanId(), context.getVisitDate(), context.getVisitorCount());
-                
-                String orderContent = orderAgent.createOrder(
-                    context.getPlanId(),
-                    context.getVisitDate(),
-                    context.getVisitorCount(),
-                    "请根据plan和游玩信息生成订单"
-                );
+                log.info("调用 AI 生成订单: planId={}, visitDate={}, visitorCount={}",
+                        context.getPlanId(), context.getVisitDate(), context.getVisitorCount());
 
+                // 直接调用非流式 API 获取完整内容
+                String orderContent = orderAgent.createOrder(
+                        context.getUser(),
+                        context.getPlanId(),
+                        context.getVisitDate(),
+                        context.getVisitorCount(),
+                        "请根据plan和游玩信息生成订单"
+                );
+                
+                log.info("AI 订单生成完成，内容长度: {}", orderContent.length());
+                
+                // 发送 SSE 事件给前端
+                SseEmitter emitter = checkpointService.getEmitter(context.getSessionId());
+                String sessionId = context.getSessionId();
+                if (emitter != null) {
+                    try {
+                        String jsonData = JSONUtil.toJsonStr(Map.of(
+                                "sseEventType", SSEEventTypeEnum.OUTPUT_CHUNK.getCode(),
+                                "content", orderContent,
+                                "nodeName", "create_order",
+                                "confirmationType", "ORDER",
+                                "planId", context.getPlanId() != null ? context.getPlanId() : "",
+                                "orderId", orderId
+                        ));
+                        emitter.send(SseEmitter.event()
+                                .name(SSEEventTypeEnum.OUTPUT_CHUNK.getCode())
+                                .data(jsonData));
+                        log.info("发送订单生成结果 SSE 事件: sessionId={}", sessionId);
+                    } catch (Exception e) {
+                        log.error("发送 SSE 事件失败: sessionId={}", sessionId, e);
+                    }
+                }
+                
                 // 保存 AI 生成的订单内容
                 context.setCurrentStep("创建订单完成\n\n订单ID: " + orderId + "\n\n" + orderContent);
-                log.info("AI 订单生成完成，订单ID: {}", orderId);
 
             } catch (Exception e) {
                 log.error("AI 生成订单失败", e);
-                //String defaultOrder = generateDefaultOrder(context, orderId);
-                context.setCurrentStep("创建订单失败" );
+                context.setCurrentStep("创建订单失败");
             }
 
             log.info("订单创建完成，订单ID: {}, 关联行程ID: {}", orderId, context.getPlanId());
