@@ -1,5 +1,7 @@
 package com.unicorn.journey.assistant.langgragh4j.state;
 
+import com.unicorn.journey.assistant.entity.Order;
+import com.unicorn.journey.assistant.entity.Plan;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.langgragh4j.enums.BusinessTypeEnum;
 import lombok.AllArgsConstructor;
@@ -41,19 +43,49 @@ public class WorkflowContext implements Serializable {
     private User user;
 
     /**
-     * plan id
+     * plan
      */
-    private String planId;
+    private Plan plan;
 
     /**
-     * 订单 id
+     * 订单
      */
-    private String orderId;
+    private Order order;
 
     /**
      * 业务类型
      */
     private BusinessTypeEnum businessTypeEnum;
+
+    /**
+     * 行程ID（创建后的ID）
+     */
+    private String planId;
+
+    /**
+     * 订单ID（创建后的ID）
+     */
+    private String orderId;
+
+    /**
+     * 行程是否已确认
+     */
+    private Boolean planConfirmed;
+
+    /**
+     * 订单是否已确认
+     */
+    private Boolean orderConfirmed;
+
+    /**
+     * checkpoint ID - 用于恢复工作流
+     */
+    private String checkpointId;
+
+    /**
+     * 会话ID - 用于隔离不同用户的交互
+     */
+    private String sessionId;
 
     // ========== 上下文操作方法 ==========
 

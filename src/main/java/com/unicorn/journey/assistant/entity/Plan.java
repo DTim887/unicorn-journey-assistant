@@ -3,6 +3,7 @@ package com.unicorn.journey.assistant.entity;
 import dev.langchain4j.model.output.structured.Description;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Plan {
+public class Plan implements Serializable {
     /**
      * plan id
      */
@@ -48,7 +49,7 @@ public class Plan {
 
 
     @Data
-    public static class PlanAttractionItem {
+    public static class PlanAttractionItem implements Serializable{
         /**
          * 景点id
          */
