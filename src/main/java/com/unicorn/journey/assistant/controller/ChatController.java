@@ -20,8 +20,6 @@ import java.io.IOException;
 @RestController
 public class ChatController {
 
-    private static final String XIAOHONGSHU = "XIAOHONGSHU_";
-
     private final AiServiceFactory aiServiceFactory;
 
     private final UserService userService;
@@ -89,7 +87,7 @@ public class ChatController {
 
     //和 woody 聊天
     @GetMapping("/woody-chat")
-    public Flux<String> woodyChat(@RequestParam String userMessage) {
+    public Flux<String> woodyChat(@RequestParam String userMessage) throws Exception {
         User user = userService.currentUser();
         Assistant assistant = assistantService.currentAssistant();
         String memoryId = assistant.getAssistantName() + user.getId();
@@ -105,6 +103,14 @@ public class ChatController {
         Assistant assistant = assistantService.currentAssistant();
         String memoryId = assistant.getAssistantName() + user.getId();
         aiServiceFactory.newConversation(memoryId);
+        return Result.ok();
+    }
+
+
+
+    @GetMapping("/tts")
+    public Result tts() throws Exception {
+        sttService.textToSpeech("我是一只小小小小鸟。想要飞却怎么也飞不高。");
         return Result.ok();
     }
 

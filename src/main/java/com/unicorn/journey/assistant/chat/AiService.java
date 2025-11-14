@@ -22,7 +22,7 @@ public interface AiService  {
     Flux<String> wennieChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
 
     //和 胡迪 聊天
-    @SystemMessage(fromResource = "duffy_prompt.txt")
+    @SystemMessage(fromResource = "/prompt/woody-prompt.txt")
     Flux<String> woodyChat(@MemoryId String memoryId , @UserMessage String userMessage, @V("user") User user);
 
     @SystemMessage(fromResource = "prompt/xiaohongshu-prompt.txt")

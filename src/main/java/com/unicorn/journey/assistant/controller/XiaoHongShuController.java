@@ -39,7 +39,7 @@ public class XiaoHongShuController {
         String memoryId = XIAOHONGSHU + user.getId();
         //Remembering the current logged-in user
         AiService aiService = aiServiceFactory.getXiaoHongShuAiService();
-        String userMessage = "帮我查询小红书的笔记，关键字是\"上海迪士尼\", 并分析并总结有舆情风险的笔记";
+        String userMessage = "帮我查询小红书的笔记，关键字是\"上海迪士尼舆情\", 并分析并总结有舆情风险的笔记";
 //        String userMessage = "你好";
         log.info("Send text:{}, memoryId:{} ", userMessage, memoryId);
         return aiService.xiaoHongShu(memoryId, userMessage);

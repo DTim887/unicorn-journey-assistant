@@ -40,7 +40,7 @@ public class ChatModelConfiguration {
                 .apiKey(deepseekApiKey)
                 .baseUrl(deepseekBaseUrl)
                 .modelName(deepseekModelName)
-                .temperature(0.3)
+                .temperature(0.1)
                 .build();
     }
 
@@ -51,7 +51,7 @@ public class ChatModelConfiguration {
                 .apiKey(deepseekApiKey)
                 .baseUrl(deepseekBaseUrl)
                 .modelName(deepseekModelName) //deepseek 3.1
-                .temperature(0.3)
+                .temperature(0.1)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
@@ -62,7 +62,7 @@ public class ChatModelConfiguration {
                 .apiKey(deepseekApiKey)
                 .baseUrl(deepseekBaseUrl)
                 .modelName(deepseekModelName) //deepseek 3.1
-                .temperature(0.3)
+                .temperature(0.1)
                 .listeners(List.of(customChatModelListener))
                 .build();
     }
