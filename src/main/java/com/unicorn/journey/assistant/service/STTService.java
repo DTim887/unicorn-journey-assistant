@@ -41,7 +41,11 @@ public class STTService {
     @Value("${doubao.voice.endpoint}")
     private String voiceEndpoint;
 
-    private static final String VOICE = "zh_male_zhubajie_mars_bigtts";
+    // 可配置
+    @Value("${server.voice.output.path:/static/voice/}")
+    private String voiceOutputPath;
+
+    private static final String VOICE = "ICL_zh_female_jinglingxiangdao_1beb294a9e3e_tob";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -69,14 +73,19 @@ public class STTService {
         return sstResponse.getResult().getText();
     }
 
-    public void textToSpeech(String text) throws Exception {
-
+    /**
+     * 文本转语音并保存到服务器
+     * @param text 要转换的文本
+     * @return 音频文件的访问路径
+     */
+    public String textToSpeechAndSave(String text) throws Exception {
         // Set request headers
         Map<String, String> headers = Map.of(
                 "X-Api-App-Key", appId,
                 "X-Api-Access-Key", accessToken,
                 "X-Api-Resource-Id", voiceToResourceId(VOICE),
-                "X-Api-Connect-Id", UUID.randomUUID().toString());
+                "X-Api-Connect-Id", UUID.randomUUID().toString(),
+                "X-Control-Require-Usage-Tokens-Return", "*");
 
         // Create WebSocket client
         SpeechWebSocketClient client = new SpeechWebSocketClient(new URI(voiceEndpoint), headers);
@@ -130,10 +139,27 @@ public class STTService {
                 throw new RuntimeException("No audio data received");
             }
 
-            // Save audio file
-            String fileName = String.format("%s.%s", VOICE, "wav");
-            Files.write(new File(fileName).toPath(), audioStream.toByteArray());
-            log.info("Audio saved to file: {}", fileName);
+            // 生成文件名（使用时间戳 + UUID）
+            String fileName = String.format("voice_%s_%s.%s", 
+                    System.currentTimeMillis(), 
+                    UUID.randomUUID().toString().substring(0, 8),
+                    "wav");
+            
+            // 确保目录存在 - 使用系统临时目录或项目目录下的voice文件夹
+            String voiceDir = System.getProperty("user.dir") + File.separator + "voice";
+            File outputDir = new File(voiceDir);
+            if (!outputDir.exists()) {
+                outputDir.mkdirs();
+                log.info("[语音文件] 创建语音目录: {}", outputDir.getAbsolutePath());
+            }
+            
+            // 保存音频文件
+            File audioFile = new File(outputDir, fileName);
+            Files.write(audioFile.toPath(), audioStream.toByteArray());
+            log.info("[语音文件] 音频文件已保存: {}", audioFile.getAbsolutePath());
+            
+            // 返回访问路径（只返回相对路径）
+            return "/voice/" + fileName;
         } finally {
             client.closeBlocking();
         }

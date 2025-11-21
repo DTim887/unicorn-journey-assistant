@@ -110,7 +110,7 @@ public class ChatController {
 
     @GetMapping("/tts")
     public Result tts() throws Exception {
-        sttService.textToSpeech("我是一只小小小小鸟。想要飞却怎么也飞不高。");
+        sttService.textToSpeechAndSave("我是一只小小小小鸟。想要飞却怎么也飞不高。");
         return Result.ok();
     }
 

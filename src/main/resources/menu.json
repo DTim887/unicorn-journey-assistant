@@ -1,0 +1,182 @@
+[
+  {
+    "menuId": 1,
+    "name": "清蒸鲈鱼",
+    "category": "中式",
+    "flavors": ["清淡", "鲜"],
+    "image": "/images/menu/steamed_sea_bass.jpg",
+    "price": 68.0,
+    "description": "新鲜鲈鱼清蒸，保留原味"
+  },
+  {
+    "menuId": 2,
+    "name": "剁椒鱼头",
+    "category": "中式",
+    "flavors": ["辣", "鲜"],
+    "image": "/images/menu/fish_head_with_chopped_chili.jpg",
+    "price": 68.0,
+    "description": "湘菜经典，鱼肉鲜嫩，微辣或免辣可备注"
+  },
+  {
+    "menuId": 3,
+    "name": "蒜蓉西兰花",
+    "category": "中式",
+    "flavors": ["清淡", "蒜香"],
+    "image": "/images/menu/garlic_broccoli.webp",
+    "price": 28.0,
+    "description": "清爽健康的时蔬"
+  },
+  {
+    "menuId": 4,
+    "name": "白灼虾",
+    "category": "中式",
+    "flavors": ["鲜", "清淡"],
+    "image": "/images/menu/boiled_shrimp.webp",
+    "price": 88.0,
+    "description": "新鲜大虾白灼，原汁原味"
+  },
+  {
+    "menuId": 5,
+    "name": "宫保鸡丁",
+    "category": "中式",
+    "flavors": ["辣", "甜", "咸"],
+    "image": "/images/menu/kung_pao_chicken.jpeg",
+    "price": 48.0,
+    "description": "川菜经典，鸡肉嫩滑，花生香脆"
+  },
+  {
+    "menuId": 6,
+    "name": "糖醋里脊",
+    "category": "中式",
+    "flavors": ["酸", "甜"],
+    "image": "/images/menu/sweet_sour_pork.jpeg",
+    "price": 52.0,
+    "description": "外酥里嫩，酸甜开胃"
+  },
+  {
+    "menuId": 7,
+    "name": "麻婆豆腐",
+    "category": "中式",
+    "flavors": ["辣", "麻"],
+    "image": "/images/menu/mapo_tofu.webp",
+    "price": 32.0,
+    "description": "川菜经典，麻辣鲜香"
+  },
+  {
+    "menuId": 8,
+    "name": "红烧肉",
+    "category": "中式",
+    "flavors": ["甜", "咸"],
+    "image": "/images/menu/braised_pork_belly.jpg",
+    "price": 58.0,
+    "description": "肥而不腻，入口即化"
+  },
+  {
+    "menuId": 9,
+    "name": "酸菜鱼",
+    "category": "中式",
+    "flavors": ["酸", "辣"],
+    "image": "/images/menu/pickled_fish.jpeg",
+    "price": 78.0,
+    "description": "鱼肉鲜嫩，汤底酸爽"
+  },
+  {
+    "menuId": 10,
+    "name": "水煮牛肉",
+    "category": "中式",
+    "flavors": ["辣", "麻"],
+    "image": "/images/menu/boiled_beef.jpeg",
+    "price": 68.0,
+    "description": "川菜经典，牛肉嫩滑，汤汁麻辣"
+  },
+  {
+    "menuId": 11,
+    "name": "西湖醋鱼",
+    "category": "中式",
+    "flavors": ["酸", "甜"],
+    "image": "/images/menu/west_lake_fish.jpeg",
+    "price": 88.0,
+    "description": "杭州名菜，鱼肉细嫩，酸甜可口"
+  },
+  {
+    "menuId": 12,
+    "name": "东坡肉",
+    "category": "中式",
+    "flavors": ["甜", "咸"],
+    "image": "/images/menu/dongpo_pork.png",
+    "price": 68.0,
+    "description": "色泽红亮，酥烂而形不碎"
+  },
+  {
+    "menuId": 13,
+    "name": "北京烤鸭",
+    "category": "中式",
+    "flavors": ["咸", "香"],
+    "image": "/images/menu/peking_duck.webp",
+    "price": 198.0,
+    "description": "皮脆肉嫩，京城名菜"
+  },
+  {
+    "menuId": 14,
+    "name": "菲力牛排",
+    "category": "西式",
+    "flavors": ["鲜", "香"],
+    "image": "/images/menu/filet_mignon.jpeg",
+    "price": 128.0,
+    "description": "顶级牛柳，肉质细嫩"
+  },
+  {
+    "menuId": 15,
+    "name": "意大利面",
+    "category": "西式",
+    "flavors": ["咸", "香"],
+    "image": "/images/menu/spaghetti.jpeg",
+    "price": 58.0,
+    "description": "经典番茄肉酱意面"
+  },
+  {
+    "menuId": 16,
+    "name": "凯撒沙拉",
+    "category": "西式",
+    "flavors": ["清淡", "酸"],
+    "image": "/images/menu/caesar_salad.jpg",
+    "price": 38.0,
+    "description": "新鲜蔬菜配凯撒酱"
+  },
+  {
+    "menuId": 17,
+    "name": "奶油蘑菇汤",
+    "category": "西式",
+    "flavors": ["奶香", "清淡"],
+    "image": "/images/menu/mushroom_soup.jpeg",
+    "price": 28.0,
+    "description": "浓郁奶香，蘑菇鲜美"
+  },
+  {
+    "menuId": 18,
+    "name": "海鲜披萨",
+    "category": "西式",
+    "flavors": ["咸", "鲜"],
+    "image": "/images/menu/seafood_pizza.png",
+    "price": 88.0,
+    "description": "新鲜海鲜配芝士"
+  },
+  {
+    "menuId": 19,
+    "name": "烤羊排",
+    "category": "西式",
+    "flavors": ["咸", "香"],
+    "image": "/images/menu/lamb_chops.jpeg",
+    "price": 138.0,
+    "description": "香嫩多汁，配迷迭香"
+  },
+  {
+    "menuId": 20,
+    "name": "法式焕蜗牛",
+    "category": "西式",
+    "flavors": ["蒜香", "咸"],
+    "image": "/images/menu/escargot.webp",
+    "price": 78.0,
+    "description": "法国传统美食"
+  }
+]

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>上海迪士尼乐园酒店AI助手</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#2525f4",
+            "background-light": "#f5f5f8",
+            "background-dark": "#101022",
+          },
+          fontFamily: {
+            "display": ["Spline Sans", "sans-serif"]
+          },
+          borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-background-light font-display">
+  <div class="flex h-screen w-full flex-col">
+    <header class="flex h-20 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-8">
+      <div class="flex items-center gap-4">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <span class="material-symbols-outlined !text-3xl">castle</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-[#111118]">上海迪士尼乐园酒店</h1>
+          <p class="text-sm text-[#60608a]">AI 助手门户</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <button class="flex h-10 w-10 items-center justify-center rounded-full text-[#60608a] hover:bg-gray-100">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <div class="h-12 w-12 rounded-full bg-cover bg-center" data-alt="User avatar image"
+          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBs5zbBk3Q4qJzAqUCqZngB2wUauBTZrHzlHe3KhBL8cKq79Alz1DhgiwnTkHLFt9ZbhImJeRN7-bLtlgt_1HleXLU5keCqU_rD5ILHUJVq9xKWCSbwYG5na2oVTeynrCRHqOcx37KEsTaig7FW26NKicekK0g_RFY63YS71vdYjb52Qfv-xYkV2n8xXl3JY5MxcI9daJIIVazCulhusrKiKnjibFW24yAaRK8Kz_WiPeYt9zAbKo4vH-VmL6pkH9t5xkGd1QuD69K5')">
+        </div>
+      </div>
+    </header>
+    <main class="grid flex-1 grid-cols-12 gap-8 overflow-hidden p-8">
+      <div class="col-span-5 flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div id="chatMessages" class="flex-1 space-y-4 overflow-y-auto p-4">
+          <div class="flex items-end gap-3 p-4">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+              data-alt="AI Assistant's avatar, a stylized castle icon"
+              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwfcue_kvY36uqGcp0ex6j5cgOH7vN1z63VQPZWxcno14jeQCGon_gqcGkl-TGMrOlJ_klqyadi845rCrwzroqvE_obchgwqPikYi_EiBA4lSY0WWE0rHoML9RDbJLmXOh5M4UFCMqWiDf6xqnGVVy4Gfz3ORoUwUBLiC8T9NqzROs9CdIoebsmD5TPsDNnbebTusOS4xc5yfN-MkBdxngBcIdOfCrY3Q6oF-yr8NV6dbdeYK_-QKi635JO5p3WctvkBmIQmIC9dAZ");'>
+            </div>
+            <div class="flex flex-1 flex-col gap-1 items-start">
+              <p class="text-[#60608a] text-[13px] font-normal leading-normal max-w-[360px]">AI 助手</p>
+              <p
+                class="text-base font-normal leading-normal flex max-w-[360px] rounded-xl px-4 py-3 bg-[#f0f0f5] text-[#111118]">
+                欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或叫醒服务吗？
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-200 bg-white">
+          <div class="flex items-center px-4 py-3 gap-3 @container">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 shrink-0"
+              data-alt="User's avatar, abstract gradient"
+              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2_88N-wv3VGvAFPOf2t89aadNNJUzjbXR_XCMzR9pwv_P5P32_nVXmDoRWfQDytrSHBEiJpc4kNZmos3-KLlW8-ApDgv48o5ytdMjAJHPAGML3QBmwv3vvUfeV1fnpVUJXhI1_04I9fi4jgyofbj3PGSX3EgzoZKJZ6ofKEC-HzHMnPnINcW3PPiszyNmousDrFnvTH3gfyrKQOpGpZYieN4u3ejhAmFLN0gyGw2M4BZCKLAVNi_1URX-oEjq_vJzNamR3oaA8_QI");'>
+            </div>
+            <label class="flex flex-col min-w-40 h-12 flex-1">
+              <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+                <input id="userInput"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#111118] focus:outline-0 focus:ring-0 border-none bg-[#f0f0f5] focus:border-none h-full placeholder:text-[#60608a] px-4 rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal"
+                  placeholder="询问订餐或叫醒服务..." />
+                <div
+                  class="flex border-none bg-[#f0f0f5] items-center justify-center pr-4 rounded-r-xl border-l-0 !pr-2">
+                  <div class="flex items-center gap-4 justify-end">
+                    <div class="flex items-center gap-1">
+                      <button id="voiceBtn" class="flex items-center justify-center p-1.5 text-[#60608a] hover:text-primary" onclick="toggleVoiceRecording()">
+                        <span class="material-symbols-outlined">mic</span>
+                      </button>
+                      <button class="flex items-center justify-center p-1.5 text-[#60608a] hover:text-primary" onclick="sendMessage()">
+                        <span class="material-symbols-outlined">send</span>
+                      </button>
+                    </div>
+                    <button onclick="sendMessage()"
+                      class="min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 px-4 bg-primary text-white text-sm font-medium leading-normal hidden @[480px]:block">
+                      <span class="truncate">发送</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div id="detailPanel" class="col-span-7 flex flex-col gap-6 overflow-y-auto">
+        <!-- 动态内容会添加到这里 -->
+      </div>
+    </main>
+  </div>
+
+  <style>
+    /* 语音消息样式 */
+    .voice-message {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #f0f7ff;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      max-width: 360px;
+    }
+
+    .voice-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .voice-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .voice-duration {
+      font-size: 12px;
+      color: #60608a;
+      margin-bottom: 2px;
+    }
+
+    .voice-text {
+      font-size: 13px;
+      color: #111118;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .voice-playing {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* 录音状态 */
+    #voiceBtn.recording {
+      background-color: #ef4444;
+      color: white;
+      border-radius: 50%;
+      animation: recording-pulse 1.5s infinite;
+    }
+
+    @keyframes recording-pulse {
+      0%, 100% { 
+        background-color: #ef4444;
+        transform: scale(1);
+      }
+      50% { 
+        background-color: #dc2626;
+        transform: scale(1.1);
+      }
+    }
+    
+    /* 叫醒弹窗动画 */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+    
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* 右侧菜单区域样式 */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .menu-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .menu-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* 选中状态样式 */
+    .menu-card.border-2 {
+      box-shadow: 0 0 0 2px #2525f4;
+    }
+
+    .menu-card.border-2::after {
+      content: '✔';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      background: #2525f4;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .loading-spinner {
+      border: 2px solid #f3f4f6;
+      border-top: 2px solid #2525f4;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    const API_BASE_URL = '/journey-assistant/hotel';
+    const userId = '1';
+    let sessionId = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let currentAudio = null;
+    let selectedMenuItems = []; // 存储用户选择的菜品
+
+    // 初始化 - 支持回车发送
+    document.addEventListener('DOMContentLoaded', function() {
+      const input = document.getElementById('userInput');
+      if (input) {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+      }
+    });
+
+    // 发送文本消息
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // 添加用户消息
+      addUserMessage(message);
+      input.value = '';
+      
+      // 显示加载状态
+      const loadingDiv = addAssistantMessage('正在思考...');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId,
+            message: message,
+            sessionId: sessionId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('请求失败');
+        }
+
+        loadingDiv.remove();
+        await processSSEResponse(response);
+
+      } catch (error) {
+        console.error('发送消息失败', error);
+        loadingDiv.remove();
+        addAssistantMessage('抱歉，发送消息失败，请重试。');
+      }
+    }
+
+    // 语音录制切换
+    async function toggleVoiceRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        await startRecording();
+      }
+    }
+
+    // 开始录音
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          await sendVoiceMessage(audioBlob);
+          
+          // 停止所有音轨
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        
+        // 更新UI
+        const voiceBtn = document.getElementById('voiceBtn');
+        voiceBtn.classList.add('recording');
+        voiceBtn.querySelector('.material-symbols-outlined').textContent = 'stop';
+
+        console.log('开始录音...');
+      } catch (error) {
+        console.error('无法访问麦克风:', error);
+        alert('无法访问麦克风，请检查权限设置');
+      }
+    }
+
+    // 停止录音
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        // 更新UI
+        const voiceBtn = document.getElementById('voiceBtn');
+        voiceBtn.classList.remove('recording');
+        voiceBtn.querySelector('.material-symbols-outlined').textContent = 'mic';
+        
+        console.log('停止录音...');
+      }
+    }
+
+    // 发送语音消息
+    async function sendVoiceMessage(audioBlob) {
+      const loadingDiv = addAssistantMessage('正在识别语音...');
+      
+      try {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+        formData.append('userId', userId);
+        if (sessionId) {
+          formData.append('sessionId', sessionId);
+        }
+
+        const response = await fetch(`${API_BASE_URL}/voice-chat`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('语音识别失败');
+        }
+
+        loadingDiv.remove();
+        await processSSEResponse(response);
+
+      } catch (error) {
+        console.error('语音发送失败', error);
+        loadingDiv.remove();
+        addAssistantMessage('抱歉，语音识别失败，请重试。');
+      }
+    }
+
+    // 处理SSE响应流
+    async function processSSEResponse(response) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        
+        // 按双换行符分割SSE消息
+        const messages = buffer.split('\n\n');
+        buffer = messages.pop() || '';
+        
+        for (const message of messages) {
+          if (!message.trim()) continue;
+          
+          console.log('[SSE] 原始消息:', message);
+          
+          const lines = message.split('\n');
+          let eventType = 'message';
+          let data = null;
+          
+          for (const line of lines) {
+            // 兼容event:和data:前缀后有无空格
+            if (line.startsWith('event:') || line.startsWith('event: ')) {
+              eventType = line.substring(line.indexOf(':') + 1).trim();
+            } else if (line.startsWith('data:') || line.startsWith('data: ')) {
+              const dataStr = line.substring(line.indexOf(':') + 1).trim();
+              try {
+                data = JSON.parse(dataStr);
+              } catch (e) {
+                console.error('[SSE] JSON解析失败:', dataStr, e);
+                data = dataStr;
+              }
+            }
+          }
+          
+          if (data) {
+            handleSSEEvent(eventType, data);
+          }
+        }
+      }
+    }
+
+    // 处理SSE事件
+    function handleSSEEvent(eventType, data) {
+      console.log('[SSE] 事件类型:', eventType, '数据长度:', JSON.stringify(data).length, '数据:', JSON.stringify(data).substring(0, 300));
+      
+      if (eventType === 'session_created') {
+        sessionId = data.sessionId;
+        console.log('[SSE] 会话已创建:', sessionId);
+      } else if (eventType === 'message') {
+        // 兼容降级处理：可能包含content和nodeName字段
+        if (data.content) {
+          addAssistantMessage(data.content);
+        } else if (typeof data === 'string') {
+          addAssistantMessage(data);
+        } else {
+          console.warn('[SSE] message事件但content为空:', data);
+        }
+      } else if (eventType === 'structured_data') {
+        handleStructuredData(data);
+      } else if (eventType === 'confirm_menu') {
+        handleConfirmMenu(data);
+      } else if (eventType === 'voice') {
+        addVoiceMessage(data);
+      } else if (eventType === 'wakeup_alert') {
+        // 叫醒提醒事件
+        handleWakeUpAlert(data);
+      } else if (eventType === 'error') {
+        const errorMsg = data.error || data.message || '发生错误';
+        addAssistantMessage('❌ ' + errorMsg);
+      } else {
+        console.warn('[SSE] 未知事件类型:', eventType, data);
+      }
+    }
+
+    // 处理结构化数据
+    function handleStructuredData(jsonData) {
+      console.log('[SSE] 处理结构化数据:', jsonData);
+      const { type, data } = jsonData;
+      
+      if (type === 'MENU') {
+        // 存储当前菜单数据
+        window.currentMenuItems = data;
+        displayMenu(data);
+      } else if (type === 'ORDER') {
+        displayOrder(data);
+      } else if (type === 'WAKE_UP') {
+        displayWakeUp(data);
+      } else {
+        console.warn('[SSE] 未知结构化数据类型:', type);
+      }
+    }
+
+    // 处理确认菜单
+    function handleConfirmMenu(jsonData) {
+      console.log('[SSE] 处理确认菜单 - 原始数据:', jsonData);
+      console.log('[SSE] 处理确认菜单 - 数据类型:', typeof jsonData);
+      console.log('[SSE] 处理确认菜单 - JSON字符串:', JSON.stringify(jsonData, null, 2));
+      
+      const { data } = jsonData;
+      console.log('[SSE] 提取的data字段:', data);
+      console.log('[SSE] data是否为数组:', Array.isArray(data));
+      console.log('[SSE] data长度:', data ? data.length : 'null/undefined');
+      
+      if (data && Array.isArray(data)) {
+        console.log('[SSE] ✅ 确认菜单数据有效，菜品数量:', data.length);
+        displayConfirmMenu(data);
+      } else {
+        console.error('[SSE] ❌ 确认菜单数据格式错误:', jsonData);
+        console.error('[SSE] ❌ 期望data为数组，实际:', typeof data, data);
+      }
+    }
+
+    // 显示菜单
+    function displayMenu(menuItems) {
+      console.log('[显示] 菜单列表，共', menuItems.length, '个菜品');
+      const detailPanel = document.getElementById('detailPanel');
+      
+      // 检查是否存在前一个菜单容器，如果有则移除
+      const existingMenu = detailPanel.querySelector('[data-menu-id="menu-container"]');
+      if (existingMenu) {
+        existingMenu.remove();
+      }
+      
+      let html = '<div class="p-4 bg-white rounded-lg border border-gray-200" data-menu-id="menu-container">';
+      html += '<h2 class="text-xl font-bold text-[#111118] mb-4">🍽️ 菜单推荐</h2>';
+      
+      // 显示已选菜品提示
+      if (selectedMenuItems.length > 0) {
+        html += `
+          <div class="mb-4 p-3 bg-primary/10 rounded-lg">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-700">已选 ${selectedMenuItems.length} 个菜品</span>
+              <button onclick="confirmSelectedItems()" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium hover:bg-primary/90">
+                确认选择
+              </button>
+            </div>
+          </div>
+        `;
+      }
+      
+      html += '<div class="menu-grid">';
+      
+      menuItems.forEach(item => {
+        const imagePath = item.image ? `/journey-assistant${item.image}` : 'https://via.placeholder.com/300x200?text=No+Image';
+        const isSelected = selectedMenuItems.some(selected => selected.menuId === item.menuId);
+        
+        html += `
+          <div class="menu-card ${isSelected ? 'border-2 border-primary' : ''}">
+            <div class="aspect-video w-full overflow-hidden">
+              <img src="${imagePath}" class="w-full h-full object-cover" alt="${item.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'" />
+            </div>
+            <div class="p-4">
+              <h3 class="font-bold text-gray-800 mb-2">${item.name}</h3>
+              <p class="text-sm text-gray-500 mb-3">${item.description || ''}</p>
+              ${item.flavors && item.flavors.length > 0 ? `<p class="text-xs text-gray-400 mb-3">口味：${item.flavors.join(', ')}</p>` : ''}
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-bold text-primary">¥${item.price}</span>
+                <button 
+                  onclick="toggleMenuItem(${item.menuId}, '${item.name.replace(/'/g, "\\'")}')"
+                  class="px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    isSelected 
+                      ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+                      : 'bg-primary/10 text-primary hover:bg-primary hover:text-white'
+                  }">
+                  ${isSelected ? '移除' : '添加'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+      // 追加菜单而不是覆盖整个面板
+      const menuContainer = document.createElement('div');
+      menuContainer.innerHTML = html;
+      detailPanel.appendChild(menuContainer.firstElementChild);
+    }
+
+    // 显示确认菜单
+    function displayConfirmMenu(menuItems) {
+      console.log('[显示] 确认菜单，共', menuItems.length, '个菜品');
+      const detailPanel = document.getElementById('detailPanel');
+      
+      // 检查是否存在前一个确认菜单容器，如果有则移除
+      const existingConfirmMenu = detailPanel.querySelector('[data-confirm-id="confirm-menu-container"]');
+      if (existingConfirmMenu) {
+        existingConfirmMenu.remove();
+      }
+      
+      let total = 0;
+      let html = '<div class="p-4 bg-white rounded-lg border border-gray-200" data-confirm-id="confirm-menu-container">';
+      html += '<h2 class="text-xl font-bold text-[#111118] mb-4">📋 确认订单</h2>';
+      html += '<div class="space-y-3">';
+      
+      menuItems.forEach(item => {
+        total += item.price;
+        const imagePath = item.image ? `/journey-assistant${item.image}` : '';
+        html += `
+          <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+            ${item.image ? `<img src="${imagePath}" class="w-16 h-16 rounded-lg object-cover" alt="${item.name}" onerror="this.style.display='none'" />` : ''}
+            <div class="flex-1">
+              <div class="font-semibold text-gray-800">${item.name}</div>
+              ${item.description ? `<div class="text-sm text-gray-500">${item.description}</div>` : ''}
+              ${item.flavors && item.flavors.length > 0 ? `<div class="text-xs text-gray-400 mt-1">口味：${item.flavors.join(', ')}</div>` : ''}
+            </div>
+            <div class="font-bold text-primary">¥${item.price}</div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      html += `
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold">总计</span>
+            <span class="text-2xl font-bold text-primary">¥${total}</span>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="modifyOrder()" class="flex-1 px-6 py-3 border border-gray-300 rounded-full text-gray-700 font-medium hover:bg-gray-50">修改订单</button>
+            <button onclick="confirmOrder()" class="flex-1 px-6 py-3 bg-primary rounded-full text-white font-medium hover:bg-primary/90">确认下单</button>
+          </div>
+        </div>
+      `;
+      html += '</div>';
+      
+      // 追加确认菜单而不是覆盖整个面板
+      const confirmMenuContainer = document.createElement('div');
+      confirmMenuContainer.innerHTML = html;
+      detailPanel.appendChild(confirmMenuContainer.firstElementChild);
+      
+      // 滚动到底部
+      setTimeout(() => {
+        detailPanel.scrollTop = detailPanel.scrollHeight;
+      }, 100);
+    }
+
+    // 显示订单
+    function displayOrder(order) {
+      console.log('[显示] 订单详情:', order.orderId);
+      const detailPanel = document.getElementById('detailPanel');
+      
+      let html = '<div class="p-4 bg-white rounded-lg border border-gray-200">';
+      html += '<h2 class="text-xl font-bold text-[#111118] mb-4">✅ 订单已确认</h2>';
+      html += `
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <div class="text-sm text-gray-600">订单号</div>
+              <div class="font-semibold text-gray-800">${order.orderId}</div>
+            </div>
+            <div class="px-3 py-1 bg-green-500 text-white rounded-full text-sm">已确认</div>
+          </div>
+        </div>
+      `;
+      
+      html += '<div class="space-y-2">';
+      order.items.forEach(item => {
+        html += `
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-gray-800">${item.name}</span>
+            <span class="font-semibold text-gray-800">¥${item.price}</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      html += `
+        <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+          <span class="text-lg font-semibold">总计</span>
+          <span class="text-2xl font-bold text-primary">¥${order.totalPrice}</span>
+        </div>
+      `;
+      html += '</div>';
+      
+      // 追加订单而不是覆盖整个面板
+      const orderContainer = document.createElement('div');
+      orderContainer.innerHTML = html;
+      detailPanel.appendChild(orderContainer.firstElementChild);
+      
+      // 滚动到底部
+      setTimeout(() => {
+        detailPanel.scrollTop = detailPanel.scrollHeight;
+      }, 100);
+    }
+
+    // 显示叫醒服务
+    function displayWakeUp(wakeUpData) {
+      console.log('[显示] 叫醒服务:', wakeUpData);
+      const detailPanel = document.getElementById('detailPanel');
+      
+      let html = '<div class="p-4 bg-white rounded-lg border border-gray-200">';
+      html += '<h2 class="text-xl font-bold text-[#111118] mb-4">⏰ 叫醒服务</h2>';
+      
+      html += `
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="material-symbols-outlined text-primary text-3xl">alarm</span>
+            <div>
+              <div class="text-sm text-gray-600">叫醒时间</div>
+              <div class="text-2xl font-bold text-primary">${wakeUpData.wakeUpTime || wakeUpData.time}</div>
+            </div>
+          </div>
+          ${wakeUpData.wakeUpId ? `
+            <div class="mt-2 pt-2 border-t border-blue-200">
+              <div class="text-xs text-gray-600">服务编号</div>
+              <div class="text-sm font-mono text-gray-800">${wakeUpData.wakeUpId}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      
+      html += `
+        <div class="p-3 bg-gray-50 rounded-lg">
+          <div class="text-sm text-gray-600 mb-1">✓ 叫醒服务已设置成功</div>
+          <div class="text-xs text-gray-500">我们将在指定时间给您致电提醒</div>
+        </div>
+      `;
+      html += '</div>';
+      
+      // 追加叫醒服务而不是覆盖整个面板
+      const wakeUpContainer = document.createElement('div');
+      wakeUpContainer.innerHTML = html;
+      detailPanel.appendChild(wakeUpContainer.firstElementChild);
+      
+      // 滚动到底部
+      setTimeout(() => {
+        detailPanel.scrollTop = detailPanel.scrollHeight;
+      }, 100);
+    }
+
+    // 修改订单
+    function modifyOrder() {
+      const input = document.getElementById('userInput');
+      input.value = '我想修改订单';
+      input.focus();
+    }
+
+    // 确认订单
+    function confirmOrder() {
+      const input = document.getElementById('userInput');
+      input.value = '确认下单';
+      sendMessage();
+    }
+
+    // 切换菜品选择状态
+    function toggleMenuItem(menuId, menuName) {
+      const index = selectedMenuItems.findIndex(item => item.menuId === menuId);
+      
+      if (index > -1) {
+        // 移除菜品
+        selectedMenuItems.splice(index, 1);
+        console.log('[菜品选择] 移除:', menuName);
+      } else {
+        // 添加菜品
+        selectedMenuItems.push({ menuId, name: menuName });
+        console.log('[菜品选择] 添加:', menuName);
+      }
+      
+      console.log('[菜品选择] 当前已选:', selectedMenuItems.map(item => item.name).join(', '));
+      
+      // 重新渲染菜单（保持当前显示的菜单数据）
+      // 注：这里需要存储当前菜单数据
+      if (window.currentMenuItems) {
+        displayMenu(window.currentMenuItems);
+      }
+    }
+
+    // 确认选择的菜品
+    async function confirmSelectedItems() {
+      if (selectedMenuItems.length === 0) {
+        addAssistantMessage('请先选择菜品哦！');
+        return;
+      }
+      
+      // 生成菜品名称列表
+      const dishNames = selectedMenuItems.map(item => item.name).join('、');
+      const message = `我要点${dishNames}`;
+      
+      console.log('[确认选择] 发送消息:', message);
+      
+      // 添加用户消息
+      addUserMessage(message);
+      
+      // 显示加载状态
+      const loadingDiv = addAssistantMessage('正在处理您的点餐...');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId,
+            message: message,
+            sessionId: sessionId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('请求失败');
+        }
+
+        loadingDiv.remove();
+        await processSSEResponse(response);
+        
+        // 清空选择
+        selectedMenuItems = [];
+
+      } catch (error) {
+        console.error('发送消息失败', error);
+        loadingDiv.remove();
+        addAssistantMessage('抱歉，发送消息失败，请重试。');
+      }
+    }
+
+    // 添加用户消息
+    function addUserMessage(content) {
+      const messagesDiv = document.getElementById('chatMessages');
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'flex items-end gap-3 p-4 justify-end';
+      messageDiv.innerHTML = `
+        <div class="flex flex-1 flex-col gap-1 items-end">
+          <p class="text-[#60608a] text-[13px] font-normal leading-normal max-w-[360px] text-right">用户</p>
+          <p class="text-base font-normal leading-normal flex max-w-[360px] rounded-xl px-4 py-3 bg-primary text-white">
+            ${escapeHtml(content)}
+          </p>
+        </div>
+        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBLjVFrlbGmI-sPMqo3NkLkKTtMCG01RZLPEJGwmAo-iwiYgbM2ua2iWnYiyktgjDyTCTC8xiuY4e51ObZe_H4YgzARy7_WB16V0n1VtzCQebZu1lxmP24vg7bZgJksp-vnn0QQRRIAUvDt0bxYBEE_GQa9RkPMrh1ZjJiFY-bIbKReD2BrX5t7U87KpyCgmPcP-lz9J7fwkMop_UFZKOFF-mBOCqyVkirRW_05wAefIFBpEyp7zoNxbtKux_HWVlv0-bVV6vSd3Qr");'>
+        </div>
+      `;
+      
+      messagesDiv.appendChild(messageDiv);
+      scrollToBottom();
+      
+      return messageDiv;
+    }
+
+    // 添加助手消息
+    function addAssistantMessage(content) {
+      const messagesDiv = document.getElementById('chatMessages');
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'flex items-end gap-3 p-4';
+      messageDiv.innerHTML = `
+        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwfcue_kvY36uqGcp0ex6j5cgOH7vN1z63VQPZWxcno14jeQCGon_gqcGkl-TGMrOlJ_klqyadi845rCrwzroqvE_obchgwqPikYi_EiBA4lSY0WWE0rHoML9RDbJLmXOh5M4UFCMqWiDf6xqnGVVy4Gfz3ORoUwUBLiC8T9NqzROs9CdIoebsmD5TPsDNnbebTusOS4xc5yfN-MkBdxngBcIdOfCrY3Q6oF-yr8NV6dbdeYK_-QKi635JO5p3WctvkBmIQmIC9dAZ");'>
+        </div>
+        <div class="flex flex-1 flex-col gap-1 items-start">
+          <p class="text-[#60608a] text-[13px] font-normal leading-normal max-w-[360px]">AI 助手</p>
+          <p class="text-base font-normal leading-normal flex max-w-[360px] rounded-xl px-4 py-3 bg-[#f0f0f5] text-[#111118]">
+            ${escapeHtml(content)}
+          </p>
+        </div>
+      `;
+      
+      messagesDiv.appendChild(messageDiv);
+      scrollToBottom();
+      
+      return messageDiv;
+    }
+
+    // 添加语音消息
+    function addVoiceMessage(voiceData) {
+      const messagesDiv = document.getElementById('chatMessages');
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'flex items-end gap-3 p-4';
+      
+      const voiceHtml = `
+        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwfcue_kvY36uqGcp0ex6j5cgOH7vN1z63VQPZWxcno14jeQCGon_gqcGkl-TGMrOlJ_klqyadi845rCrwzroqvE_obchgwqPikYi_EiBA4lSY0WWE0rHoML9RDbJLmXOh5M4UFCMqWiDf6xqnGVVy4Gfz3ORoUwUBLiC8T9NqzROs9CdIoebsmD5TPsDNnbebTusOS4xc5yfN-MkBdxngBcIdOfCrY3Q6oF-yr8NV6dbdeYK_-QKi635JO5p3WctvkBmIQmIC9dAZ");'>
+        </div>
+        <div class="flex flex-1 flex-col gap-1 items-start">
+          <p class="text-[#60608a] text-[13px] font-normal leading-normal max-w-[360px]">AI 助手</p>
+          <div class="voice-message" data-audio-path="${voiceData.audioPath}">
+            <div class="voice-icon">
+              <span class="play-icon">▶️</span>
+            </div>
+            <div class="voice-info">
+              <div class="voice-duration">点击播放</div>
+              <div class="voice-text">${escapeHtml(voiceData.text || '语音消息')}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      messageDiv.innerHTML = voiceHtml;
+      
+      // 添加点击播放事件
+      const voiceElement = messageDiv.querySelector('.voice-message');
+      voiceElement.addEventListener('click', function() {
+        playVoiceMessage(voiceElement, voiceData.audioPath);
+      });
+      
+      messagesDiv.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    // 播放语音消息
+    function playVoiceMessage(voiceDiv, audioPath) {
+      // 停止当前正在播放的音频
+      if (currentAudio && !currentAudio.paused) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        document.querySelectorAll('.voice-playing').forEach(el => {
+          el.classList.remove('voice-playing');
+          const playIcon = el.querySelector('.play-icon');
+          if (playIcon) playIcon.textContent = '▶️';
+        });
+      }
+      
+      // 确保完整的URL路径 - 语音文件直接标準化为 /voice/xxx.wav
+      let fullAudioPath = audioPath;
+      if (!audioPath.startsWith('http')) {
+        // 就算是 /voice/xxx.wav 也要添加 context-path
+        if (!audioPath.startsWith('/journey-assistant')) {
+          if (audioPath.startsWith('/voice')) {
+            fullAudioPath = '/journey-assistant' + audioPath;
+          } else if (audioPath.startsWith('/')) {
+            fullAudioPath = '/journey-assistant' + audioPath;
+          } else {
+            fullAudioPath = '/journey-assistant/voice/' + audioPath;
+          }
+        }
+      }
+      console.log('[VOICE] 原始路径:', audioPath, '最终路径:', fullAudioPath);
+      
+      currentAudio = new Audio(fullAudioPath);
+      const voiceIcon = voiceDiv.querySelector('.voice-icon');
+      const playIcon = voiceDiv.querySelector('.play-icon');
+      
+      voiceIcon.classList.add('voice-playing');
+      playIcon.textContent = '⏸️';
+      
+      currentAudio.play().catch(error => {
+        console.error('播放失败:', error);
+        voiceIcon.classList.remove('voice-playing');
+        playIcon.textContent = '▶️';
+        alert('语音播放失败，请重试');
+      });
+      
+      currentAudio.onended = function() {
+        voiceIcon.classList.remove('voice-playing');
+        playIcon.textContent = '▶️';
+      };
+    }
+
+    // 滚动到底部
+    function scrollToBottom() {
+      const messagesDiv = document.getElementById('chatMessages');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // HTML转义
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // 处理叫醒提醒事件
+    function handleWakeUpAlert(data) {
+      console.log('[WAKEUP-ALERT] ✅ 收到叫醒提醒:', data);
+      
+      const { wakeUpId, wakeUpTime, voicePath, message } = data;
+      
+      // 显示叫醒弹窗
+      showWakeUpModal(message, voicePath);
+      
+      // 自动播放叫醒语音
+      if (voicePath) {
+        setTimeout(() => {
+          playWakeUpVoice(voicePath);
+        }, 500); // 延迟500ms播放，确保弹窗已显示
+      }
+    }
+    
+    // 显示叫醒弹窗
+    function showWakeUpModal(message, voicePath) {
+      // 创建弹窗HTML
+      const modalHTML = `
+        <div id="wakeUpModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="animation: fadeIn 0.3s;">
+          <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl" style="animation: scaleIn 0.3s;">
+            <div class="text-center">
+              <div class="text-6xl mb-4">⏰</div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-4">叫醒服务</h2>
+              <p class="text-lg text-gray-600 mb-6">${message}</p>
+              <div class="flex gap-3">
+                <button onclick="closeWakeUpModal()" class="flex-1 px-6 py-3 bg-gray-200 rounded-full text-gray-700 font-medium hover:bg-gray-300">
+                  稍后提醒
+                </button>
+                <button onclick="confirmWakeUp()" class="flex-1 px-6 py-3 bg-primary rounded-full text-white font-medium hover:bg-primary/90">
+                  我已起床
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 添加到页面
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      console.log('[WAKEUP-ALERT] 叫醒弹窗已显示');
+    }
+    
+    // 关闭叫醒弹窗
+    function closeWakeUpModal() {
+      const modal = document.getElementById('wakeUpModal');
+      if (modal) {
+        modal.style.animation = 'fadeOut 0.3s';
+        setTimeout(() => {
+          modal.remove();
+        }, 300);
+      }
+      
+      // 停止语音
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+    }
+    
+    // 确认起床
+    function confirmWakeUp() {
+      console.log('[WAKEUP-ALERT] 用户确认起床');
+      closeWakeUpModal();
+      addAssistantMessage('✅ 早安！祝您今天有个美好的一天！');
+    }
+    
+    // 播放叫醒语音
+    function playWakeUpVoice(voicePath) {
+      console.log('[WAKEUP-ALERT] 开始播放叫醒语音:', voicePath);
+      
+      // 停止当前播放
+      if (currentAudio) {
+        currentAudio.pause();
+      }
+      
+      // 确保完整的URL路径 - 语音文件直接标準化为 /voice/xxx.wav
+      let fullVoicePath = voicePath;
+      if (!voicePath.startsWith('http')) {
+        if (!voicePath.startsWith('/journey-assistant')) {
+          if (voicePath.startsWith('/voice')) {
+            fullVoicePath = '/journey-assistant' + voicePath;
+          } else if (voicePath.startsWith('/')) {
+            fullVoicePath = '/journey-assistant' + voicePath;
+          } else {
+            fullVoicePath = '/journey-assistant/voice/' + voicePath;
+          }
+        }
+      }
+      console.log('[WAKEUP-ALERT] 原始路径:', voicePath, '最终路径:', fullVoicePath);
+      
+      currentAudio = new Audio(fullVoicePath);
+      currentAudio.volume = 1.0; // 最大音量
+      
+      currentAudio.play().catch(error => {
+        console.error('[WAKEUP-ALERT] 播放失败:', error);
+      });
+      
+      currentAudio.onended = function() {
+        console.log('[WAKEUP-ALERT] 语音播放完成');
+      };
+    }
+  </script>
+</body>
+
+</html>

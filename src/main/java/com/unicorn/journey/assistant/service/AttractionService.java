@@ -30,4 +30,11 @@ public class AttractionService extends BaseService<Attraction> {
     public List<Attraction> retrieveAllAttraction() {
         return this.getAll(Attraction.class);
     }
+    
+    /**
+     * 获取所有景点（非Tool方法，供内部使用）
+     */
+    public List<Attraction> getAllAttractions() {
+        return this.getAll(Attraction.class);
+    }
 }
