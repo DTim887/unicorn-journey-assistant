@@ -8,6 +8,7 @@ import com.unicorn.journey.assistant.hotel.enums.SseEventType;
 import com.unicorn.journey.assistant.hotel.factory.HotelAgentFactory;
 import com.unicorn.journey.assistant.hotel.entity.MenuItem;
 import com.unicorn.journey.assistant.hotel.entity.MenuOrder;
+import com.unicorn.journey.assistant.hotel.entity.SessionContext;
 import com.unicorn.journey.assistant.hotel.utils.SseEventSender;
 import com.unicorn.journey.assistant.service.STTService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,17 +39,14 @@ public class HotelAssistantService {
     private MOAgent moAgent;
     private WakeUpAgent wakeUpAgent;
 
-    // 存储每个会话的当前菜单
-    private final Map<String, List<MenuItem>> sessionMenus = new ConcurrentHashMap<>();
+    // 存储会话上下文（包含菜单、业务类型、SSE等所有会话数据）
+    private final Map<String, SessionContext> sessionContexts = new ConcurrentHashMap<>();
 
     // 存储订单
     private final Map<String, MenuOrder> orders = new ConcurrentHashMap<>();
 
     // 存储叫醒服务 key:wakeUpId
     private final Map<String, WakeUpAssistance> wakeUpAssistanceMap = new ConcurrentHashMap<>();
-
-    // 存储会话ID和SSE对象的映射关系
-    private final Map<String, SseEmitter> sessionEmitters = new ConcurrentHashMap<>();
 
     public HotelAssistantService(HotelAgentFactory hotelAgentFactory,
                                   MenuService menuService,
@@ -93,33 +91,41 @@ public class HotelAssistantService {
     }
 
     /**
-     * 创建新会话并返回SSE对象
+     * 创建新会话并返回会话上下文
      */
-    private SseEmitter createSession(String sessionId) {
+    private SessionContext createSession(String sessionId, String userId) {
         // 创建SSE，60分钟超时
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L);
 
         // 设置超时和完成回调
         emitter.onTimeout(() -> {
             log.info("[SESSION] sessionId: {} 超时，移除SSE连接", sessionId);
-            sessionEmitters.remove(sessionId);
+            sessionContexts.remove(sessionId);
         });
 
         emitter.onCompletion(() -> {
             log.info("[SESSION] sessionId: {} 完成，移除SSE连接", sessionId);
-            sessionEmitters.remove(sessionId);
+            sessionContexts.remove(sessionId);
         });
 
         emitter.onError((e) -> {
             log.error("[SESSION] sessionId: {} 错误，移除SSE连接: {}", sessionId, e.getMessage());
-            sessionEmitters.remove(sessionId);
+            sessionContexts.remove(sessionId);
         });
 
-        // 存储会话和SSE对象的映射
-        sessionEmitters.put(sessionId, emitter);
+        // 创建并存储会话上下文
+        SessionContext context = SessionContext.builder()
+                .sessionId(sessionId)
+                .userId(userId)
+                .createTime(LocalDateTime.now())
+                .sseEmitter(emitter)
+                .lastDataType("")
+                .build();
+
+        sessionContexts.put(sessionId, context);
         log.info("[SESSION] 创建新会话: sessionId={}", sessionId);
 
-        return emitter;
+        return context;
     }
 
     /**
@@ -127,21 +133,21 @@ public class HotelAssistantService {
      * 如果sessionId为空或不存在，则创建新会话；否则使用已有会话
      */
     public SseEmitter chat(String userId, String userMessage, String sessionId, boolean enableVoiceOutput) {
-        SseEmitter emitter;
+        SessionContext context;
         boolean isNewSession = false;
 
         // 如果sessionId为空或不存在，创建新会话
         if (sessionId == null || sessionId.isEmpty()) {
             sessionId = "session_" + userId + "_" + System.currentTimeMillis();
-            emitter = createSession(sessionId);
+            context = createSession(sessionId, userId);
             isNewSession = true;
             log.info("[CHAT] 创建新会话: sessionId={}, userId={}", sessionId, userId);
         } else {
-            emitter = sessionEmitters.get(sessionId);
-            if (emitter == null) {
+            context = sessionContexts.get(sessionId);
+            if (context == null) {
                 // 会话已过期，创建新会话
                 sessionId = "session_" + userId + "_" + System.currentTimeMillis();
-                emitter = createSession(sessionId);
+                context = createSession(sessionId, userId);
                 isNewSession = true;
                 log.info("[CHAT] 会话已过期，创建新会话: sessionId={}, userId={}", sessionId, userId);
             } else {
@@ -152,7 +158,8 @@ public class HotelAssistantService {
         // 如果是新会话，先发送session_created事件
         final String finalSessionId = sessionId;
         final boolean finalIsNewSession = isNewSession;
-        final SseEmitter finalEmitter = emitter;
+        final SessionContext finalContext = context;
+        final SseEmitter finalEmitter = context.getSseEmitter();
 
         Thread.startVirtualThread(() -> {
             try {
@@ -177,7 +184,18 @@ public class HotelAssistantService {
 
                 // 先通过路由Agent判断意图
                 log.info("[SSE] sessionId: {}, 用户消息: {}", finalSessionId, userMessage);
-                String routeDecision = getRouterAgent().routeToAgent(memoryId + "_router", userMessage).trim();
+
+                // 获取业务上下文（使用SessionContext中的方法）
+                String businessContext = finalContext.getBusinessContextString();
+                if (!businessContext.isEmpty()) {
+                    if (finalContext.isInMenuProcess()) {
+                        log.info("[ROUTER] sessionId: {}, 检测到用户处于点餐流程", finalSessionId);
+                    } else if (finalContext.isInWakeUpProcess()) {
+                        log.info("[ROUTER] sessionId: {}, 检测到用户处于叫醒流程", finalSessionId);
+                    }
+                }
+
+                String routeDecision = getRouterAgent().routeToAgentWithContext(memoryId + "_router", userMessage, businessContext).trim();
                 log.info("[SSE] sessionId: {}, 路由决策: {}", finalSessionId, routeDecision);
 
                 String response;
@@ -199,12 +217,12 @@ public class HotelAssistantService {
                     } else if (response.contains("[CONFIRM_MENU]")) {
                         // 确认菜单（用户已选择菜品，等待确认）
                         dataType = "CONFIRM";
-                        structuredData = extractSelectedMenuFromResponse(response, finalSessionId);
+                        structuredData = extractSelectedMenuFromResponse(response, finalContext);
                         response = response.replace("[CONFIRM_MENU]", "").trim();
                     } else if (response.contains("[GENERATE_ORDER]")) {
                         // 生成订单（用户最终确认）
                         dataType = "ORDER";
-                        structuredData = generateOrder(userId, finalSessionId);
+                        structuredData = generateOrder(userId, finalContext);
                         response = response.replace("[GENERATE_ORDER]", "").trim();
                     }
 
@@ -222,10 +240,7 @@ public class HotelAssistantService {
                         dataType = "WAKEUP";
                         WakeUpAssistance wakeUpAssistance = generateWakeUpAssistance(userId, response, finalSessionId, finalEmitter);
                         structuredData = wakeUpAssistance;
-
-                        // 生成专业的叫醒服务确认文案
-                        String confirmationText = "";
-                        response = (response.replace("[GENERATE_WAKEUP]", "").trim() + "\n\n" + confirmationText).trim();
+                        response = response.replace("[GENERATE_WAKEUP]", "").trim();
 
                         // 生成叫醒语音（用于定时播放）
                         try {
@@ -240,21 +255,6 @@ public class HotelAssistantService {
                         } catch (Exception e) {
                             log.error("[WAKEUP-VOICE] 叫醒语音生成失败: {}", e.getMessage(), e);
                             // 语音生成失败不影响主流程
-                        }
-
-                        // 如果启用语音输出，为确认文案生成语音
-                        if (enableVoiceOutput) {
-                            try {
-                                log.info("[WAKEUP-VOICE] 开始生成确认文案语音: {}", confirmationText.substring(0, Math.min(50, confirmationText.length())));
-                                String audioPath = sttService.textToSpeechAndSave(confirmationText);
-                                log.info("[WAKEUP-VOICE] 确认文案语音生成成功: {}", audioPath);
-
-                                // 存储语音路径到结构化数据中，以便后续发送
-                                wakeUpAssistance.setRemark("audioPath:" + audioPath);
-                            } catch (Exception e) {
-                                log.error("[WAKEUP-VOICE] 确认文案语音生成失败: {}", e.getMessage(), e);
-                                // 语音生成失败不影响主流程
-                            }
                         }
                     }
 
@@ -290,6 +290,16 @@ public class HotelAssistantService {
 
                 // 如果有结构化数据，通过SSE异步发送
                 if (structuredData != null) {
+                    // 保存当前会话的最后业务数据类型，便下次路由判断
+                    if (dataType.equals("MENU") || dataType.equals("CONFIRM")) {
+                        finalContext.updateLastDataType("MENU");
+                    } else if (dataType.equals("WAKEUP")) {
+                        finalContext.updateLastDataType("WAKEUP");
+                    } else if (dataType.equals("ORDER")) {
+                        // 订单完成后，清除最后的数据类型，以便下一次模拘新业务
+                        finalContext.updateLastDataType("");
+                    }
+
                     log.info("[SSE] sessionId: {}, 发送结构化数据，类型: {}", finalSessionId, dataType);
                     switch (dataType) {
                         case "MENU" -> {
@@ -357,7 +367,7 @@ public class HotelAssistantService {
             }
         });
 
-        return emitter;
+        return finalEmitter;
     }
 
     /**
@@ -408,7 +418,7 @@ public class HotelAssistantService {
             if (dishName.isEmpty() || dishName.equals("-")) {
                 continue;
             }
-            
+
             log.info("[MENU] 匹配到菜品: {}", dishName);
 
             MenuItem item = menuService.getMenuItemByName(dishName);
@@ -430,7 +440,7 @@ public class HotelAssistantService {
      * 从确认响应中提取用户已选择的菜品
      * 用于生成确认菜单
      */
-    private List<MenuItem> extractSelectedMenuFromResponse(String response, String sessionId) {
+    private List<MenuItem> extractSelectedMenuFromResponse(String response, SessionContext context) {
         List<MenuItem> selectedItems = new ArrayList<>();
 
         log.info("[CONFIRM] 开始提取已选菜品，响应内容: {}", response);
@@ -449,7 +459,7 @@ public class HotelAssistantService {
             if (dishName.isEmpty() || dishName.equals("-")) {
                 continue;
             }
-            
+
             log.info("[CONFIRM] 匹配到已选菜品: {}", dishName);
 
             MenuItem item = menuService.getMenuItemByName(dishName);
@@ -464,8 +474,8 @@ public class HotelAssistantService {
 
         log.info("[CONFIRM] 提取完成，共匹配 {} 个已选菜品", matchCount);
 
-        // 存储当前会话的已选菜品，用于生成订单
-        sessionMenus.put(sessionId, selectedItems);
+        // 存储当前会话的已选菜品到SessionContext中
+        context.setSelectedMenuItems(selectedItems);
 
         return selectedItems;
     }
@@ -473,8 +483,8 @@ public class HotelAssistantService {
     /**
      * 生成订单
      */
-    private MenuOrder generateOrder(String userId, String sessionId) {
-        List<MenuItem> items = sessionMenus.getOrDefault(sessionId, new ArrayList<>());
+    private MenuOrder generateOrder(String userId, SessionContext context) {
+        List<MenuItem> items = context.getSelectedMenuItems() != null ? context.getSelectedMenuItems() : new ArrayList<>();
 
         double totalPrice = items.stream()
                 .mapToDouble(MenuItem::getPrice)
@@ -737,6 +747,10 @@ public class HotelAssistantService {
      * 清除会话数据
      */
     public void clearSession(String sessionId) {
-        sessionMenus.remove(sessionId);
+        SessionContext context = sessionContexts.remove(sessionId);
+        if (context != null) {
+            context.clear();
+            log.info("[SESSION] 清除会话数据: sessionId={}", sessionId);
+        }
     }
 }

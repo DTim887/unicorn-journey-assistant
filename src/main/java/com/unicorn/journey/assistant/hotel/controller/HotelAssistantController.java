@@ -35,31 +35,39 @@ public class HotelAssistantController {
      * 聊天接口 - SSE返回
      * sessionId为空时创建新会话，否则使用已有会话
      * 对话内容同步返回，结构化数据异步发送
+     * 
+     * @param request 聊天请求（包含userId, message, sessionId, enableVoiceOutput）
      */
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chat(@RequestBody ChatRequest request) {
-        log.info("收到聊天请求: userId={}, message={}, sessionId={}", 
-                request.getUserId(), request.getMessage(), request.getSessionId());
+        log.info("收到聊天请求: userId={}, message={}, sessionId={}, enableVoiceOutput={}", 
+                request.getUserId(), request.getMessage(), request.getSessionId(), request.getEnableVoiceOutput());
         
         return hotelAssistantService.chat(
                 request.getUserId(), 
                 request.getMessage(), 
                 request.getSessionId(),
-                false  // 不启用语音输出
+                request.getEnableVoiceOutput() != null ? request.getEnableVoiceOutput() : false
         );
     }
     
     /**
      * 语音聊天接口 - SSE返回
-     * 支持语音输入和语音输出
+     * 支持语音输入，通过输出参数控制是否启用语音输出
+     * 
+     * @param file 语音文件
+     * @param userId 用户ID
+     * @param sessionId 会话ID（可选）
+     * @param enableVoiceOutput 是否启用语音输出，默认true
      */
     @PostMapping(value = "/voice-chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter voiceChat(
             @RequestParam("audio") MultipartFile file,
             @RequestParam("userId") String userId,
-            @RequestParam(value = "sessionId", required = false) String sessionId) throws IOException {
+            @RequestParam(value = "sessionId", required = false) String sessionId,
+            @RequestParam(value = "enableVoiceOutput", defaultValue = "true") boolean enableVoiceOutput) throws IOException {
         
-        log.info("收到语音聊天请求: userId={}, sessionId={}", userId, sessionId);
+        log.info("收到语音聊天请求: userId={}, sessionId={}, enableVoiceOutput={}", userId, sessionId, enableVoiceOutput);
         
         // 语音转文字
         String userMessage = sttService.speechToText(file);
@@ -69,7 +77,7 @@ public class HotelAssistantController {
                 userId, 
                 userMessage, 
                 sessionId,
-                true  // 启用语音输出
+                enableVoiceOutput
         );
     }
 

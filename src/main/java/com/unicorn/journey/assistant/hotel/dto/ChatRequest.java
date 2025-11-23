@@ -19,4 +19,9 @@ public class ChatRequest {
     private String message;
     
     private String sessionId;
+    
+    /**
+     * 是否启用语音输出，默认false
+     */
+    private Boolean enableVoiceOutput = false;
 }
