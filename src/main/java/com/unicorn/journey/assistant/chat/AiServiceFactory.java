@@ -43,8 +43,8 @@ public class AiServiceFactory extends BaseService<AiService> {
     @Resource
     private ProductService productService;
 
-    /*@Resource
-    private McpToolProvider mcpToolProvider;*/
+    @Resource
+    private McpToolProvider mcpToolProvider;
 
     @Resource
     private RedNoteService redNoteService;
@@ -119,7 +119,7 @@ public class AiServiceFactory extends BaseService<AiService> {
                 .chatMemory(chatMemory)
                 .chatMemoryProvider(memoryId -> chatMemory)
                 .tools(List.of(redNoteService))
-                //.toolProvider(mcpToolProvider)
+                .toolProvider(mcpToolProvider)
                 .build();
     }
 

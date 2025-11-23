@@ -18,7 +18,7 @@ public class MCPClientConfiguration {
     @Value("${mcp.rednode.sse-url}")
     private String sseUrl;
 
- /*   @Bean
+    @Bean
     public McpToolProvider mcpToolProvider() {
 
         McpTransport mcpTransport = new StreamableHttpMcpTransport.Builder()
@@ -40,5 +40,5 @@ public class MCPClientConfiguration {
 
 
 
-    }*/
+    }
 }
