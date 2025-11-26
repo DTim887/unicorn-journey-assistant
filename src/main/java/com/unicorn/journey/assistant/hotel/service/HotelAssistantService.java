@@ -14,6 +14,8 @@ import com.unicorn.journey.assistant.service.STTService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -214,16 +216,22 @@ public class HotelAssistantService {
                         dataType = "MENU";
                         structuredData = extractMenuFromResponse(response);
                         response = response.replace("[SHOW_MENU]", "").trim();
+                        // 清理JSON数据块
+                        response = cleanJSONDataBlocks(response);
                     } else if (response.contains("[CONFIRM_MENU]")) {
                         // 确认菜单（用户已选择菜品，等待确认）
                         dataType = "CONFIRM";
                         structuredData = extractSelectedMenuFromResponse(response, finalContext);
                         response = response.replace("[CONFIRM_MENU]", "").trim();
+                        // 清理JSON数据块
+                        response = cleanJSONDataBlocks(response);
                     } else if (response.contains("[GENERATE_ORDER]")) {
                         // 生成订单（用户最终确认）
                         dataType = "ORDER";
                         structuredData = generateOrder(userId, finalContext);
                         response = response.replace("[GENERATE_ORDER]", "").trim();
+                        // 清理JSON数据块
+                        response = cleanJSONDataBlocks(response);
                     }
 
                 } else if (routeDecision.contains("WAKEUP_AGENT")) {
@@ -396,86 +404,178 @@ public class HotelAssistantService {
     }
 
     /**
+     * 清理响应中的JSON数据块
+     * 移除 [MENU_DATA]{...}[/MENU_DATA] 和 [SELECTED_DATA]{...}[/SELECTED_DATA]
+     */
+    private String cleanJSONDataBlocks(String response) {
+        // 清理MENU_DATA数据块
+        response = response.replaceAll("\\[MENU_DATA\\].*?\\[/MENU_DATA\\]", "").trim();
+        // 清理SELECTED_DATA数据块
+        response = response.replaceAll("\\[SELECTED_DATA\\].*?\\[/SELECTED_DATA\\]", "").trim();
+        return response;
+    }
+
+    /**
      * 从响应中提取菜单
+     * 优先级：JSON结构化数据 > 正则文本提取
      */
     private List<MenuItem> extractMenuFromResponse(String response) {
         List<MenuItem> menuItems = new ArrayList<>();
 
-        log.info("[MENU] 开始提取菜单，响应内容: {}", response);
+        log.info("[MENU] 开始提取菜单");
 
-        // 优化正则，兼容多种格式：
-        // 1. 数字. 菜品名 - 价格元
-        // 2. **数字. 菜品名 - 价格元**
-        // 3. 数字. **菜品名 - 价格元**
-        // 4. - 菜品名 - 价格元（不带序号）
-        Pattern pattern = Pattern.compile("(?:^|\n)\\s*(?:\\d+\\.)?\\s*\\*{0,2}\\s*([^−\\-*\n（(]+?)\\s*\\*{0,2}\\s*[−\\-]\\s*([\\d.]+)元", Pattern.MULTILINE);
+        // 第一步：尝试从JSON数据中提取
+        List<MenuItem> jsonMenuItems = tryExtractMenuFromJSON(response);
+        if (!jsonMenuItems.isEmpty()) {
+            log.info("[MENU] 从JSON成功提取 {} 个菜品", jsonMenuItems.size());
+            return jsonMenuItems;
+        }
+
+        // 第二步：降级使用正则提取
+        log.warn("[MENU] JSON提取失败，使用正则表达式降级提取");
+        Pattern pattern = Pattern.compile("(?:^|\\n)\\s*(?:\\d+\\.)?\\s*\\*{0,2}\\s*([^−\\-*\\n（(]+?)\\s*\\*{0,2}\\s*[−\\-]\\s*([\\d.]+)元", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(response);
 
         int matchCount = 0;
         while (matcher.find()) {
             String dishName = matcher.group(1).trim();
-            // 过滤掉不是菜品名的内容
             if (dishName.isEmpty() || dishName.equals("-")) {
                 continue;
             }
-
-            log.info("[MENU] 匹配到菜品: {}", dishName);
 
             MenuItem item = menuService.getMenuItemByName(dishName);
             if (item != null) {
                 menuItems.add(item);
                 matchCount++;
-                log.info("[MENU] 成功添加菜品: {}", item.getName());
-            } else {
-                log.warn("[MENU] 菜品不存在: {}", dishName);
+                log.info("[MENU] 从文本提取菜品: {}", item.getName());
             }
         }
 
-        log.info("[MENU] 提取完成，共匹配 {} 个菜品", matchCount);
+        log.info("[MENU] 提取完成，共提取 {} 个菜品", menuItems.size());
+        return menuItems;
+    }
+
+    /**
+     * 从JSON数据中尝试提取菜单
+     * 格式：[MENU_DATA]{"items":[{"id":1,"name":"菜品名","price":价格},...]}[/MENU_DATA]
+     */
+    private List<MenuItem> tryExtractMenuFromJSON(String response) {
+        List<MenuItem> menuItems = new ArrayList<>();
+
+        try {
+            Pattern jsonPattern = Pattern.compile("\\[MENU_DATA\\]\\s*\\{(.+?)\\}\\s*\\[/MENU_DATA\\]", Pattern.DOTALL);
+            Matcher jsonMatcher = jsonPattern.matcher(response);
+
+            if (!jsonMatcher.find()) {
+                return menuItems;
+            }
+
+            String jsonContent = "{" + jsonMatcher.group(1) + "}";
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonNode = mapper.readValue(jsonContent, ObjectNode.class);
+
+            if (jsonNode.has("items") && jsonNode.get("items").isArray()) {
+                jsonNode.get("items").forEach(item -> {
+                    try {
+                        String name = item.get("name").asText();
+                        MenuItem menuItem = menuService.getMenuItemByName(name);
+                        if (menuItem != null) {
+                            menuItems.add(menuItem);
+                            log.debug("[MENU] 从JSON提取菜品: {}", name);
+                        }
+                    } catch (Exception e) {
+                        log.debug("[MENU] 解析JSON菜品项失败");
+                    }
+                });
+            }
+        } catch (Exception e) {
+            log.debug("[MENU] JSON解析失败：{}", e.getMessage());
+        }
 
         return menuItems;
     }
 
     /**
      * 从确认响应中提取用户已选择的菜品
-     * 用于生成确认菜单
+     * 优先级：JSON结构化数据 > 正则文本提取
      */
     private List<MenuItem> extractSelectedMenuFromResponse(String response, SessionContext context) {
         List<MenuItem> selectedItems = new ArrayList<>();
 
-        log.info("[CONFIRM] 开始提取已选菜品，响应内容: {}", response);
+        log.info("[CONFIRM] 开始提取已选菜品");
 
-        // 提取确认菜单中的菜品
-        // 支持两种格式：
-        // 1. 数字. 菜品名 - 价格元（带序号）
-        // 2. - 菜品名 - 价格元（无序号，用-开头）
-        Pattern pattern = Pattern.compile("(?:^|\n)\\s*(?:\\d+\\.)?\\s*([^−\\-*\n（(]+?)\\s*[−\\-]\\s*([\\d.]+)元", Pattern.MULTILINE);
+        // 第一步：尝试从JSON数据中提取
+        List<MenuItem> jsonItems = tryExtractSelectedFromJSON(response);
+        if (!jsonItems.isEmpty()) {
+            log.info("[CONFIRM] 从JSON成功提取 {} 个已选菜品", jsonItems.size());
+            context.setSelectedMenuItems(jsonItems);
+            return jsonItems;
+        }
+
+        // 第二步：降级使用正则提取
+        log.warn("[CONFIRM] JSON提取失败，使用正则表达式降级提取");
+        Pattern pattern = Pattern.compile("(?:^|\\n)\\s*(?:\\d+\\.)?\\s*([^−\\-*\\n（(]+?)\\s*[−\\-]\\s*([\\d.]+)元", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(response);
 
         int matchCount = 0;
         while (matcher.find()) {
             String dishName = matcher.group(1).trim();
-            // 过滤掉不是菜品名的内容（如"- "开头的列表项标记）
             if (dishName.isEmpty() || dishName.equals("-")) {
                 continue;
             }
-
-            log.info("[CONFIRM] 匹配到已选菜品: {}", dishName);
 
             MenuItem item = menuService.getMenuItemByName(dishName);
             if (item != null) {
                 selectedItems.add(item);
                 matchCount++;
-                log.info("[CONFIRM] 成功添加已选菜品: {}", item.getName());
-            } else {
-                log.warn("[CONFIRM] 菜品不存在: {}", dishName);
+                log.info("[CONFIRM] 从文本提取已选菜品: {}", item.getName());
             }
         }
 
-        log.info("[CONFIRM] 提取完成，共匹配 {} 个已选菜品", matchCount);
+        log.info("[CONFIRM] 提取完成，共提取 {} 个已选菜品", selectedItems.size());
 
         // 存储当前会话的已选菜品到SessionContext中
         context.setSelectedMenuItems(selectedItems);
+
+        return selectedItems;
+    }
+
+    /**
+     * 从JSON数据中尝试提取已选菜品
+     * 格式：[SELECTED_DATA]{"items":[{"id":1,"name":"菜品名","price":价格},...],"total":总价}[/SELECTED_DATA]
+     */
+    private List<MenuItem> tryExtractSelectedFromJSON(String response) {
+        List<MenuItem> selectedItems = new ArrayList<>();
+
+        try {
+            Pattern jsonPattern = Pattern.compile("\\[SELECTED_DATA\\]\\s*\\{(.+?)\\}\\s*\\[/SELECTED_DATA\\]", Pattern.DOTALL);
+            Matcher jsonMatcher = jsonPattern.matcher(response);
+
+            if (!jsonMatcher.find()) {
+                return selectedItems;
+            }
+
+            String jsonContent = "{" + jsonMatcher.group(1) + "}";
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonNode = mapper.readValue(jsonContent, ObjectNode.class);
+
+            if (jsonNode.has("items") && jsonNode.get("items").isArray()) {
+                jsonNode.get("items").forEach(item -> {
+                    try {
+                        String name = item.get("name").asText();
+                        MenuItem menuItem = menuService.getMenuItemByName(name);
+                        if (menuItem != null) {
+                            selectedItems.add(menuItem);
+                            log.debug("[CONFIRM] 从JSON提取已选菜品: {}", name);
+                        }
+                    } catch (Exception e) {
+                        log.debug("[CONFIRM] 解析JSON菜品项失败");
+                    }
+                });
+            }
+        } catch (Exception e) {
+            log.debug("[CONFIRM] JSON解析失败：{}", e.getMessage());
+        }
 
         return selectedItems;
     }
