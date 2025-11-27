@@ -182,7 +182,7 @@ public class HotelAssistantService {
                     }
                 }
 
-                String memoryId = "hotel_" + userId;
+                String memoryId = "hotel_" + finalSessionId;
 
                 // 先通过路由Agent判断意图
                 log.info("[SSE] sessionId: {}, 用户消息: {}", finalSessionId, userMessage);
