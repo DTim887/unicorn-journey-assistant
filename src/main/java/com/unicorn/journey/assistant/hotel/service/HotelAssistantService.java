@@ -279,7 +279,7 @@ public class HotelAssistantService {
                 if (enableVoiceOutput && !response.isEmpty()) {
                     try {
                         log.info("[VOICE] 开始生成语音: {}", response.substring(0, Math.min(50, response.length())));
-                        String audioPath = sttService.textToSpeechAndSave(response);
+                        String audioPath = sttService.textToSpeechAndSave(response.replace("*", ""));
                         log.info("[VOICE] 语音生成成功: {}", audioPath);
 
                         // 发送语音消息
@@ -436,7 +436,6 @@ public class HotelAssistantService {
         Pattern pattern = Pattern.compile("(?:^|\\n)\\s*(?:\\d+\\.)?\\s*\\*{0,2}\\s*([^−\\-*\\n（(]+?)\\s*\\*{0,2}\\s*[−\\-]\\s*([\\d.]+)元", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(response);
 
-        int matchCount = 0;
         while (matcher.find()) {
             String dishName = matcher.group(1).trim();
             if (dishName.isEmpty() || dishName.equals("-")) {
@@ -446,7 +445,6 @@ public class HotelAssistantService {
             MenuItem item = menuService.getMenuItemByName(dishName);
             if (item != null) {
                 menuItems.add(item);
-                matchCount++;
                 log.info("[MENU] 从文本提取菜品: {}", item.getName());
             }
         }
