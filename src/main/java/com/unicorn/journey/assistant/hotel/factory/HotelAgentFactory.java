@@ -3,6 +3,7 @@ package com.unicorn.journey.assistant.hotel.factory;
 import com.unicorn.journey.assistant.hotel.agent.HotelRouterAgent;
 import com.unicorn.journey.assistant.hotel.agent.MOAgent;
 import com.unicorn.journey.assistant.hotel.agent.WakeUpAgent;
+import com.unicorn.journey.assistant.hotel.agent.WakeUpCopywritingAgent;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
@@ -46,6 +47,26 @@ public class HotelAgentFactory {
         return AiServices.builder(WakeUpAgent.class)
                 .chatModel(chatModel)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .build();
+    }
+    
+    /**
+     * 创建叫醒文案生成Agent
+     */
+    public WakeUpCopywritingAgent createWakeUpCopywritingAgent() {
+        return AiServices.builder(WakeUpCopywritingAgent.class)
+                .chatModel(chatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .build();
+    }
+    
+    /**
+     * 创建总结Agent
+     */
+    public com.unicorn.journey.assistant.hotel.agent.SummaryAgent createSummaryAgent() {
+        return AiServices.builder(com.unicorn.journey.assistant.hotel.agent.SummaryAgent.class)
+                .chatModel(chatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
                 .build();
     }
 }

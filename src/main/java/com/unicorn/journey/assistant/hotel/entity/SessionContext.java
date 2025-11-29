@@ -33,6 +33,9 @@ public class SessionContext {
 
     /** 最后业务数据类型（MENU/CONFIRM_MENU/WAKEUP/ORDER等） */
     private String lastDataType;
+    
+    /** 上次执行的Agent类型（MO_AGENT/WAKEUP_AGENT/ROUTER_AGENT） */
+    private String lastAgentType;
 
     /**
      * 判断是否处于点餐流程
@@ -52,12 +55,30 @@ public class SessionContext {
      * 获取业务上下文字符串（用于传递给路由Agent）
      */
     public String getBusinessContextString() {
-        if (isInMenuProcess()) {
-            return "CURRENT_BUSINESS_TYPE:MENU";
-        } else if (isInWakeUpProcess()) {
-            return "CURRENT_BUSINESS_TYPE:WAKEUP";
+        StringBuilder context = new StringBuilder();
+        
+        // 添加上次执行的Agent类型
+        if (lastAgentType != null && !lastAgentType.isEmpty()) {
+            context.append("LAST_AGENT:").append(lastAgentType);
         }
-        return "";
+        
+        // 添加当前业务状态
+        if (isInMenuProcess()) {
+            if (context.length() > 0) context.append("; ");
+            context.append("CURRENT_BUSINESS:MENU");
+        } else if (isInWakeUpProcess()) {
+            if (context.length() > 0) context.append("; ");
+            context.append("CURRENT_BUSINESS:WAKEUP");
+        }
+        
+        return context.toString();
+    }
+    
+    /**
+     * 更新上次执行的Agent类型
+     */
+    public void updateLastAgentType(String agentType) {
+        this.lastAgentType = agentType;
     }
 
     /**
@@ -73,6 +94,7 @@ public class SessionContext {
     public void clear() {
         this.selectedMenuItems = null;
         this.lastDataType = "";
+        this.lastAgentType = "";
         this.sseEmitter = null;
     }
 }

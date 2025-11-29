@@ -3,6 +3,8 @@ package com.unicorn.journey.assistant.hotel.service;
 import com.unicorn.journey.assistant.hotel.agent.HotelRouterAgent;
 import com.unicorn.journey.assistant.hotel.agent.MOAgent;
 import com.unicorn.journey.assistant.hotel.agent.WakeUpAgent;
+import com.unicorn.journey.assistant.hotel.agent.SummaryAgent;
+import com.unicorn.journey.assistant.hotel.agent.WakeUpCopywritingAgent;
 import com.unicorn.journey.assistant.hotel.entity.WakeUpAssistance;
 import com.unicorn.journey.assistant.hotel.enums.SseEventType;
 import com.unicorn.journey.assistant.hotel.factory.HotelAgentFactory;
@@ -40,6 +42,8 @@ public class HotelAssistantService {
     private HotelRouterAgent hotelRouterAgent;
     private MOAgent moAgent;
     private WakeUpAgent wakeUpAgent;
+    private SummaryAgent summaryAgent;
+    private WakeUpCopywritingAgent wakeUpCopywritingAgent;
 
     // 存储会话上下文（包含菜单、业务类型、SSE等所有会话数据）
     private final Map<String, SessionContext> sessionContexts = new ConcurrentHashMap<>();
@@ -49,6 +53,27 @@ public class HotelAssistantService {
 
     // 存储叫醒服务 key:wakeUpId
     private final Map<String, WakeUpAssistance> wakeUpAssistanceMap = new ConcurrentHashMap<>();
+    
+    /**
+     * 结构化数据包装类
+     */
+    private static class StructuredDataWrapper {
+        private final String type;
+        private final Object data;
+        
+        public StructuredDataWrapper(String type, Object data) {
+            this.type = type;
+            this.data = data;
+        }
+        
+        public String getType() {
+            return type;
+        }
+        
+        public Object getData() {
+            return data;
+        }
+    }
 
     public HotelAssistantService(HotelAgentFactory hotelAgentFactory,
                                   MenuService menuService,
@@ -91,6 +116,26 @@ public class HotelAssistantService {
         }
         return wakeUpAgent;
     }
+    
+    /**
+     * 获取叫醒文案生成Agent
+     */
+    private WakeUpCopywritingAgent getWakeUpCopywritingAgent() {
+        if (wakeUpCopywritingAgent == null) {
+            wakeUpCopywritingAgent = hotelAgentFactory.createWakeUpCopywritingAgent();
+        }
+        return wakeUpCopywritingAgent;
+    }
+    
+    /**
+     * 获取总结Agent
+     */
+    private SummaryAgent getSummaryAgent() {
+        if (summaryAgent == null) {
+            summaryAgent = hotelAgentFactory.createSummaryAgent();
+        }
+        return summaryAgent;
+    }
 
     /**
      * 创建新会话并返回会话上下文
@@ -130,11 +175,25 @@ public class HotelAssistantService {
         return context;
     }
 
+    // ========================================================================
+    // 主流程：处理用户消息
+    // ========================================================================
+    
     /**
      * 处理用户消息，返回SSE对象
-     * 如果sessionId为空或不存在，则创建新会话；否则使用已有会话
+     * 
+     * 执行流程：
+     * 1. 会话管理：创建/获取会话
+     * 2. 任务规划：Router Agent 生成任务列表
+     * 3. 意图解析：Router Agent 拆分用户消息
+     * 4. Agent执行：根据任务类型调用对应的Agent
+     * 5. 响应汇总：使用Summary Agent汇总
+     * 6. 业务执行：根据特殊标记执行业务逻辑
+     * 7. 数据清理：清除响应中的标记和JSON数据块
+     * 8. SSE发送：发送文本、语音、结构化数据
      */
     public SseEmitter chat(String userId, String userMessage, String sessionId, boolean enableVoiceOutput) {
+        // ===== 1：会话管理 =====
         SessionContext context;
         boolean isNewSession = false;
 
@@ -143,17 +202,16 @@ public class HotelAssistantService {
             sessionId = "session_" + userId + "_" + System.currentTimeMillis();
             context = createSession(sessionId, userId);
             isNewSession = true;
-            log.info("[CHAT] 创建新会话: sessionId={}, userId={}", sessionId, userId);
+            log.info("[会话] 创建新会话: sessionId={}, userId={}", sessionId, userId);
         } else {
             context = sessionContexts.get(sessionId);
             if (context == null) {
-                // 会话已过期，创建新会话
                 sessionId = "session_" + userId + "_" + System.currentTimeMillis();
                 context = createSession(sessionId, userId);
                 isNewSession = true;
-                log.info("[CHAT] 会话已过期，创建新会话: sessionId={}, userId={}", sessionId, userId);
+                log.info("[会话] 会话已过期，创建新会话: sessionId={}, userId={}", sessionId, userId);
             } else {
-                log.info("[CHAT] 使用已有会话: sessionId={}, userId={}", sessionId, userId);
+                log.info("[会话] 使用已有会话: sessionId={}, userId={}", sessionId, userId);
             }
         }
 
@@ -184,97 +242,131 @@ public class HotelAssistantService {
 
                 String memoryId = "hotel_" + finalSessionId;
 
-                // 先通过路由Agent判断意图
-                log.info("[SSE] sessionId: {}, 用户消息: {}", finalSessionId, userMessage);
+                // ===== 2：任务规划 =====
+                // 先通过路由Agent分析任务
+                log.info("sessionId: {}, 用户消息: {}", finalSessionId, userMessage);
 
                 // 获取业务上下文（使用SessionContext中的方法）
                 String businessContext = finalContext.getBusinessContextString();
                 if (!businessContext.isEmpty()) {
-                    if (finalContext.isInMenuProcess()) {
-                        log.info("[ROUTER] sessionId: {}, 检测到用户处于点餐流程", finalSessionId);
-                    } else if (finalContext.isInWakeUpProcess()) {
-                        log.info("[ROUTER] sessionId: {}, 检测到用户处于叫醒流程", finalSessionId);
-                    }
+                    log.info("[上下文] {}", businessContext);
                 }
 
-                String routeDecision = getRouterAgent().routeToAgentWithContext(memoryId + "_router", userMessage, businessContext).trim();
-                log.info("[SSE] sessionId: {}, 路由决策: {}", finalSessionId, routeDecision);
+                // 首先检测多个意图 用逗号分隔
+                String tasks = getRouterAgent().generateTasks(memoryId + "_plan", userMessage, businessContext).trim();
+                log.info("sessionId: {}, 多意图检测: {}", finalSessionId, tasks);
+                
+                // 记录上次执行的Agent类型
+                if (tasks.equals("MO_AGENT")) {
+                    finalContext.updateLastAgentType("MO_AGENT");
+                } else if (tasks.equals("WAKEUP_AGENT")) {
+                    finalContext.updateLastAgentType("WAKEUP_AGENT");
+                } else if (tasks.equals("ROUTER_AGENT")) {
+                    finalContext.updateLastAgentType("ROUTER_AGENT");
+                } else if (tasks.contains(",")) {
+                    finalContext.updateLastAgentType("");
+                }
 
-                String response;
-                String dataType = "NONE";
-                Object structuredData = null;
-
-                // 根据路由决策调用相应的Agent，获取响应
-                if (routeDecision.contains("MO_AGENT")) {
-                    // 调用点餐Agent
-                    String menuList = formatMenuList();
-                    response = getMOAgent().chat(memoryId + "_mo", userMessage, menuList);
-
-                    // 检查响应中的标记，确定需要发送的数据类型
-                    if (response.contains("[SHOW_MENU]")) {
-                        // 展示菜单列表（初始菜单或筛选后）
-                        dataType = "MENU";
-                        structuredData = extractMenuFromResponse(response);
-                        response = response.replace("[SHOW_MENU]", "").trim();
-                        // 清理JSON数据块
-                        response = cleanJSONDataBlocks(response);
-                    } else if (response.contains("[CONFIRM_MENU]")) {
-                        // 确认菜单（用户已选择菜品，等待确认）
-                        dataType = "CONFIRM";
-                        structuredData = extractSelectedMenuFromResponse(response, finalContext);
-                        response = response.replace("[CONFIRM_MENU]", "").trim();
-                        // 清理JSON数据块
-                        response = cleanJSONDataBlocks(response);
-                    } else if (response.contains("[GENERATE_ORDER]")) {
-                        // 生成订单（用户最终确认）
-                        dataType = "ORDER";
-                        structuredData = generateOrder(userId, finalContext);
-                        response = response.replace("[GENERATE_ORDER]", "").trim();
-                        // 清理JSON数据块
-                        response = cleanJSONDataBlocks(response);
+                // ===== 3：意图解析 =====
+                // 解析用户意图（仅多任务时需要解析）
+                Map<String, String> agentMessages = new HashMap<>();
+                if (tasks.contains(",")) {
+                    // 多个任务 - 需要解析用户意图，拆分消息
+                    try {
+                        String parsedJson = getRouterAgent().parseUserIntents(memoryId + "_parse", userMessage).trim();
+                        log.info("[意图解析] 结果: {}", parsedJson);
+                        ObjectMapper mapper = new ObjectMapper();
+                        agentMessages = mapper.readValue(parsedJson, 
+                            mapper.getTypeFactory().constructMapType(HashMap.class, String.class, String.class));
+                    } catch (Exception e) {
+                        log.warn("[意图解析] 意图解析失败~，使用原始消息: {}", e.getMessage());
+                        if (tasks.contains("MO_AGENT")) agentMessages.put("MO_AGENT", userMessage);
+                        if (tasks.contains("WAKEUP_AGENT")) agentMessages.put("WAKEUP_AGENT", userMessage);
                     }
+                } else if (tasks.equals("MO_AGENT")) {
+                    // 单任务 - 直接使用原始消息
+                    agentMessages.put("MO_AGENT", userMessage);
+                } else if (tasks.equals("WAKEUP_AGENT")) {
+                    // 单任务 - 直接使用原始消息
+                    agentMessages.put("WAKEUP_AGENT", userMessage);
+                }
+                
+                String response;
 
-                } else if (routeDecision.contains("WAKEUP_AGENT")) {
-                    // 调用叫醒服务Agent
-                    response = getWakeUpAgent().chat(memoryId + "_wakeup", userMessage);
-
-                    // 检查响应中的标记
-                    if (response.contains("[REQUEST_TIME_INPUT]")) {
-                        // 请求用户输入叫醒时间
-                        dataType = "TIME_INPUT";
-                        response = response.replace("[REQUEST_TIME_INPUT]", "").trim();
-                    } else if (response.contains("[GENERATE_WAKEUP]")) {
-                        // 生成叫醒服务
-                        dataType = "WAKEUP";
-                        WakeUpAssistance wakeUpAssistance = generateWakeUpAssistance(userId, response, finalSessionId, finalEmitter);
-                        structuredData = wakeUpAssistance;
-                        response = response.replace("[GENERATE_WAKEUP]", "").trim();
-
-                        // 生成叫醒语音（用于定时播放）
-                        try {
-                            String wakeUpVoiceText = generateWakeUpVoiceText(wakeUpAssistance);
-                            log.info("[WAKEUP-VOICE] 开始生成叫醒语音: {}", wakeUpVoiceText.substring(0, Math.min(50, wakeUpVoiceText.length())));
-                            String voicePath = sttService.textToSpeechAndSave(wakeUpVoiceText);
-                            log.info("[WAKEUP-VOICE] 叫醒语音生成成功: {}", voicePath);
-
-                            // 存储语音路径
-                            wakeUpAssistance.setVoicePath(voicePath);
-
-                        } catch (Exception e) {
-                            log.error("[WAKEUP-VOICE] 叫醒语音生成失败: {}", e.getMessage(), e);
-                            // 语音生成失败不影响主流程
+                // ===== 4：agent 执行 =====
+                // ===== 5：响应汇总 =====
+                // ===== 6：业务执行 =====
+                // ===== 7：数据清理 =====
+                // 根据任务类型动态执行
+                Map<String, String> agentResponses = new HashMap<>();
+                List<StructuredDataWrapper> structuredDataList = new ArrayList<>();
+                
+                if (tasks.equals("ROUTER_AGENT")) {
+                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或叫醒服务吗？";
+                } else if (tasks.contains(",")) {
+                    // 多个任务 - 并发执行
+                    String[] taskArray = tasks.split(",");
+                    for (String task : taskArray) {
+                        task = task.trim();
+                        if ("MO_AGENT".equals(task)) {
+                            String moMessage = agentMessages.getOrDefault("MO_AGENT", userMessage);
+                            log.info("[Agent执行] MO_AGENT 使用消息: {}", moMessage);
+                            agentResponses.put("MO_AGENT", getMOAgent().chat(memoryId + "_mo", moMessage, formatMenuList()));
+                        } else if ("WAKEUP_AGENT".equals(task)) {
+                            String wakeUpMessage = agentMessages.getOrDefault("WAKEUP_AGENT", userMessage);
+                            log.info("[Agent执行] WAKEUP_AGENT 使用消息: {}", wakeUpMessage);
+                            agentResponses.put("WAKEUP_AGENT", getWakeUpAgent().chat(memoryId + "_wakeup", wakeUpMessage));
                         }
                     }
 
+                    // 汇总响应
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<String, String> entry : agentResponses.entrySet()) {
+                        sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n\n");
+                    }
+                    response = getSummaryAgent().summarizeResponses(sb.toString());
+                    log.info("[响应汇总] 多任务汇总完成");
+
+                    // 执行业务并收集结构化数据
+                    structuredDataList = executeBusinessLogic(agentResponses, finalSessionId, finalContext);
+                    
+                    // 清理标记
+                    response = cleanAllDataTags(response);
+                } else if (tasks.equals("MO_AGENT")) {
+                    String moMessage = agentMessages.getOrDefault("MO_AGENT", userMessage);
+                    String moResponse = getMOAgent().chat(memoryId + "_mo", moMessage, formatMenuList());
+                    agentResponses.put("MO_AGENT", moResponse);
+                    log.info("[Agent执行] MO_AGENT 使用消息: {}", moMessage);
+                    
+                    // 汇总响应
+                    response = getSummaryAgent().summarizeResponses("MO_AGENT: " + moResponse);
+                    log.info("[响应汇总] 单任务MO_AGENT汇总完成");
+                    
+                    // 执行业务并收集结构化数据
+                    structuredDataList = executeBusinessLogic(agentResponses, finalSessionId, finalContext);
+                    
+                    // 清理标记
+                    response = cleanAllDataTags(response);
+                } else if (tasks.equals("WAKEUP_AGENT")) {
+                    String wakeUpMessage = agentMessages.getOrDefault("WAKEUP_AGENT", userMessage);
+                    String wakeUpResponse = getWakeUpAgent().chat(memoryId + "_wakeup", wakeUpMessage);
+                    agentResponses.put("WAKEUP_AGENT", wakeUpResponse);
+                    log.info("[Agent执行] WAKEUP_AGENT 使用消息: {}", wakeUpMessage);
+                    
+                    // 汇总响应
+                    response = getSummaryAgent().summarizeResponses("WAKEUP_AGENT: " + wakeUpResponse);
+                    log.info("[响应汇总] 单任务WAKEUP_AGENT汇总完成");
+                    
+                    // 执行业务并收集结构化数据
+                    structuredDataList = executeBusinessLogic(agentResponses, finalSessionId, finalContext);
+                    
+                    // 清理标记
+                    response = cleanAllDataTags(response);
                 } else {
-                    // 路由Agent直接回复
-                    response = "你好！我是酒店助手，可以帮您：\n1. 点餐服务\n2. 设置叫醒服务\n\n请问需要什么帮助？";
+                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或叫醒服务吗？";
                 }
 
-                // 发送文本响应（同步返回对话内容）
-                log.info("[SSE] sessionId: {}, 发送对话内容: {}", finalSessionId, response);
-                sseEventSender.sendEvent(finalSessionId, finalEmitter, SseEventType.MESSAGE.getEventName(), Map.of("content", response));
-
+                // ===== 8：SSE发送 =====
                 // 如果启用语音输出，将文本转换为语音并发送
                 if (enableVoiceOutput && !response.isEmpty()) {
                     try {
@@ -282,7 +374,7 @@ public class HotelAssistantService {
                         String audioPath = sttService.textToSpeechAndSave(response.replace("*", ""));
                         log.info("[VOICE] 语音生成成功: {}", audioPath);
 
-                        // 发送语音消息
+                        // 先发送语音消息
                         sseEventSender.sendEvent(finalSessionId, finalEmitter,
                             SseEventType.VOICE.getEventName(),
                             Map.of(
@@ -296,71 +388,76 @@ public class HotelAssistantService {
                     }
                 }
 
-                // 如果有结构化数据，通过SSE异步发送
-                if (structuredData != null) {
-                    // 保存当前会话的最后业务数据类型，便下次路由判断
-                    if (dataType.equals("MENU") || dataType.equals("CONFIRM")) {
-                        finalContext.updateLastDataType("MENU");
-                    } else if (dataType.equals("WAKEUP")) {
-                        finalContext.updateLastDataType("WAKEUP");
-                    } else if (dataType.equals("ORDER")) {
-                        // 订单完成后，清除最后的数据类型，以便下一次模拘新业务
-                        finalContext.updateLastDataType("");
-                    }
+                // 发送文字消息
+                if (!response.isEmpty()) {
+                    sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                        SseEventType.MESSAGE.getEventName(),
+                        Map.of("content", response));
+                    log.info("[MESSAGE] 发送文字消息: {}", response.substring(0, Math.min(50, response.length())));
+                }
 
-                    log.info("[SSE] sessionId: {}, 发送结构化数据，类型: {}", finalSessionId, dataType);
-                    switch (dataType) {
-                        case "MENU" -> {
-                            // 展示菜单列表（初始或筛选后）
-                            sseEventSender.sendEvent(finalSessionId, finalEmitter,
-                                SseEventType.STRUCTURED_DATA.getEventName(),
-                                Map.of("type", "MENU", "data", structuredData));
+                // 发送所有结构化数据
+                if (structuredDataList != null && !structuredDataList.isEmpty()) {
+                    for (StructuredDataWrapper wrapper : structuredDataList) {
+                        String dataType = wrapper.getType();
+                        Object data = wrapper.getData();
+                        
+                        // 更新会话上下文
+                        if (dataType.equals("MENU") || dataType.equals("CONFIRM")) {
+                            finalContext.updateLastDataType("MENU");
+                        } else if (dataType.equals("WAKEUP")) {
+                            finalContext.updateLastDataType("WAKEUP");
+                        } else if (dataType.equals("ORDER")) {
+                            finalContext.updateLastDataType("");
                         }
-                        case "CONFIRM" -> {
-                            // 确认菜单（等待用户确认）
-                            sseEventSender.sendEvent(finalSessionId, finalEmitter,
-                                SseEventType.CONFIRM_MENU.getEventName(),
-                                Map.of("type", "CONFIRM", "data", structuredData));
-                        }
-                        case "ORDER" -> {
-                            // 正式订单
-                            sseEventSender.sendEvent(finalSessionId, finalEmitter,
-                                SseEventType.STRUCTURED_DATA.getEventName(),
-                                Map.of("type", "ORDER", "data", structuredData));
-                        }
-                        case "TIME_INPUT" -> {
-                            // 请求用户输入时间
-                            sseEventSender.sendEvent(finalSessionId, finalEmitter,
-                                SseEventType.STRUCTURED_DATA.getEventName(),
-                                Map.of("type", "TIME_INPUT", "data", Map.of("message", "请选择叫醒时间")));
-                        }
-                        case "WAKEUP" -> {
-                            // 叫醒服务
-                            sseEventSender.sendEvent(finalSessionId, finalEmitter,
-                                SseEventType.STRUCTURED_DATA.getEventName(),
-                                Map.of("type", "WAKE_UP", "data", structuredData));
-
-                            // 如果有语音路径，也发送语音事件
-                            if (structuredData instanceof WakeUpAssistance wakeUp) {
-                                String remark = wakeUp.getRemark();
-                                if (remark != null && remark.startsWith("audioPath:")) {
-                                    String audioPath = remark.substring("audioPath:".length());
-                                    log.info("[WAKEUP-VOICE] 发送叫醒服务语音: {}", audioPath);
-
-                                    // 生成确认文案用于语音消息显示
-                                    String voiceText = generateWakeUpText(wakeUp);
-
-                                    sseEventSender.sendEvent(finalSessionId, finalEmitter,
-                                        SseEventType.VOICE.getEventName(),
-                                        Map.of(
-                                            "audioPath", audioPath,
-                                            "text", voiceText,
-                                            "type", "wakeup_confirmation",
+                        
+                        log.info("[SSE] sessionId: {}, 发送结构化数据，类型: {}", finalSessionId, dataType);
+                        switch (dataType) {
+                            case "MENU" -> {
+                                sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                    SseEventType.STRUCTURED_DATA.getEventName(),
+                                    Map.of("type", "MENU", "data", data));
+                            }
+                            case "CONFIRM" -> {
+                                sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                    SseEventType.CONFIRM_MENU.getEventName(),
+                                    Map.of("type", "CONFIRM", "data", data));
+                            }
+                            case "ORDER" -> {
+                                sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                    SseEventType.STRUCTURED_DATA.getEventName(),
+                                    Map.of("type", "ORDER", "data", data));
+                            }
+                            case "TIME_INPUT" -> {
+                                sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                    SseEventType.STRUCTURED_DATA.getEventName(),
+                                    Map.of("type", "TIME_INPUT", "data", data));
+                            }
+                            case "WAKEUP" -> {
+                                sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                    SseEventType.STRUCTURED_DATA.getEventName(),
+                                    Map.of("type", "WAKE_UP", "data", data));
+                                
+                                // 如果有语音路径，也发送语音事件
+                                if (data instanceof WakeUpAssistance wakeUp) {
+                                    String remark = wakeUp.getRemark();
+                                    if (remark != null && remark.startsWith("audioPath:")) {
+                                        String audioPath = remark.substring("audioPath:".length());
+                                        log.info("[WAKEUP-VOICE] 发送叫醒服务语音: {}", audioPath);
+                                        
+                                        String voiceText = generateWakeUpText(wakeUp);
+                                        
+                                        sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                            SseEventType.VOICE.getEventName(),
+                                            Map.of(
+                                                "audioPath", audioPath,
+                                                "text", voiceText,
+                                                "type", "wakeup_confirmation",
                                                 "timeInterval", "100"
-                                        ));
-
-                                    // 清理remark中的语音路径，恢复为原始备注
-                                    wakeUp.setRemark("酒店叫醒服务");
+                                            ));
+                                        
+                                        wakeUp.setRemark("酒店叫醒服务");
+                                    }
                                 }
                             }
                         }
@@ -617,19 +714,44 @@ public class HotelAssistantService {
             wakeUpTime = LocalDateTime.now().plusDays(1).withHour(7).withMinute(0).withSecond(0).withNano(0);
         }
 
-        WakeUpAssistance wakeUpAssistance = WakeUpAssistance.builder()
+        // 先创建临时的叫醒服务对象（用于生成语音文案）
+        WakeUpAssistance tempWakeUp = WakeUpAssistance.builder()
                 .wakeUpId("WAKEUP_" + System.currentTimeMillis())
                 .userId(userId)
-                .sessionId(sessionId)  // 存储sessionId，用于后续发送SSE事件
+                .sessionId(sessionId)
                 .wakeUpTime(wakeUpTime)
                 .createTime(LocalDateTime.now())
                 .status("PENDING")
                 .remark("酒店叫醒服务")
                 .build();
+        
+        // 生成叫醒语音文案
+        String voiceText = generateWakeUpVoiceText(tempWakeUp);
+        
+        // 生成语音文件
+        String voicePath = null;
+        try {
+            voicePath = sttService.textToSpeechAndSave(voiceText);
+            log.info("[WAKEUP] 语音文件生成成功: {}", voicePath);
+        } catch (Exception e) {
+            log.error("[WAKEUP] 语音文件生成失败: {}", e.getMessage(), e);
+        }
+        
+        // 创建最终的叫醒服务对象（包含语音路径）
+        WakeUpAssistance wakeUpAssistance = WakeUpAssistance.builder()
+                .wakeUpId(tempWakeUp.getWakeUpId())
+                .userId(userId)
+                .sessionId(sessionId)
+                .wakeUpTime(wakeUpTime)
+                .createTime(tempWakeUp.getCreateTime())
+                .status("PENDING")
+                .voicePath(voicePath)
+                .remark("酒店叫醒服务")
+                .build();
 
         wakeUpAssistanceMap.put(wakeUpAssistance.getWakeUpId(), wakeUpAssistance);
-        log.info("[WAKEUP] 生成叫醒服务: {}, 时间: {}, sessionId: {}",
-                wakeUpAssistance.getWakeUpId(), wakeUpTime, sessionId);
+        log.info("[WAKEUP] 生成叫醒服务: {}, 时间: {}, sessionId: {}, 语音路径: {}",
+                wakeUpAssistance.getWakeUpId(), wakeUpTime, sessionId, voicePath);
 
         // 调度叫醒任务
         wakeUpSchedulerService.scheduleWakeUp(wakeUpAssistance, emitter);
@@ -638,11 +760,54 @@ public class HotelAssistantService {
     }
 
     /**
-     * 生成叫醒语音文本（用于定时播放）
+     * 生成叫醒语音文本（会议：使用大模型生成带有迪士尼特色的文案）
      */
     private String generateWakeUpVoiceText(WakeUpAssistance wakeUp) {
         LocalDateTime wakeUpTime = wakeUp.getWakeUpTime();
-
+        String remark = wakeUp.getRemark() != null ? wakeUp.getRemark() : "无";
+        
+        // 判断季节
+        int month = wakeUpTime.getMonthValue();
+        String season;
+        if (month >= 3 && month <= 5) {
+            season = "春季";
+        } else if (month >= 6 && month <= 8) {
+            season = "夏季";
+        } else if (month >= 9 && month <= 11) {
+            season = "秋季";
+        } else {
+            season = "冬季";
+        }
+        
+        // 格式化时间信息
+        String timeStr = String.format("%02d:%02d", wakeUpTime.getHour(), wakeUpTime.getMinute());
+        
+        try {
+            // 使用大模型生成创意文案
+            String memoryId = "wakeup_copy_" + wakeUp.getWakeUpId();
+            String userMessage = "请为客人生成一个富有迪士尼特色、充满魔力的叫醒文案";
+            
+            String generatedCopy = getWakeUpCopywritingAgent().generateWakeUpCopy(
+                memoryId,
+                userMessage,
+                timeStr,
+                season,
+                remark
+            );
+            
+            log.info("[WAKEUP-COPY] 成功生成文案: {}", generatedCopy);
+            return generatedCopy;
+        } catch (Exception e) {
+            log.warn("[WAKEUP-COPY] 文案生成失败，使用默认文案: {}", e.getMessage());
+            // 降级方案：使用静态模板
+            return generateWakeUpVoiceTextFallback(wakeUpTime);
+        }
+    }
+    
+    /**
+     * 默认叫醒文案模板（降级方案）
+     */
+    private String generateWakeUpVoiceTextFallback(LocalDateTime wakeUpTime) {
         // 格式化时间
         int hour = wakeUpTime.getHour();
         int minute = wakeUpTime.getMinute();
@@ -666,46 +831,10 @@ public class HotelAssistantService {
         return String.format(
             "尊敬的客人，%s！\n\n" +
             "现在是%d点%s，该起床啦！\n\n" +
-            "祇您今天有个美好的一天！",
+            "祝您今天有个美好的一天！",
             timeGreeting,
             hour,
             minuteText
-        );
-    }
-
-    /**
-     * 生成叫醒服务确认文案
-     */
-    private String generateWakeUpConfirmationText(WakeUpAssistance wakeUp) {
-        LocalDateTime wakeUpTime = wakeUp.getWakeUpTime();
-
-        // 格式化时间
-        String timeStr = String.format("%d月%d日 %02d:%02d",
-                wakeUpTime.getMonthValue(),
-                wakeUpTime.getDayOfMonth(),
-                wakeUpTime.getHour(),
-                wakeUpTime.getMinute());
-
-        // 判断是明天还是后天
-        LocalDateTime now = LocalDateTime.now();
-        long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(now.toLocalDate(), wakeUpTime.toLocalDate());
-        String dayText = "";
-        if (daysDiff == 1) {
-            dayText = "明天";
-        } else if (daysDiff == 2) {
-            dayText = "后天";
-        }
-
-        // 生成专业的确认文案
-        return String.format(
-            "尊敬的客人，您好！\n\n" +
-            "您的叫醒服务已成功设置。\n" +
-            "叫醒时间：%s%s\n" +
-            "服务编号：%s\n\n" +
-            "我们将在指定时间准时为您提供叫醒服务。祝您住店愉快，睡眠充足！",
-            dayText.isEmpty() ? "" : dayText + " ",
-            timeStr,
-            wakeUp.getWakeUpId()
         );
     }
 
@@ -850,5 +979,100 @@ public class HotelAssistantService {
             context.clear();
             log.info("[SESSION] 清除会话数据: sessionId={}", sessionId);
         }
+    }
+    
+    /**
+     * 执行业务逻辑 - 根据Agent输出中的特殊标记执行对应业务
+     * @param agentResponses Agent响应Map
+     * @param sessionId 会话 ID
+     * @param context 会话上下文
+     * @return 结构化数据列表
+     */
+    private List<StructuredDataWrapper> executeBusinessLogic(Map<String, String> agentResponses, String sessionId, SessionContext context) {
+        List<StructuredDataWrapper> structuredDataList = new ArrayList<>();
+        
+        for (Map.Entry<String, String> entry : agentResponses.entrySet()) {
+            String agentName = entry.getKey();
+            String response = entry.getValue();
+            
+            try {
+                if ("MO_AGENT".equals(agentName)) {
+                    // 处理点餐业务
+                    if (response.contains("[SHOW_MENU]")) {
+                        // 展示菜单列表
+                        log.info("[BUSINESS] 展示菜单");
+                        List<MenuItem> menuItems = extractMenuFromResponse(response);
+                        if (!menuItems.isEmpty()) {
+                            structuredDataList.add(new StructuredDataWrapper("MENU", menuItems));
+                            log.info("[BUSINESS] 提取到 {} 个菜品", menuItems.size());
+                        }
+                    } else if (response.contains("[CONFIRM_MENU]")) {
+                        // 确认菜单
+                        log.info("[BUSINESS] 确认菜单");
+                        List<MenuItem> selectedItems = extractSelectedMenuFromResponse(response, context);
+                        if (!selectedItems.isEmpty()) {
+                            structuredDataList.add(new StructuredDataWrapper("CONFIRM", selectedItems));
+                            log.info("[BUSINESS] 确认 {} 个菜品", selectedItems.size());
+                        }
+                    } else if (response.contains("[GENERATE_ORDER]")) {
+                        // 生成订单
+                        log.info("[BUSINESS] 执行MO业务: 生成订单");
+                        List<MenuItem> selectedItems = tryExtractSelectedFromJSON(response);
+                        if (selectedItems.isEmpty()) {
+                            selectedItems = context.getSelectedMenuItems();
+                        }
+                        
+                        if (selectedItems != null && !selectedItems.isEmpty()) {
+                            context.setSelectedMenuItems(selectedItems);
+                            MenuOrder order = generateOrder(context.getUserId(), context);
+                            log.info("[BUSINESS] 订单已生成: {}, 包含 {} 个菜品，总价: {}", 
+                                order.getOrderId(), selectedItems.size(), order.getTotalPrice());
+                            structuredDataList.add(new StructuredDataWrapper("ORDER", order));
+                        } else {
+                            log.warn("[BUSINESS] 无法提取菜品信息，订单生成失败");
+                        }
+                    }
+                } else if ("WAKEUP_AGENT".equals(agentName)) {
+                    // 处理叫醒业务
+                    if (response.contains("[REQUEST_TIME_INPUT]")) {
+                        // 请求用户输入时间
+                        log.info("[BUSINESS] 请求用户输入叫醒时间");
+                        structuredDataList.add(new StructuredDataWrapper("TIME_INPUT", 
+                            Map.of("message", "请选择叫醒时间")));
+                    } else if (response.contains("[GENERATE_WAKEUP]")) {
+                        // 生成叫醒服务
+                        LocalDateTime wakeUpTime = extractTimeFromResponse(response);
+                        if (wakeUpTime != null) {
+                            String userId = context.getUserId();
+                            SseEmitter emitter = context.getSseEmitter();
+                            WakeUpAssistance wakeUpAssistance = generateWakeUpAssistance(userId, response, sessionId, emitter);
+                            log.info("[BUSINESS] 执行WAKEUP业务: 已生成叫醒服务: {}", wakeUpAssistance.getWakeUpId());
+                            structuredDataList.add(new StructuredDataWrapper("WAKEUP", wakeUpAssistance));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("[BUSINESS] 执行业务失败: {}", e.getMessage(), e);
+            }
+        }
+        
+        return structuredDataList;
+    }
+    
+    /**
+     * 清理所有数据标签（不推特殊标记给用户）
+     */
+    private String cleanAllDataTags(String response) {
+        // 清理县管标记
+        response = response.replace("[SHOW_MENU]", "").trim();
+        response = response.replace("[CONFIRM_MENU]", "").trim();
+        response = response.replace("[GENERATE_ORDER]", "").trim();
+        response = response.replace("[REQUEST_TIME_INPUT]", "").trim();
+        response = response.replace("[GENERATE_WAKEUP]", "").trim();
+        
+        // 清理JSON数据块
+        response = cleanJSONDataBlocks(response);
+        
+        return response.trim();
     }
 }

@@ -87,4 +87,80 @@ public interface HotelRouterAgent {
     String routeToAgentWithContext(@MemoryId String memoryId, 
                                     @UserMessage String userMessage, 
                                    @V("businessContext") String businessContext);
+    
+
+    @SystemMessage("""
+            你是一个酒店助手的上位业务规划器。你的职责是根据用户消息分析需求、生成结构化的任务列表。
+            
+            你需要输出的是一个逻辑规划。
+            
+            可执行的任务类型：
+            1. MO_AGENT - 点餐业务
+            2. WAKEUP_AGENT - 叫醒服务
+            3. ROUTER_AGENT - 无法识别或打招呼
+            
+            规划规则：
+            - 用户可能同时需要两个服务
+            - 用户打招或惰掲，返回 ROUTER_AGENT
+            - 如果用户输入模糊（如“确认”、“好的”、“就这些”），根据上下文推断：
+              * 如果 LAST_AGENT=MO_AGENT 或 CURRENT_BUSINESS=MENU，则返回 MO_AGENT
+              * 如果 LAST_AGENT=WAKEUP_AGENT 或 CURRENT_BUSINESS=WAKEUP，则返回 WAKEUP_AGENT
+              * 否则返回 ROUTER_AGENT
+            
+            上下文信息（如果提供）：
+            {{businessContext}}
+            
+            输出格式（不要任何描述、不要换行）：
+            - MO_AGENT
+            - WAKEUP_AGENT
+            - MO_AGENT,WAKEUP_AGENT
+            - ROUTER_AGENT
+            """)
+    String generateTasks(@MemoryId String memoryId, @UserMessage String userMessage, @V("businessContext") String businessContext);
+    
+    @SystemMessage("""
+            你是一个酒店助手的智能任务解析器。你的职责是将用户的复合需求拆分成不同子任务的具体内容。
+            
+            可识别的业务类型：
+            - MO_AGENT：点餐相关（菜品、点餐、订单、加菜、换菜等）
+            - WAKEUP_AGENT：叫醒相关（叫醒、闹钟、起床时间等）
+            
+            任务：
+            1. 识别用户消息中包含哪些业务需求
+            2. 将每个业务需求提取出来，生成对应的子消息
+            
+            输出格式（严格的JSON格式，不要任何其他内容）：
+            {
+              "MO_AGENT": "点餐相关的具体内容",
+              "WAKEUP_AGENT": "叫醒相关的具体内容"
+            }
+            
+            示例1：
+            用户输入："我要点个红烧肉，明天7点叫我"
+            输出：
+            {
+              "MO_AGENT": "我要点个红烧肉",
+              "WAKEUP_AGENT": "明天7点叫我"
+            }
+            
+            示例2：
+            用户输入："帮我看看菜单"
+            输出：
+            {
+              "MO_AGENT": "帮我看看菜单"
+            }
+            
+            示例3：
+            用户输入："明天早上7点半叫醒我"
+            输出：
+            {
+              "WAKEUP_AGENT": "明天早上7点半叫醒我"
+            }
+            
+            注意：
+            - 只输出JSON，不要有任何额外的解释或文字
+            - 如果用户只有一个需求，只输出对应的字段
+            - 保持用户原意，不要改写或总结
+            """)
+    String parseUserIntents(@MemoryId String memoryId, @UserMessage String userMessage);
 }
