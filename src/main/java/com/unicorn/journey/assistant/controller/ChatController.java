@@ -8,6 +8,7 @@ import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.User;
 import com.unicorn.journey.assistant.service.AssistantService;
 import com.unicorn.journey.assistant.service.STTService;
+import com.unicorn.journey.assistant.service.TrainingTTSService;
 import com.unicorn.journey.assistant.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +27,15 @@ public class ChatController {
 
     private final STTService sttService;
 
+    private final TrainingTTSService trainingTTSService;
+
     private final AssistantService assistantService;
 
-    public ChatController(AiServiceFactory aiServiceFactory, UserService userService, STTService sttService, AssistantService assistantService) {
+    public ChatController(AiServiceFactory aiServiceFactory, UserService userService, STTService sttService, TrainingTTSService trainingTTSService, AssistantService assistantService) {
         this.aiServiceFactory = aiServiceFactory;
         this.userService = userService;
         this.sttService = sttService;
+        this.trainingTTSService = trainingTTSService;
         this.assistantService = assistantService;
     }
 
@@ -111,6 +115,15 @@ public class ChatController {
     @GetMapping("/tts")
     public Result tts() throws Exception {
         sttService.textToSpeechAndSave("我是一只小小小小鸟。想要飞却怎么也飞不高。");
+        return Result.ok();
+    }
+
+
+
+
+    @GetMapping("/ttts")
+    public Result ttts() throws Exception {
+        trainingTTSService.textToSpeech("我是尼克胡尼克，宇宙无敌第一帅狐狸。");
         return Result.ok();
     }
 

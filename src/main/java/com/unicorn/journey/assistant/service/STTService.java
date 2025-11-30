@@ -284,17 +284,18 @@ public class STTService {
 //    }
 
 
-/**
- * Get resource ID based on voice type
- *
- * @param voice Voice type string
- * @return Corresponding resource ID
- */
-public static String voiceToResourceId(String voice) {
-    // Map different voice types to resource IDs based on actual needs
-    if (voice.startsWith("S_")) {
-        return "volc.megatts.default";
+    /**
+     * Get resource ID based on voice type
+     *
+     * @param voice Voice type string
+     * @return Corresponding resource ID
+     */
+    public static String voiceToResourceId(String voice) {
+        // Map different voice types to resource IDs based on actual needs
+        if (voice.startsWith("S_")) {
+            return "volc.megatts.default";
+        }
+        return "volc.service_type.10029";
     }
-    return "volc.service_type.10029";
-}
+
 }
