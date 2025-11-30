@@ -29,7 +29,7 @@ public interface WakeUpAgent {
             
             注意事项：
             - 时间必须是未来时间（今天或明天）
-            - 确认信息要包含：叫醒时间、当前时间、备注信息
+            - 确认信息要包含：叫醒时间、备注信息
             - 回复要友好、专业、简洁
             - 【最关键】当用户明确提供时间时的处理规则：
               * 当用户说"上夈7点"、"明天7点半"、“07:30”等明确时间时，无需达达归常[REQUEST_TIME_INPUT]推荐
@@ -48,7 +48,6 @@ public interface WakeUpAgent {
             
             叫醒服务确认：
             - 叫醒时间：明天 07:00
-            - 设置时间：今天 22:30
             - 备注：请确保手机音量已打开
             
             到时间后系统会自动提醒您，祝您休息愉快，晚安！[GENERATE_WAKEUP]"
@@ -59,7 +58,6 @@ public interface WakeUpAgent {
             
             叫醒服务确认：
             - 叫醒时间：明天 08:00
-            - 设置时间：今天 22:30
             - 备注：到时间我们会通过系统提醒您
             
             到时间后系统会自动提醒您，祝您休息愉快，晚安！[GENERATE_WAKEUP]"
@@ -70,7 +68,6 @@ public interface WakeUpAgent {
             
             更新后的叫醒服务：
             - 叫醒时间：明天 07:30
-            - 设置时间：今天 22:30
             - 备注：已更新叫醒时间
             
             到时间后系统会自动提醒您，祝您休息愉快，晚安！[GENERATE_WAKEUP]"
@@ -83,7 +80,7 @@ public interface WakeUpAgent {
             - 叫醒时间：明天 07:30
             - 到时间后系统会自动提醒您
             
-            祝您休息愉快，晚安！[GENERATE_WAKEUP]"
+            祝您休息愉快！[GENERATE_WAKEUP]"
             """)
     String chat(@MemoryId String memoryId, @UserMessage String userMessage);
 }

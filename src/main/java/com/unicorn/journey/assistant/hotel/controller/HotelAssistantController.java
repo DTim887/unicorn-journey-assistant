@@ -1,5 +1,6 @@
 package com.unicorn.journey.assistant.hotel.controller;
 
+import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.hotel.dto.ChatRequest;
 import com.unicorn.journey.assistant.hotel.entity.WakeUpAssistance;
 import com.unicorn.journey.assistant.hotel.service.HotelAssistantService;
@@ -36,18 +37,23 @@ public class HotelAssistantController {
      * sessionId为空时创建新会话，否则使用已有会话
      * 对话内容同步返回，结构化数据异步发送
      * 
-     * @param request 聊天请求（包含userId, message, sessionId, enableVoiceOutput）
+     * @param request 聊天请求（包含userId, message, sessionId, enableVoiceOutput, voiceCharacter）
      */
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chat(@RequestBody ChatRequest request) {
-        log.info("收到聊天请求: userId={}, message={}, sessionId={}, enableVoiceOutput={}", 
-                request.getUserId(), request.getMessage(), request.getSessionId(), request.getEnableVoiceOutput());
+        log.info("收到聊天请求: userId={}, message={}, sessionId={}, enableVoiceOutput={}, voiceCharacter={}", 
+                request.getUserId(), request.getMessage(), request.getSessionId(), 
+                request.getEnableVoiceOutput(), request.getVoiceCharacter());
+        
+        // 解析语音角色
+        VoiceCharacter voiceCharacter = parseVoiceCharacter(request.getVoiceCharacter());
         
         return hotelAssistantService.chat(
                 request.getUserId(), 
                 request.getMessage(), 
                 request.getSessionId(),
-                request.getEnableVoiceOutput() != null ? request.getEnableVoiceOutput() : false
+                request.getEnableVoiceOutput() != null ? request.getEnableVoiceOutput() : false,
+                voiceCharacter
         );
     }
     
@@ -59,25 +65,32 @@ public class HotelAssistantController {
      * @param userId 用户ID
      * @param sessionId 会话ID（可选）
      * @param enableVoiceOutput 是否启用语音输出，默认true
+     * @param voiceCharacterName 语音角色，默认NICK
      */
     @PostMapping(value = "/voice-chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter voiceChat(
             @RequestParam("audio") MultipartFile file,
             @RequestParam("userId") String userId,
             @RequestParam(value = "sessionId", required = false) String sessionId,
-            @RequestParam(value = "enableVoiceOutput", defaultValue = "true") boolean enableVoiceOutput) throws IOException {
+            @RequestParam(value = "enableVoiceOutput", defaultValue = "true") boolean enableVoiceOutput,
+            @RequestParam(value = "voiceCharacter", required = false) String voiceCharacterName) throws IOException {
         
-        log.info("收到语音聊天请求: userId={}, sessionId={}, enableVoiceOutput={}", userId, sessionId, enableVoiceOutput);
+        log.info("收到语音聊天请求: userId={}, sessionId={}, enableVoiceOutput={}, voiceCharacter={}", 
+                userId, sessionId, enableVoiceOutput, voiceCharacterName);
         
         // 语音转文字
         String userMessage = sttService.speechToText(file);
         log.info("语音识别结果: {}", userMessage);
         
+        // 解析语音角色
+        VoiceCharacter voiceCharacter = parseVoiceCharacter(voiceCharacterName);
+        
         return hotelAssistantService.chat(
                 userId, 
                 userMessage, 
                 sessionId,
-                enableVoiceOutput
+                enableVoiceOutput,
+                voiceCharacter
         );
     }
 
@@ -122,5 +135,21 @@ public class HotelAssistantController {
     @DeleteMapping("/session/{sessionId}")
     public void clearSession(@PathVariable String sessionId) {
         hotelAssistantService.clearSession(sessionId);
+    }
+    
+    /**
+     * 解析语音角色字符串
+     */
+    private VoiceCharacter parseVoiceCharacter(String voiceCharacterName) {
+        if (voiceCharacterName == null || voiceCharacterName.trim().isEmpty()) {
+            return VoiceCharacter.NICK; // 默认使用尼克
+        }
+        
+        try {
+            return VoiceCharacter.valueOf(voiceCharacterName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.warn("无效的语音角色: {}, 使用默认值 NICK", voiceCharacterName);
+            return VoiceCharacter.NICK;
+        }
     }
 }

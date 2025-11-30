@@ -30,6 +30,12 @@
 | message | String | 是 | 用户消息内容 |
 | sessionId | String | 否 | 会话ID，首次对话可为空，后续对话需携带 |
 | enableVoiceOutput | Boolean | 否 | 是否启用语音输出，默认为 false |
+| voiceCharacter | String | 否 | 语音角色选择，可选值："NICK"（尼克）或 "JUDY"（朱迪），默认为 "NICK" |
+
+**语音角色说明**:
+- **NICK（尼克）**: 男性语音，声音沉稳、专业
+- **JUDY（朱迪）**: 女性语音，声音亲切、温柔
+- 前端可根据用户偏好选择不同的语音角色，提供个性化服务体验
 
 **请求示例**:
 
@@ -40,7 +46,22 @@ curl --location 'http://localhost:8080/journey-assistant/hotel/chat' \
     "userId": "1",
     "message": "我想订餐",
     "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-    "enableVoiceOutput": true
+    "enableVoiceOutput": true,
+    "voiceCharacter": "JUDY"
+}'
+```
+
+**使用尼克语音的示例**:
+
+```bash
+curl --location 'http://localhost:8080/journey-assistant/hotel/chat' \
+--header 'Content-Type: application/json' \
+--data '{
+    "userId": "1",
+    "message": "帮我设置明天早上7点的叫醒服务",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "enableVoiceOutput": true,
+    "voiceCharacter": "NICK"
 }'
 ```
 
@@ -65,6 +86,7 @@ curl --location 'http://localhost:8080/journey-assistant/hotel/chat' \
 | userId | String | 是 | 用户ID |
 | sessionId | String | 否 | 会话ID，首次对话可为空 |
 | enableVoiceOutput | Boolean | 否 | 是否启用语音输出，默认为 true |
+| voiceCharacter | String | 否 | 语音角色选择，可选值："NICK"（尼克）或 "JUDY"（朱迪），默认为 "NICK" |
 
 **请求示例**:
 
@@ -74,6 +96,7 @@ curl -X POST \
   -F "userId=1" \
   -F "sessionId=550e8400-e29b-41d4-a716-446655440000" \
   -F "enableVoiceOutput=true" \
+  -F "voiceCharacter=JUDY" \
   http://localhost:8080/journey-assistant/hotel/voice-chat
 ```
 
@@ -510,22 +533,24 @@ data: {"data":[{"menuId":1,"name":"清蒸鲈鱼","price":68.0}]}
 
 ```json
 {
-  "audioPath": "/journey-assistant/voice/voice_1234567890_abc123.wav",
+  "audioPath": "/journey-assistant/voice/voice_JUDY_1234567890_abc123.mp3",
   "text": "您好，我已为您推荐了几道菜品",
-  "type": "VOICE"
+  "type": "assistant",
+  "voiceCharacter": "JUDY"
 }
 ```
 
 **字段说明**:
-- `audioPath`: 语音文件访问路径
+- `audioPath`: 语音文件访问路径（文件名包含角色信息）
 - `text`: 语音对应的文本内容
-- `type`: 消息类型标识
+- `type`: 消息类型标识（assistant 表示助手回复）
+- `voiceCharacter`: 语音角色名称（NICK 或 JUDY）
 
 **SSE 消息示例**:
 
 ```
 event: voice
-data: {"audioPath":"/journey-assistant/voice/voice_1234567890_abc123.wav","text":"您好"}
+data: {"audioPath":"/journey-assistant/voice/voice_NICK_1234567890_abc123.mp3","text""您好","type":"assistant","voiceCharacter":"NICK"}
 
 ```
 
@@ -619,7 +644,8 @@ data: {"error":"会话已过期，请重新开始对话"}
   "userId": "String",           // 用户ID（必填）
   "message": "String",          // 消息内容（必填）
   "sessionId": "String",        // 会话ID（选填）
-  "enableVoiceOutput": Boolean   // 是否启用语音输出（选填，默认 false）
+  "enableVoiceOutput": Boolean,  // 是否启用语音输出（选填，默认 false）
+  "voiceCharacter": "String"    // 语音角色（选填，可选值："NICK" 或 "JUDY"，默认 "NICK"）
 }
 ```
 
@@ -646,6 +672,39 @@ A: 目前支持 WAV 格式的音频文件。
 A: 文本聊天接口 `/chat` 默认不生成语音。如需要语音回复，请设置 `enableVoiceOutput: true` 参数。
 
 语音聊天接口 `/voice-chat` 默认启用语音输出。如不需要，请设置 `enableVoiceOutput: false` 参数。
+
+### Q4: 如何选择不同的语音角色？
+
+A: 系统提供两种语音角色供选择：
+
+- **NICK（尼克）**: 男性语音，声音沉稳、专业，适合商务场景
+- **JUDY（朱迪）**: 女性语音，声音亲切、温柔，适合休闲场景
+
+**使用方式**:
+
+1. **文本聊天接口**: 在请求体中添加 `voiceCharacter` 参数
+   ```json
+   {
+     "userId": "1",
+     "message": "我想订餐",
+     "enableVoiceOutput": true,
+     "voiceCharacter": "JUDY"  // 选择朱迪的语音
+   }
+   ```
+
+2. **语音聊天接口**: 在 form-data 中添加 `voiceCharacter` 字段
+   ```bash
+   curl -X POST \
+     -F "audio=@/path/to/audio.wav" \
+     -F "userId=1" \
+     -F "voiceCharacter=NICK" \
+     http://localhost:8080/journey-assistant/hotel/voice-chat
+   ```
+
+**注意**:
+- 如果不指定 `voiceCharacter` 参数，系统默认使用 NICK（尼克）语音
+- 语音角色选择同时适用于聊天响应和叫醒服务语音
+- 前端可以根据用户偏好保存设置，在每次请求中携带对应的角色参数
 
 
 

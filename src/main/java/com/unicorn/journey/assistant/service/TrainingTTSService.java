@@ -1,6 +1,7 @@
 package com.unicorn.journey.assistant.service;
 
 import com.alibaba.fastjson.JSON;
+import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.tts.TtsRequest;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -9,6 +10,7 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -61,6 +63,50 @@ public class TrainingTTSService {
         fos.write(audio);
         fos.close();
         log.info("TTS done.");
+    }
+
+    /**
+     * 文本转语音并保存（支持角色选择）
+     * @param text 文本内容
+     * @param voiceCharacter 语音角色
+     * @return 音频字节数组
+     */
+    public byte[] textToSpeechWithCharacter(String text, VoiceCharacter voiceCharacter) throws IOException, InterruptedException {
+        // 如果未指定角色，使用默认角色（尼克）
+        if (voiceCharacter == null) {
+            voiceCharacter = VoiceCharacter.NICK;
+        }
+        
+        StopWatch stopWatch = new StopWatch("TTS-" + voiceCharacter.name());
+        stopWatch.start("总计时");
+        log.info("[TTS] 开始生成语音 - 角色: {}, 文本长度: {} 字", voiceCharacter.name(), text.length());
+        
+        TtsRequest ttsRequest = TtsRequest.builder()
+                .app(TtsRequest.App.builder()
+                        .appid(appId)
+                        .cluster("volcano_icl")
+                        .build())
+                .user(TtsRequest.User.builder()
+                        .uid("uid")
+                        .build())
+                .audio(TtsRequest.Audio.builder()
+                        .encoding("mp3")
+                        .voiceType(voiceCharacter.getCode())  // 使用枚举中的语音编码
+                        .build())
+                .request(TtsRequest.Request.builder()
+                        .reqID(UUID.randomUUID().toString())
+                        .operation("query")
+                        .text(text)
+                        .build())
+                .build();
+
+        TtsWebsocketClient ttsWebsocketClient = new TtsWebsocketClient(accessToken);
+        byte[] audio = ttsWebsocketClient.submit(ttsRequest);
+        stopWatch.stop();
+        log.info("[耗时统计-TTS] 总耗时: {} ms", stopWatch.getLastTaskTimeMillis());
+        
+        log.info("[TTS] 语音生成成功 - 角色: {}, 音频大小: {} bytes", voiceCharacter.name(), audio.length);
+        return audio;
     }
 
 

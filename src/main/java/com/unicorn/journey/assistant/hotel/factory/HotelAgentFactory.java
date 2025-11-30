@@ -66,7 +66,7 @@ public class HotelAgentFactory {
     public com.unicorn.journey.assistant.hotel.agent.SummaryAgent createSummaryAgent() {
         return AiServices.builder(com.unicorn.journey.assistant.hotel.agent.SummaryAgent.class)
                 .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(2))
                 .build();
     }
 }

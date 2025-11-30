@@ -6,6 +6,7 @@ import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.entity.Assistant;
 import com.unicorn.journey.assistant.entity.User;
+import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.service.AssistantService;
 import com.unicorn.journey.assistant.service.STTService;
 import com.unicorn.journey.assistant.service.TrainingTTSService;
@@ -114,7 +115,7 @@ public class ChatController {
 
     @GetMapping("/tts")
     public Result tts() throws Exception {
-        sttService.textToSpeechAndSave("我是一只小小小小鸟。想要飞却怎么也飞不高。");
+        sttService.textToSpeechAndSave("我是一只小小小小鸟。想要飞却怎么也飞不高。", VoiceCharacter.NICK);
         return Result.ok();
     }
 

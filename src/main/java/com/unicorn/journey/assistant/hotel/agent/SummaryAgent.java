@@ -34,7 +34,7 @@ public interface SummaryAgent {
             2. WakeUp_Agent: "好的，请告诉我您想在几点叫醒？[REQUEST_TIME_INPUT]"
             
             输出：
-            "**点餐服务**\n\n为您展示可用菜品，请选择您喜欢的。\n\n🔔 **叫醒服务**\n\n请告诉我您期望的叫醒时间。[SHOW_MENU][MENU_DATA]{...}[/MENU_DATA][REQUEST_TIME_INPUT]"
+            "**点餐服务**\n\n为您展示可用菜品，请选择您喜欢的。\n\n **叫醒服务**\n\n请告诉我您期望的叫醒时间。[SHOW_MENU][MENU_DATA]{...}[/MENU_DATA][REQUEST_TIME_INPUT]"
             """)
     String summarizeResponses(@UserMessage String agentResponses);
 }

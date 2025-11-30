@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unicorn.journey.assistant.client.AudioRequest;
 import com.unicorn.journey.assistant.client.ByteDanceRecognizeClient;
 import com.unicorn.journey.assistant.client.SSTResponse;
+import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.protocol.EventType;
 import com.unicorn.journey.assistant.protocol.Message;
 import com.unicorn.journey.assistant.protocol.MsgType;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class STTService {
 
     private final ByteDanceRecognizeClient byteDanceRecognizeClient;
+    private final TrainingTTSService trainingTTSService;
 
     @Value("${doubao.app.id}")
     private String appId;
@@ -52,8 +54,9 @@ public class STTService {
     private static final int SEQUENCE = -1;
     private static final String MODEL_NAME = "bigmodel";
 
-    public STTService(ByteDanceRecognizeClient byteDanceRecognizeClient) {
+    public STTService(ByteDanceRecognizeClient byteDanceRecognizeClient, TrainingTTSService trainingTTSService) {
         this.byteDanceRecognizeClient = byteDanceRecognizeClient;
+        this.trainingTTSService = trainingTTSService;
     }
 
     public String speechToText(MultipartFile file) throws IOException {
@@ -74,95 +77,44 @@ public class STTService {
     }
 
     /**
-     * 文本转语音并保存到服务器
+     * 文本转语音并保存到服务器（支持角色选择）
      * @param text 要转换的文本
+     * @param voiceCharacter 语音角色枚举
      * @return 音频文件的访问路径
      */
-    public String textToSpeechAndSave(String text) throws Exception {
-        // Set request headers
-        Map<String, String> headers = Map.of(
-                "X-Api-App-Key", appId,
-                "X-Api-Access-Key", accessToken,
-                "X-Api-Resource-Id", voiceToResourceId(VOICE),
-                "X-Api-Connect-Id", UUID.randomUUID().toString(),
-                "X-Control-Require-Usage-Tokens-Return", "*");
-
-        // Create WebSocket client
-        SpeechWebSocketClient client = new SpeechWebSocketClient(new URI(voiceEndpoint), headers);
-        try {
-            client.connectBlocking();
-            // Prepare request parameters
-            Map<String, Object> request = Map.of(
-                    "user", Map.of("uid", UUID.randomUUID().toString()),
-                    "req_params", Map.of(
-                            "speaker", VOICE,
-                            "audio_params", Map.of(
-                                    "format", "wav",
-                                    "sample_rate", 24000,
-                                    "enable_timestamp", true),
-                            // additions requires a JSON string
-                            "additions", objectMapper.writeValueAsString(Map.of(
-                                    "disable_markdown_filter", false)),
-                            "text", text));
-
-            // Send request
-            client.sendFullClientMessage(objectMapper.writeValueAsBytes(request));
-
-            // Receive response
-            ByteArrayOutputStream audioStream = new ByteArrayOutputStream();
-            while (true) {
-                Message msg = client.receiveMessage();
-                log.info("Received message: {}", msg);
-
-                if (msg.getType() == MsgType.AUDIO_ONLY_SERVER) {
-                    if (msg.getPayload() != null) {
-                        audioStream.write(msg.getPayload());
-                    }
-                } else if (msg.getType() == MsgType.ERROR) {
-                    throw new RuntimeException("Server returned error: " + new String(msg.getPayload()));
-                }
-
-                if (msg.getType() == MsgType.FULL_SERVER_RESPONSE &&
-                        msg.getEvent() == EventType.TTS_SENTENCE_END) {
-                    String jsonString = new String(msg.getPayload(), StandardCharsets.UTF_8);
-                    log.info("Received TTS response sentence end: {}", jsonString);
-                    continue;
-                }
-
-                if (msg.getType() == MsgType.FULL_SERVER_RESPONSE &&
-                        msg.getEvent() == EventType.SESSION_FINISHED) {
-                    break;
-                }
-            }
-
-            if (audioStream.size() == 0) {
-                throw new RuntimeException("No audio data received");
-            }
-
-            // 生成文件名（使用时间戳 + UUID）
-            String fileName = String.format("voice_%s_%s.%s", 
-                    System.currentTimeMillis(), 
-                    UUID.randomUUID().toString().substring(0, 8),
-                    "wav");
-            
-            // 确保目录存在 - 使用系统临时目录或项目目录下的voice文件夹
-            String voiceDir = System.getProperty("user.dir") + File.separator + "voice";
-            File outputDir = new File(voiceDir);
-            if (!outputDir.exists()) {
-                outputDir.mkdirs();
-                log.info("[语音文件] 创建语音目录: {}", outputDir.getAbsolutePath());
-            }
-            
-            // 保存音频文件
-            File audioFile = new File(outputDir, fileName);
-            Files.write(audioFile.toPath(), audioStream.toByteArray());
-            log.info("[语音文件] 音频文件已保存: {}", audioFile.getAbsolutePath());
-            
-            // 返回访问路径（只返回相对路径）
-            return "/voice/" + fileName;
-        } finally {
-            client.closeBlocking();
+    public String textToSpeechAndSave(String text, VoiceCharacter voiceCharacter) throws Exception {
+        // 如果未指定角色，使用默认角色（尼克）
+        if (voiceCharacter == null) {
+            voiceCharacter = VoiceCharacter.NICK;
         }
+        
+        log.info("[语音生成] 开始生成语音 - 角色: {}, 文本: {}", voiceCharacter.name(), text);
+        
+        // 使用 TrainingTTSService 生成语音
+        byte[] audioData = trainingTTSService.textToSpeechWithCharacter(text, voiceCharacter);
+        
+        // 生成文件名（包含角色信息）
+        String fileName = String.format("voice_%s_%s_%s.%s", 
+                voiceCharacter.name(),
+                System.currentTimeMillis(), 
+                UUID.randomUUID().toString().substring(0, 8),
+                "mp3");
+        
+        // 确保目录存在 - 使用系统临时目录或项目目录下的voice文件夹
+        String voiceDir = System.getProperty("user.dir") + File.separator + "voice";
+        File outputDir = new File(voiceDir);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+            log.info("[语音文件] 创建语音目录: {}", outputDir.getAbsolutePath());
+        }
+        
+        // 保存音频文件
+        File audioFile = new File(outputDir, fileName);
+        Files.write(audioFile.toPath(), audioData);
+        log.info("[语音文件] 音频文件已保存: {} - 角色: {}", audioFile.getAbsolutePath(), voiceCharacter.name());
+        
+        // 返回访问路径（只返回相对路径）
+        return "/voice/" + fileName;
     }
 
 
