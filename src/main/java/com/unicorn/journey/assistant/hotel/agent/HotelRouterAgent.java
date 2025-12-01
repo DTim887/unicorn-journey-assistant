@@ -29,9 +29,10 @@ public interface HotelRouterAgent {
             - 具体时间："帮我设置明天早7点的叫醒"、"我要6:30叫醒我"
             - 修改叫醒："取消叫醒"、"改成8点"、"我不需要叫醒了"
             - 查询叫醒："我的叫醒时间是什么时候？"、"有没有设置叫醒？"
+            - 【新增】讲故事需求："给我讲个故事"、"我想听故事"、"讲个迪士尼故事"、"明天叫醒时给我讲个故事"
             
             【判断逻辑】
-            1. 优先根据用户提到的具体功能词判断："点餐""菜""吃饭" -> MO_AGENT；"叫醒""闹钟""叫我" -> WAKEUP_AGENT
+            1. 优先根据用户提到的具体功能词判断："点餐""菜""吃饭" -> MO_AGENT；"叫醒""闹钟""叫我""故事" -> WAKEUP_AGENT
             2. 在多轮对话中，如果用户处于点餐过程（上一条消息是关于菜品的），继续认为是点餐相关
             3. 如果明确要求点餐流程继续（加菜、换菜、确认等），路由到 MO_AGENT
             4. 如果无法判断或只是打招呼/寒暄，返回 ROUTER_AGENT
@@ -65,12 +66,14 @@ public interface HotelRouterAgent {
             - 具体时间："帮我设置明天早7点的叫醒"、"我要6:30叫醒我"
             - 修改叫醒："取消叫醒"、"改成8点"、"我不需要叫醒了"
             - 查询叫醒："我的叫醒时间是什么时候？"、"有没有设置叫醒？"
+            - 【新增】讲故事需求："给我讲个故事"、"我想听故事"、"讲个迪士尼故事"、"明天叫醒时给我讲个故事"
             
             【判断优先级 - 非常重要】
             1. 【最高优先级】用户的明确意图语言优先于业务上下文！
-               - 即使用户处于点餐流程中，但用户明确说了"我需要叫醒"、"帮我设置闹钟"等叫醒相关词汇，就路由到 WAKEUP_AGENT
+               - 即使用户处于点餐流程中，但用户明确说了"我需要叫醒"、"帮我设置闹钟"、"讲个故事"等叫醒相关词汇，就路由到 WAKEUP_AGENT
                - 即使用户处于叫醒流程中，但用户明确说了"我再要点个菜"、"添加菜品"等点餐相关词汇，就路由到 MO_AGENT
                - 举例：用户正在点餐，说"叫醒服务" -> 应路由到 WAKEUP_AGENT，不是 MO_AGENT
+               - 举例：用户正在点餐，说"给我讲个故事" -> 应路由到 WAKEUP_AGENT，不是 MO_AGENT
             2. 第二优先级：业务上下文感知（当没有明确的业务切换语言时）
                - 如果用户处于点餐流程（MENU/CONFIRM_MENU），且没有明确请求业务切换，就继续路由到 MO_AGENT
                - 如果用户处于叫醒流程（WAKEUP），且没有明确请求业务切换，就继续路由到 WAKEUP_AGENT
@@ -90,14 +93,20 @@ public interface HotelRouterAgent {
     
 
     @SystemMessage("""
-            你是一个酒店助手的上位业务规划器。你的职责是根据用户消息分析需求、生成结构化的任务列表。
+            你是一个酒店助手的业务规划器。你的职责是根据用户消息分析需求、生成结构化的任务列表。
             
             你需要输出的是一个逻辑规划。
             
             可执行的任务类型：
             1. MO_AGENT - 点餐业务
-            2. WAKEUP_AGENT - 叫醒服务
+            2. WAKEUP_AGENT - 叫醒服务（包含讲故事需求）
             3. ROUTER_AGENT - 无法识别或打招呼
+            
+            【重要】业务识别规则：
+            - 点餐相关："点餐"、"菜"、"吃饭"、"订餐"、"菜单"、"菜品" -> MO_AGENT
+            - 叫醒相关："叫醒"、"闹钟"、"起床"、"叫我"、"叫醒服务" -> WAKEUP_AGENT
+            - 讲故事相关："故事"、"讲个故事"、"听故事"、"迪士尼故事" -> WAKEUP_AGENT
+            - 打招呼/寒暗："你好"、"在吗"、"帮我" -> ROUTER_AGENT
             
             规划规则：
             - 用户可能同时需要两个服务
@@ -115,6 +124,12 @@ public interface HotelRouterAgent {
             - WAKEUP_AGENT
             - MO_AGENT,WAKEUP_AGENT
             - ROUTER_AGENT
+            
+            示例：
+            用户输入："给我讲个故事" -> 输出：WAKEUP_AGENT
+            用户输入："我想听迪士尼故事" -> 输出：WAKEUP_AGENT
+            用户输入："明天7点给我讲个故事" -> 输出：WAKEUP_AGENT
+            用户输入："帮我讲个故事" -> 输出：WAKEUP_AGENT
             """)
     String generateTasks(@MemoryId String memoryId, @UserMessage String userMessage, @V("businessContext") String businessContext);
     
@@ -123,7 +138,7 @@ public interface HotelRouterAgent {
             
             可识别的业务类型：
             - MO_AGENT：点餐相关（菜品、点餐、订单、加菜、换菜等）
-            - WAKEUP_AGENT：叫醒相关（叫醒、闹钟、起床时间等）
+            - WAKEUP_AGENT：叫醒相关（叫醒、闹钟、起床时间、讲故事等）
             
             任务：
             1. 识别用户消息中包含哪些业务需求
@@ -155,6 +170,13 @@ public interface HotelRouterAgent {
             输出：
             {
               "WAKEUP_AGENT": "明天早上7点半叫醒我"
+            }
+            
+            示例4：
+            用户输入："给我讲个迪士尼故事"
+            输出：
+            {
+              "WAKEUP_AGENT": "给我讲个迪士尼故事"
             }
             
             注意：
