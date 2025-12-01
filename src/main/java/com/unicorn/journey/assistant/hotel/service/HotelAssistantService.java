@@ -825,6 +825,10 @@ public class HotelAssistantService {
         // 格式化时间信息
         String timeStr = String.format("%02d:%02d", wakeUpTime.getHour(), wakeUpTime.getMinute());
         
+        // 生成随机数（1-18），用于映射到不同的迪士尼故事
+        int storyIndex = new Random().nextInt(18) + 1;
+        log.info("[WAKEUP-COPY] 生成随机故事索引: {}", storyIndex);
+        
         try {
             // 使用大模型生成创意文案
             String memoryId = "wakeup_copy_" + wakeUp.getWakeUpId();
@@ -834,7 +838,8 @@ public class HotelAssistantService {
             String generatedCopy = getWakeUpCopywritingAgent().generateWakeUpCopy(
                 memoryId,
                 timeStr,
-                remark
+                remark,
+                storyIndex
             );
             aiWatch.stop();
             log.info("[耗时统计] 叫醒文案AI生成耗时: {} ms", aiWatch.getTotalTimeMillis());
