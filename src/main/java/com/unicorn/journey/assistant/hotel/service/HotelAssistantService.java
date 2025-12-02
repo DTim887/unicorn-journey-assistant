@@ -304,7 +304,7 @@ public class HotelAssistantService {
                 List<StructuredDataWrapper> structuredDataList = new ArrayList<>();
                 
                 if (tasks.equals("ROUTER_AGENT")) {
-                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或陪伴服务吗？";
+                    response = getDefaultResponseByCharacter(voiceCharacter);
                 } else if (tasks.contains(",")) {
                     // 多个任务 - 并发执行
                     StopWatch agentWatch = new StopWatch("多任务Agent执行");
@@ -404,7 +404,7 @@ public class HotelAssistantService {
                     // 清理标记
                     response = cleanAllDataTags(response);
                 } else {
-                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或陪伴服务吗？";
+                    response = getDefaultResponseByCharacter(voiceCharacter);
                 }
 
                 // ===== 8：SSE发送 =====
@@ -586,10 +586,6 @@ public class HotelAssistantService {
         response = response.replaceAll("\\[MENU_DATA\\].*?\\[/MENU_DATA\\]", "").trim();
         // 清理SELECTED_DATA数据块
         response = response.replaceAll("\\[SELECTED_DATA\\].*?\\[/SELECTED_DATA\\]", "").trim();
-        
-        // 【新增】清理文本中列举的菜品信息（如：红烧肉 — 58元）
-        // 匹配格式：菜名 + 空格/制表符 + —/- + 空格/制表符 + 数字 + 元
-        response = response.replaceAll("(?m)^\\s*[\u4e00-\u9fa5\u3400-\u4dbf\u20000-\u2a6df\u2a700-\u2b73f\u2b740-\u2b81f\u2b820-\u2ceaf\uf900-\ufaff\u3300-\u33ff\ufe30-\ufe4f\uf900-\ufaff\u3200-\u32ff\u2f00-\u2fdf\u2e80-\u2eff\u31c0-\u31ef\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\u31f0-\u31ff\u3200-\u32ff\u3300-\u33ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\ua000-\ua48f\ua490-\ua4cf\uff00-\uffef]+\\s*[—–\\-]\\s*\\d+元\\s*$", "").trim();
         
         // 清理多余的空行（连续的\n\n或更多）
         response = response.replaceAll("(\\n\\s*){3,}", "\n\n").trim();
@@ -1144,5 +1140,15 @@ public class HotelAssistantService {
         response = cleanJSONDataBlocks(response);
         
         return response.trim();
+    }
+    
+    /**
+     * 根据语音角色获取默认响应文案
+     */
+    private String getDefaultResponseByCharacter(VoiceCharacter voiceCharacter) {
+        return switch (voiceCharacter) {
+            case JUDY -> "我暂时无法帮您处理这个需求哦～我是朱迪，您的专属陪伴助手！🐰 我可以为您讲迪士尼故事、温柔地叫醒您，还能帮您订美味的餐食。请问您需要什么服务呢？";
+            case NICK -> "这个我还真搞不定哦，哈哈～我是尼克，您的贴心服务员！🦊 我能给您讲迪士尼的精彩故事、帮您安排叫醒服务，还能帮您点外卖。有什么需要尽管说！";
+        };
     }
 }
