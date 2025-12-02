@@ -177,14 +177,14 @@ public class HotelAssistantController {
      */
     private VoiceCharacter parseVoiceCharacter(String voiceCharacterName) {
         if (voiceCharacterName == null || voiceCharacterName.trim().isEmpty()) {
-            return VoiceCharacter.JUDY; // 默认使用尼克
+            return VoiceCharacter.NICK; // 默认使用尼克
         }
         
         try {
             return VoiceCharacter.valueOf(voiceCharacterName.toUpperCase());
         } catch (IllegalArgumentException e) {
             log.warn("无效的语音角色: {}, 使用默认值 NICK", voiceCharacterName);
-            return VoiceCharacter.JUDY;
+            return VoiceCharacter.NICK;
         }
     }
 }

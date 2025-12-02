@@ -304,7 +304,7 @@ public class HotelAssistantService {
                 List<StructuredDataWrapper> structuredDataList = new ArrayList<>();
                 
                 if (tasks.equals("ROUTER_AGENT")) {
-                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或叫醒服务吗？";
+                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或陪伴服务吗？";
                 } else if (tasks.contains(",")) {
                     // 多个任务 - 并发执行
                     StopWatch agentWatch = new StopWatch("多任务Agent执行");
@@ -404,7 +404,7 @@ public class HotelAssistantService {
                     // 清理标记
                     response = cleanAllDataTags(response);
                 } else {
-                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或叫醒服务吗？";
+                    response = "欢迎来到上海迪士尼乐园酒店！今天我能为您提供订餐或陪伴服务吗？";
                 }
 
                 // ===== 8：SSE发送 =====
@@ -481,6 +481,35 @@ public class HotelAssistantService {
                                     SseEventType.STRUCTURED_DATA.getEventName(),
                                     Map.of("type", "TIME_INPUT", "data", data));
                             }
+                            case "STORY" -> {
+                                // 处理讲故事：生成语音并发送voice事件
+                                if (data instanceof Map storyData) {
+                                    String storyText = (String) storyData.get("storyText");
+                                    if (storyText != null && !storyText.isEmpty()) {
+                                        try {
+                                            log.info("[STORY-VOICE] 开始生成故事语音");
+                                            StopWatch storyVoiceWatch = new StopWatch("故事语音生成");
+                                            storyVoiceWatch.start();
+                                            String audioPath = sttService.textToSpeechAndSave(storyText, voiceCharacter);
+                                            storyVoiceWatch.stop();
+                                            log.info("[耗时统计] 故事语音生成耗时: {} ms", storyVoiceWatch.getTotalTimeMillis());
+                                            log.info("[STORY-VOICE] 故事语音生成成功: {}", audioPath);
+                                            
+                                            // 发送故事语音事件（与叫醒服务统一格式）
+                                            sseEventSender.sendEvent(finalSessionId, finalEmitter,
+                                                SseEventType.VOICE.getEventName(),
+                                                Map.of(
+                                                    "audioPath", audioPath,
+                                                    "text", storyText,
+                                                    "type", "story",
+                                                    "voiceCharacter", voiceCharacter.name()
+                                                ));
+                                        } catch (Exception e) {
+                                            log.error("[STORY-VOICE] 故事语音生成失败: {}", e.getMessage(), e);
+                                        }
+                                    }
+                                }
+                            }
                             case "WAKEUP" -> {
                                 sseEventSender.sendEvent(finalSessionId, finalEmitter,
                                     SseEventType.STRUCTURED_DATA.getEventName(),
@@ -491,7 +520,7 @@ public class HotelAssistantService {
                                     String remark = wakeUp.getRemark();
                                     if (remark != null && remark.startsWith("audioPath:")) {
                                         String audioPath = remark.substring("audioPath:".length());
-                                        log.info("[WAKEUP-VOICE] 发送叫醒服务语音: {}", audioPath);
+                                        log.info("[WAKEUP-VOICE] 发送陪伴服务语音: {}", audioPath);
                                         
                                         String voiceText = generateWakeUpText(wakeUp);
                                         
@@ -557,6 +586,14 @@ public class HotelAssistantService {
         response = response.replaceAll("\\[MENU_DATA\\].*?\\[/MENU_DATA\\]", "").trim();
         // 清理SELECTED_DATA数据块
         response = response.replaceAll("\\[SELECTED_DATA\\].*?\\[/SELECTED_DATA\\]", "").trim();
+        
+        // 【新增】清理文本中列举的菜品信息（如：红烧肉 — 58元）
+        // 匹配格式：菜名 + 空格/制表符 + —/- + 空格/制表符 + 数字 + 元
+        response = response.replaceAll("(?m)^\\s*[\u4e00-\u9fa5\u3400-\u4dbf\u20000-\u2a6df\u2a700-\u2b73f\u2b740-\u2b81f\u2b820-\u2ceaf\uf900-\ufaff\u3300-\u33ff\ufe30-\ufe4f\uf900-\ufaff\u3200-\u32ff\u2f00-\u2fdf\u2e80-\u2eff\u31c0-\u31ef\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\u31f0-\u31ff\u3200-\u32ff\u3300-\u33ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\ua000-\ua48f\ua490-\ua4cf\uff00-\uffef]+\\s*[—–\\-]\\s*\\d+元\\s*$", "").trim();
+        
+        // 清理多余的空行（连续的\n\n或更多）
+        response = response.replaceAll("(\\n\\s*){3,}", "\n\n").trim();
+        
         return response;
     }
 
@@ -660,7 +697,6 @@ public class HotelAssistantService {
         Pattern pattern = Pattern.compile("(?:^|\\n)\\s*(?:\\d+\\.)?\\s*([^−\\-*\\n（(]+?)\\s*[−\\-]\\s*([\\d.]+)元", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(response);
 
-        int matchCount = 0;
         while (matcher.find()) {
             String dishName = matcher.group(1).trim();
             if (dishName.isEmpty() || dishName.equals("-")) {
@@ -670,7 +706,6 @@ public class HotelAssistantService {
             MenuItem item = menuService.getMenuItemByName(dishName);
             if (item != null) {
                 selectedItems.add(item);
-                matchCount++;
                 log.info("[CONFIRM] 从文本提取已选菜品: {}", item.getName());
             }
         }
@@ -816,41 +851,58 @@ public class HotelAssistantService {
     }
 
     /**
-     * 生成叫醒语音文本（会议：使用大模型生成带有迪士尼特色的文案）
+     * 生成叫醒语音文本（普通叫醒：使用简单的音乐式叫醒）
      */
     private String generateWakeUpVoiceText(WakeUpAssistance wakeUp) {
         LocalDateTime wakeUpTime = wakeUp.getWakeUpTime();
-        String remark = wakeUp.getRemark() != null ? wakeUp.getRemark() : "无";
         
-        // 格式化时间信息
-        String timeStr = String.format("%02d:%02d", wakeUpTime.getHour(), wakeUpTime.getMinute());
+        // 普通叫醒：使用简单的音乐式叫醒，不讲故事
+        log.info("[WAKEUP] 普通叫醒服务，生成简单叫醒提示");
+        return generateWakeUpMusicText(wakeUpTime);
+    }
+    
+    /**
+     * 生成叫醒文案
+     */
+    private String generateWakeUpMusicText(LocalDateTime wakeUpTime) {
+        int hour = wakeUpTime.getHour();
+        int minute = wakeUpTime.getMinute();
         
-        // 生成随机数（1-18），用于映射到不同的迪士尼故事
-        int storyIndex = new Random().nextInt(18) + 1;
-        log.info("[WAKEUP-COPY] 生成随机故事索引: {}", storyIndex);
+        // 根据时间段生成不同的问候
+        String timeGreeting;
+        String musicGreeting;
         
-        try {
-            // 使用大模型生成创意文案
-            String memoryId = "wakeup_copy_" + wakeUp.getWakeUpId();
-            
-            StopWatch aiWatch = new StopWatch("叫醒文案AI生成");
-            aiWatch.start();
-            String generatedCopy = getWakeUpCopywritingAgent().generateWakeUpCopy(
-                memoryId,
-                timeStr,
-                remark,
-                storyIndex
-            );
-            aiWatch.stop();
-            log.info("[耗时统计] 叫醒文案AI生成耗时: {} ms", aiWatch.getTotalTimeMillis());
-            
-            log.info("[WAKEUP-COPY] 成功生成文案: {}", generatedCopy);
-            return generatedCopy;
-        } catch (Exception e) {
-            log.warn("[WAKEUP-COPY] 文案生成失败，使用默认文案: {}", e.getMessage());
-            // 降级方案：使用静态模板
-            return generateWakeUpVoiceTextFallback(wakeUpTime);
+        if (hour >= 5 && hour < 9) {
+            timeGreeting = "早上好";
+            musicGreeting = "早上的阳光多美好！";
+        } else if (hour >= 9 && hour < 12) {
+            timeGreeting = "上午好";
+            musicGreeting = "新的一天开始啦！";
+        } else if (hour >= 12 && hour < 14) {
+            timeGreeting = "中午好";
+            musicGreeting = "该起床啦！";
+        } else if (hour >= 14 && hour < 18) {
+            timeGreeting = "下午好";
+            musicGreeting = "下午的时光不要费！";
+        } else {
+            timeGreeting = "晚上好";
+            musicGreeting = "该起床啦！";
         }
+        
+        String minuteText = minute == 0 ? "" : String.format("%d分", minute);
+        
+        // 生成愉快的音乐式叫醒文案
+        return String.format(
+            "%s\n\n" +
+            "尊敬的客人，%s！\n\n" +
+            "现在是%d点%s，%s\n\n" +
+            "祝您今天有个美好的一天！",
+            musicGreeting,
+            timeGreeting,
+            hour,
+            minuteText,
+            "该起床啦"
+        );
     }
     
     /**
@@ -1084,6 +1136,27 @@ public class HotelAssistantService {
                     }
                 } else if ("WAKEUP_AGENT".equals(agentName)) {
                     // 处理叫醒业务
+                    /*if (response.contains("[TELL_STORY]")) {
+                        // 立即讲故事（不需要时间）
+                        log.info("[BUSINESS] 检测到 [TELL_STORY] 标记，立即生成故事");
+                        int storyIndex = new Random().nextInt(18) + 1;
+                        log.info("[STORY] 生成随机故事索引: {}", storyIndex);
+                        
+                        try {
+                            String memoryId = "story_" + sessionId + "_" + System.currentTimeMillis();
+                            //StopWatch storyWatch = new StopWatch("讲故事AI生成");
+                            //storyWatch.start();
+                            //String storyText = getWakeUpAgent().tellStory(memoryId, storyIndex);
+                            //storyWatch.stop();
+                           // log.info("[耗时统计] AI生成故事耗时: {} ms", storyWatch.getTotalTimeMillis());
+                            //log.info("[STORY] 成功生成故事文案: {}", storyText);
+                            
+                            // 将故事文案作为结构化数据返回，用于语音播放
+                            structuredDataList.add(new StructuredDataWrapper("STORY", 
+                                Map.of("storyText", storyText, "storyIndex", storyIndex)));
+                        } catch (Exception e) {
+                            log.error("[STORY] 故事生成失败: {}", e.getMessage(), e);
+                        }*/
                     if (response.contains("[REQUEST_TIME_INPUT]")) {
                         // 请求用户输入时间
                         log.info("[BUSINESS] 请求用户输入叫醒时间");
@@ -1119,6 +1192,7 @@ public class HotelAssistantService {
         response = response.replace("[GENERATE_ORDER]", "").trim();
         response = response.replace("[REQUEST_TIME_INPUT]", "").trim();
         response = response.replace("[GENERATE_WAKEUP]", "").trim();
+        response = response.replace("[TELL_STORY]", "").trim();
         
         // 清理JSON数据块
         response = cleanJSONDataBlocks(response);
