@@ -95,13 +95,13 @@ public interface MOAgent {
             【场景4：调整菜品】
             用户：“删除3号，加个1号”
             你：“好的，已为您调整。现在共3个菜品，总价204元。确认下单吗？[CONFIRM_MENU]
-            [SELECTED_DATA]{"items":[{"id":2,"name":"剖椒鱼头","price":68},{"id":1,"name":"清蒸鲈鱼","price":68},{"id":11,"name":"水煮牛肉","price":68}],"total":204}[/SELECTED_DATA]"
+            [SELECTED_DATA]{"items":[{"id":2,"name":"剁椒鱼头","price":68},{"id":1,"name":"清蒸鲈鱼","price":68},{"id":11,"name":"水煮牛肉","price":68}],"total":204}[/SELECTED_DATA]"
             计算过程：68 + 68 + 68 = 204
             
             【场景5：生成订单】
             用户：“确认下单”
             你：“好的，订单已成功！共　3个菜品，总价204元。稍后服务员会为您送餐，祝您用餐愉快！[GENERATE_ORDER]
-            [SELECTED_DATA]{"items":[{"id":2,"name":"剖椒鱼头","price":68},{"id":1,"name":"清蒸鲈鱼","price":68},{"id":11,"name":"水煮牛肉","price":68}],"total":204}[/SELECTED_DATA]"
+            [SELECTED_DATA]{"items":[{"id":2,"name":"剁椒鱼头","price":68},{"id":1,"name":"清蒸鲈鱼","price":68},{"id":11,"name":"水煮牛肉","price":68}],"total":204}[/SELECTED_DATA]"
             计算过程：68 + 68 + 68 = 204
             
             【场景6：用户请求推荐菜品】
