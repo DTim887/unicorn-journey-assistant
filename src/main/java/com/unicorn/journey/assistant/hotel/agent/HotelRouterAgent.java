@@ -35,12 +35,12 @@ public interface HotelRouterAgent {
             1. 优先根据用户提到的具体功能词判断："点餐""菜""吃饭" -> MO_AGENT；"叫醒""闹钟""叫我""故事" -> WAKEUP_AGENT
             2. 在多轮对话中，如果用户处于点餐过程（上一条消息是关于菜品的），继续认为是点餐相关
             3. 如果明确要求点餐流程继续（加菜、换菜、确认等），路由到 MO_AGENT
-            4. 如果无法判断或只是打招呼/寒暄，返回 ROUTER_AGENT
+            4. 如果无法判断或只是打招呼/寒暗，返回 ROUTER_AGENT
             
             【返回格式】
             只能返回以下三个值之一：
             - MO_AGENT（点餐服务）
-            - WAKEUP_AGENT（叫醒服务）
+            - WAKEUP_AGENT（陪伴服务）
             - ROUTER_AGENT（无法判断或打招呼）
             
             **重要：严格只返回上述三个值，不要返回其他内容或解释。**
@@ -99,7 +99,7 @@ public interface HotelRouterAgent {
             
             可执行的任务类型：
             1. MO_AGENT - 点餐业务
-            2. WAKEUP_AGENT - 叫醒服务（包含讲故事需求）
+            2. WAKEUP_AGENT - 陪伴服务（包含叫醒、讲故事需求）
             3. ROUTER_AGENT - 无法识别或打招呼
             
             【重要】业务识别规则：
@@ -138,7 +138,7 @@ public interface HotelRouterAgent {
             
             可识别的业务类型：
             - MO_AGENT：点餐相关（菜品、点餐、订单、加菜、换菜等）
-            - WAKEUP_AGENT：叫醒相关（叫醒、闹钟、起床时间、讲故事等）
+            - WAKEUP_AGENT：陪伴相关（叫醒、闹钟、起床时间、讲故事等）
             
             任务：
             1. 识别用户消息中包含哪些业务需求
@@ -147,7 +147,7 @@ public interface HotelRouterAgent {
             输出格式（严格的JSON格式，不要任何其他内容）：
             {
               "MO_AGENT": "点餐相关的具体内容",
-              "WAKEUP_AGENT": "叫醒相关的具体内容"
+              "WAKEUP_AGENT": "叫醒或讲故事相关的具体内容"
             }
             
             示例1：

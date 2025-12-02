@@ -851,7 +851,7 @@ public class HotelAssistantService {
     }
 
     /**
-     * 生成叫醒语音文本（普通叫醒：使用简单的音乐式叫醒）
+     * 生成叫醒语音文本
      */
     private String generateWakeUpVoiceText(WakeUpAssistance wakeUp) {
         LocalDateTime wakeUpTime = wakeUp.getWakeUpTime();
@@ -891,7 +891,7 @@ public class HotelAssistantService {
         
         String minuteText = minute == 0 ? "" : String.format("%d分", minute);
         
-        // 生成愉快的音乐式叫醒文案
+        // 生成固定叫醒文案
         return String.format(
             "%s\n\n" +
             "尊敬的客人，%s！\n\n" +
@@ -904,40 +904,7 @@ public class HotelAssistantService {
             "该起床啦"
         );
     }
-    
-    /**
-     * 默认叫醒文案模板（降级方案）
-     */
-    private String generateWakeUpVoiceTextFallback(LocalDateTime wakeUpTime) {
-        // 格式化时间
-        int hour = wakeUpTime.getHour();
-        int minute = wakeUpTime.getMinute();
 
-        // 生成友好的叫醒语音
-        String timeGreeting;
-        if (hour >= 5 && hour < 9) {
-            timeGreeting = "早上好";
-        } else if (hour >= 9 && hour < 12) {
-            timeGreeting = "上午好";
-        } else if (hour >= 12 && hour < 14) {
-            timeGreeting = "中午好";
-        } else if (hour >= 14 && hour < 18) {
-            timeGreeting = "下午好";
-        } else {
-            timeGreeting = "晚上好";
-        }
-
-        String minuteText = minute == 0 ? "" : String.format("%d分", minute);
-
-        return String.format(
-            "尊敬的客人，%s！\n\n" +
-            "现在是%d点%s，该起床啦！\n\n" +
-            "祝您今天有个美好的一天！",
-            timeGreeting,
-            hour,
-            minuteText
-        );
-    }
 
     /**
      * 生成叫醒服务文案
@@ -1136,27 +1103,6 @@ public class HotelAssistantService {
                     }
                 } else if ("WAKEUP_AGENT".equals(agentName)) {
                     // 处理叫醒业务
-                    /*if (response.contains("[TELL_STORY]")) {
-                        // 立即讲故事（不需要时间）
-                        log.info("[BUSINESS] 检测到 [TELL_STORY] 标记，立即生成故事");
-                        int storyIndex = new Random().nextInt(18) + 1;
-                        log.info("[STORY] 生成随机故事索引: {}", storyIndex);
-                        
-                        try {
-                            String memoryId = "story_" + sessionId + "_" + System.currentTimeMillis();
-                            //StopWatch storyWatch = new StopWatch("讲故事AI生成");
-                            //storyWatch.start();
-                            //String storyText = getWakeUpAgent().tellStory(memoryId, storyIndex);
-                            //storyWatch.stop();
-                           // log.info("[耗时统计] AI生成故事耗时: {} ms", storyWatch.getTotalTimeMillis());
-                            //log.info("[STORY] 成功生成故事文案: {}", storyText);
-                            
-                            // 将故事文案作为结构化数据返回，用于语音播放
-                            structuredDataList.add(new StructuredDataWrapper("STORY", 
-                                Map.of("storyText", storyText, "storyIndex", storyIndex)));
-                        } catch (Exception e) {
-                            log.error("[STORY] 故事生成失败: {}", e.getMessage(), e);
-                        }*/
                     if (response.contains("[REQUEST_TIME_INPUT]")) {
                         // 请求用户输入时间
                         log.info("[BUSINESS] 请求用户输入叫醒时间");

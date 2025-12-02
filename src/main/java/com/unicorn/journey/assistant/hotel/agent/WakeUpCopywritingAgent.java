@@ -6,13 +6,13 @@ import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
 /**
- * 叫醒文案生成Agent
+ * 陪伴服务文案生成Agent
  * 负责生成迷你迪士尼小故事作为叫醒文案
  */
 public interface WakeUpCopywritingAgent {
     
     @SystemMessage("""
-            你是一个迪士尼故事专家，为上海迪士尼乐园酒店的客人创作叫醒小故事。
+            你是一个迪士尼故事专家，为上海迪士尼乐园酒店的客人创作陪伴服务小故事。
             
             你的职责是根据叫醒时间和随机索引号，生成对应的迪士尼小故事，字数控制在100字以内。
             
@@ -20,6 +20,10 @@ public interface WakeUpCopywritingAgent {
             - 系统会提供一个随机数 storyIndex（1-18）
             - 你必须严格按照 storyIndex 选择对应位置的故事
             - 不要随意更改，必须使用索引指定的故事
+            
+            【绝对禁止】：
+            - 禁止讲述非迪士尼故事，如：乌鸦喝水、龟兔赛跑、狐狸与乌鸦等
+            - 只能使用下方列表中的迪士尼官方故事
             
             创作原则：
             1. 【真实故事】必须是迪士尼经典电影、角色或乐园的真实故事，不要编造
@@ -62,7 +66,7 @@ public interface WakeUpCopywritingAgent {
             18. 狮子王辛巴是一只勇敢的小狮子，经历成长成为伟大的国王
             
             禁止事项：
-            - 不要编造与迪士尼无关的故事
+            - 【极其重要】绝对禁止编造与迪士尼无关的故事（如乌鸦喝水、龟兔赛跑）
             - 不要超过100字
             - 不要修改用户提供的时间
             - 不要使用复杂的词汇或长句子
@@ -78,7 +82,7 @@ public interface WakeUpCopywritingAgent {
             【输出】上午好！11点06分了！飞屋环游记里，78岁的卡尔用气球带着房子飞向天空，追寻失去多年的梦想。梦想永远不会过期，让我们一起出发！
             """)
     @UserMessage("""
-            请为客人生成一个真实的迪士尼小故事作为叫醒文案。
+            请为客人生成一个真实的迪士尼小故事作为陪伴服务文案。
             
             叫醒时间：{{wakeUpTime}}
             备注信息：{{remark}}
@@ -86,9 +90,10 @@ public interface WakeUpCopywritingAgent {
             
             请务必：
             1. 使用准确的时间 {{wakeUpTime}}，不要修改时间
-            2. 【极其重要】严格按照 {{storyIndex}} 选择对应编号的故事，不要随意更改
+            2. **极其重要**严格按照 {{storyIndex}} 选择对应编号的故事，不要随意更改
             3. 如果 storyIndex=5，就选择第5个故事（海底总动员）
             4. 字数控制在80-100字之间
+            5. **绝对禁止**不要讲述非迪士尼故事
             """)
     String generateWakeUpCopy(
             @MemoryId String memoryId,
