@@ -1,5 +1,6 @@
 package com.unicorn.journey.assistant.hotel.controller;
 
+import com.unicorn.journey.assistant.controller.vo.Result;
 import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.hotel.dto.ChatRequest;
 import com.unicorn.journey.assistant.hotel.entity.WakeUpAssistance;
@@ -135,6 +136,40 @@ public class HotelAssistantController {
     @DeleteMapping("/session/{sessionId}")
     public void clearSession(@PathVariable String sessionId) {
         hotelAssistantService.clearSession(sessionId);
+    }
+    
+    /**
+     * 语音转文字接口
+     * 独立的API，可供前端单独调用
+     * 
+     * @param file 语音文件
+     * @return 识别的文本内容
+     */
+    @PostMapping("/speech-to-text")
+    public Result speechToText(@RequestParam("audio") MultipartFile file) {
+        try {
+            log.info("收到语音转文字请求: fileName={}, size={}", 
+                    file.getOriginalFilename(), file.getSize());
+            
+            String text = sttService.speechToText(file);
+            log.info("语音识别成功: {}", text);
+            
+            Map<String, Object> data = new HashMap<>();
+            data.put("text", text);
+            data.put("fileName", file.getOriginalFilename());
+            data.put("fileSize", file.getSize());
+            
+            return Result.ok(data);
+        } catch (IOException e) {
+            log.error("语音转文字失败: {}", e.getMessage(), e);
+            Map<String, Object> errorData = new HashMap<>();
+            errorData.put("error", e.getMessage());
+            return Result.builder()
+                    .code("500")
+                    .msg("语音识别失败")
+                    .data(errorData)
+                    .build();
+        }
     }
     
     /**

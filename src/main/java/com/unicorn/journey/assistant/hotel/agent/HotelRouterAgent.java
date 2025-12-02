@@ -110,7 +110,7 @@ public interface HotelRouterAgent {
             
             规划规则：
             - 用户可能同时需要两个服务
-            - 用户打招或惰掲，返回 ROUTER_AGENT
+            - 用户打招呼，返回 ROUTER_AGENT
             - 如果用户输入模糊（如“确认”、“好的”、“就这些”），根据上下文推断：
               * 如果 LAST_AGENT=MO_AGENT 或 CURRENT_BUSINESS=MENU，则返回 MO_AGENT
               * 如果 LAST_AGENT=WAKEUP_AGENT 或 CURRENT_BUSINESS=WAKEUP，则返回 WAKEUP_AGENT

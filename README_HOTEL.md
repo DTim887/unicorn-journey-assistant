@@ -211,9 +211,78 @@ curl -X DELETE \
 
 ---
 
-### 3. 会话管理接口
+### 3. 语音服务接口
 
-#### 3.1 清除会话
+#### 3.1 语音转文字
+
+**接口地址**: `POST /hotel/speech-to-text`
+
+**接口说明**: 将语音文件转换为文字文本。这是一个独立的API，可供前端单独调用，无需进入聊天流程。
+
+**Content-Type**: `multipart/form-data`
+
+**响应类型**: `application/json`
+
+**请求参数**:
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| audio | File | 是 | 语音文件（支持 WAV 格式） |
+
+**成功响应示例**:
+
+```json
+{
+  "code": "0",
+  "msg": "success",
+  "data": {
+    "text": "我想订一份清蒸鲈鱼",
+    "fileName": "audio_20241119_103045.wav",
+    "fileSize": 125680
+  }
+}
+```
+
+**失败响应示例**:
+
+```json
+{
+  "code": "500",
+  "msg": "语音识别失败",
+  "data": {
+    "error": "Audio format not supported"
+  }
+}
+```
+
+**请求示例**:
+
+```bash
+curl -X POST \
+  -F "audio=@/path/to/audio.wav" \
+  http://localhost:8080/journey-assistant/hotel/speech-to-text
+```
+
+**使用场景**:
+
+1. **独立语音转文字**: 前端可以单独调用此接口将用户的语音转换为文字，然后显示在输入框中
+2. **语音输入辅助**: 用户录音后先转文字预览，确认无误后再发送
+3. **语音笔记**: 将语音内容转换为文字备忘录
+
+**与语音聊天接口的区别**:
+
+| 对比项 | speech-to-text | voice-chat |
+|--------|----------------|------------|
+| 返回类型 | JSON | SSE流 |
+| 功能 | 仅转文字 | 转文字 + AI对话 + 语音回复 |
+| 会话管理 | 无需会话 | 需要 sessionId |
+| 使用场景 | 单纯转录 | 完整对话流程 |
+
+---
+
+### 4. 会话管理接口
+
+#### 4.1 清除会话
 
 **接口地址**: `DELETE /hotel/session/{sessionId}`
 
