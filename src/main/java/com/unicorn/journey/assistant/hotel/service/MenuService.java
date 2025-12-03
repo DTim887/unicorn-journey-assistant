@@ -107,4 +107,42 @@ public class MenuService {
                 .findFirst()
                 .orElse(null);
     }
+    
+    /**
+     * 计算多个菜品的总价
+     * @param menuIds 菜品ID列表，多个ID用逗号分隔（例如："1,2,3"）
+     * @return 总价
+     */
+    public double calculateTotalPrice(String menuIds) {
+        if (menuIds == null || menuIds.trim().isEmpty()) {
+            log.warn("菜品ID列表为空，返回总价0");
+            return 0.0;
+        }
+        
+        try {
+            String[] ids = menuIds.split(",");
+            double total = 0.0;
+            
+            for (String idStr : ids) {
+                try {
+                    Integer menuId = Integer.parseInt(idStr.trim());
+                    MenuItem item = getMenuItemById(menuId);
+                    if (item != null) {
+                        total += item.getPrice();
+                        log.debug("菜品ID: {}, 名称: {}, 价格: {}", menuId, item.getName(), item.getPrice());
+                    } else {
+                        log.warn("未找到菜品ID: {}", menuId);
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("无效的菜品ID: {}", idStr);
+                }
+            }
+            
+            log.info("计算总价：菜品ID列表={}, 总价={}", menuIds, total);
+            return total;
+        } catch (Exception e) {
+            log.error("计算总价失败: {}", e.getMessage());
+            return 0.0;
+        }
+    }
 }

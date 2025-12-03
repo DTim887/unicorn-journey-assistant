@@ -4,6 +4,7 @@ import com.unicorn.journey.assistant.hotel.agent.HotelRouterAgent;
 import com.unicorn.journey.assistant.hotel.agent.MOAgent;
 import com.unicorn.journey.assistant.hotel.agent.WakeUpAgent;
 import com.unicorn.journey.assistant.hotel.agent.WakeUpCopywritingAgent;
+import com.unicorn.journey.assistant.hotel.tool.MenuCalculatorTool;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
@@ -20,6 +21,9 @@ public class HotelAgentFactory {
     @Resource
     private ChatModel chatModel;
     
+    @Resource
+    private MenuCalculatorTool menuCalculatorTool;
+    
     /**
      * 创建路由Agent
      */
@@ -31,12 +35,13 @@ public class HotelAgentFactory {
     }
     
     /**
-     * 创建点餐Agent
+     * 创建点餐Agent（配置计算工具）
      */
     public MOAgent createMOAgent() {
         return AiServices.builder(MOAgent.class)
                 .chatModel(chatModel)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
+                .tools(menuCalculatorTool)
                 .build();
     }
     

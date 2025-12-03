@@ -416,7 +416,7 @@ public class HotelAssistantService {
                         log.info("[VOICE] 开始生成语音 - 角色: {}, 文本: {}", 
                                 voiceCharacter.name(), 
                                 response);
-                        String audioPath = sttService.textToSpeechAndSave(response.replace("*", ""), voiceCharacter);
+                        String audioPath = sttService.textToSpeechAndSave(response.replace("*", "").replace("#", ""), voiceCharacter);
                         voiceWatch.stop();
                         log.info("[耗时统计] 语音生成耗时: {} ms", voiceWatch.getTotalTimeMillis());
                         log.info("[VOICE] 语音生成成功 - 角色: {}, 路径: {}", voiceCharacter.name(), audioPath);
