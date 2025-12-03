@@ -1104,6 +1104,31 @@ public class HotelAssistantService {
                         log.info("[BUSINESS] 请求用户输入叫醒时间");
                         structuredDataList.add(new StructuredDataWrapper("TIME_INPUT", 
                             Map.of("message", "请选择叫醒时间")));
+                    } else if (response.contains("[GENERATE_WAKEUP_AND_TELL_STORY]")) {
+                        // 同时生成叫醒服务并讲故事
+                        log.info("[BUSINESS] 执行双重服务: 生成叫醒 + 立即讲故事");
+                        LocalDateTime wakeUpTime = extractTimeFromResponse(response);
+                        if (wakeUpTime != null) {
+                            String userId = context.getUserId();
+                            SseEmitter emitter = context.getSseEmitter();
+                            
+                            // 1. 生成叫醒服务
+                            WakeUpAssistance wakeUpAssistance = generateWakeUpAssistance(userId, response, sessionId, emitter, voiceCharacter);
+                            log.info("[BUSINESS] 已生成叫醒服务: {}", wakeUpAssistance.getWakeUpId());
+                            structuredDataList.add(new StructuredDataWrapper("WAKEUP", wakeUpAssistance));
+                            
+                            // 2. 立即讲故事（从响应中提取故事文本）
+                            String storyText = extractStoryFromResponse(response);
+                            if (storyText != null && !storyText.isEmpty()) {
+                                log.info("[BUSINESS] 立即讲故事: {}", storyText.substring(0, Math.min(50, storyText.length())));
+                                structuredDataList.add(new StructuredDataWrapper("STORY", 
+                                    Map.of(
+                                        "text", storyText,
+                                        "type", "story",
+                                        "voiceCharacter", voiceCharacter.name()
+                                    )));
+                            }
+                        }
                     } else if (response.contains("[GENERATE_WAKEUP]")) {
                         // 生成叫醒服务
                         LocalDateTime wakeUpTime = extractTimeFromResponse(response);
@@ -1113,6 +1138,19 @@ public class HotelAssistantService {
                             WakeUpAssistance wakeUpAssistance = generateWakeUpAssistance(userId, response, sessionId, emitter, voiceCharacter);
                             log.info("[BUSINESS] 执行WAKEUP业务: 已生成叫醒服务: {}", wakeUpAssistance.getWakeUpId());
                             structuredDataList.add(new StructuredDataWrapper("WAKEUP", wakeUpAssistance));
+                        }
+                    } else if (response.contains("[TELL_STORY]")) {
+                        // 立即讲故事（不需要设置叫醒）
+                        log.info("[BUSINESS] 执行讲故事服务");
+                        String storyText = extractStoryFromResponse(response);
+                        if (storyText != null && !storyText.isEmpty()) {
+                            log.info("[BUSINESS] 故事内容: {}", storyText.substring(0, Math.min(50, storyText.length())));
+                            structuredDataList.add(new StructuredDataWrapper("STORY", 
+                                Map.of(
+                                    "text", storyText,
+                                    "type", "story",
+                                    "voiceCharacter", voiceCharacter.name()
+                                )));
                         }
                     }
                 }
@@ -1125,16 +1163,83 @@ public class HotelAssistantService {
     }
     
     /**
+     * 从响应中提取故事文本
+     */
+    private String extractStoryFromResponse(String response) {
+        try {
+            // 查找故事标题后的内容
+            if (response.contains("📖 迪士尼故事时间") || response.contains("迪士尼故事")) {
+                // 提取 ### 📖 迪士尼故事时间 之后到标记之前的内容
+                int storyStart = response.indexOf("📖");
+                if (storyStart == -1) {
+                    storyStart = response.indexOf("迪士尼故事");
+                }
+                
+                if (storyStart != -1) {
+                    // 找到最后一个标记的位置
+                    int markerPos = response.lastIndexOf("[");
+                    String storySection = markerPos > storyStart ? 
+                        response.substring(storyStart, markerPos) : 
+                        response.substring(storyStart);
+                    
+                    // 清理 Markdown 格式和多余空格
+                    storySection = storySection.replaceAll("###\\s*", "");
+                    storySection = storySection.replaceAll("\\*\\*", "");
+                    storySection = storySection.replaceAll("-{3,}", ""); // 移除分隔线
+                    storySection = storySection.trim();
+                    
+                    // 提取故事正文（跳过标题）
+                    String[] lines = storySection.split("\\n");
+                    StringBuilder story = new StringBuilder();
+                    boolean foundStory = false;
+                    
+                    for (String line : lines) {
+                        line = line.trim();
+                        if (line.isEmpty()) continue;
+                        
+                        // 跳过标题和提示性文字
+                        if (line.contains("迪士尼故事") || 
+                            line.contains("讲一个") || 
+                            line.contains("现在让我") ||
+                            line.contains("记住：") ||
+                            line.startsWith("📖")) {
+                            foundStory = true;
+                            continue;
+                        }
+                        
+                        if (foundStory && line.length() > 10) {
+                            story.append(line).append(" ");
+                        }
+                    }
+                    
+                    String result = story.toString().trim();
+                    if (!result.isEmpty()) {
+                        log.info("[故事提取] 成功提取故事: {}", result.substring(0, Math.min(50, result.length())));
+                        return result;
+                    }
+                }
+            }
+            
+            log.warn("[故事提取] 未找到故事内容");
+            return null;
+        } catch (Exception e) {
+            log.error("[故事提取] 提取失败: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+    
+    /**
      * 清理所有数据标签（不推特殊标记给用户）
      */
     private String cleanAllDataTags(String response) {
-        // 清理县管标记
+        // 清理所有标记
         response = response.replace("[SHOW_MENU]", "").trim();
         response = response.replace("[CONFIRM_MENU]", "").trim();
         response = response.replace("[GENERATE_ORDER]", "").trim();
         response = response.replace("[REQUEST_TIME_INPUT]", "").trim();
         response = response.replace("[GENERATE_WAKEUP]", "").trim();
         response = response.replace("[TELL_STORY]", "").trim();
+        response = response.replace("[GENERATE_WAKEUP_AND_TELL_STORY]", "").trim();
         
         // 清理JSON数据块
         response = cleanJSONDataBlocks(response);
