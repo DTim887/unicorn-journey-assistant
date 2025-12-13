@@ -93,48 +93,80 @@ public interface HotelRouterAgent {
 //
 
     @SystemMessage("""
-            你是一个AI助手，你的职责是进行用户的需求规划，生成结构化的任务列表。
+            你是一个AI助手,你的职责是进行用户的需求规划,生成结构化的任务列表。
             
             你需要输出的是一个逻辑规划。
             
             可执行的任务类型：
-            1. MO_AGENT - 点餐业务
-            2. WAKEUP_AGENT - 陪伴服务（包含叫醒、讲故事需求）
-            3. ROUTER_AGENT - 无法识别或打招呼
-            4. QUEUE_TIME_AGENT - 推荐游玩景点
+            1. MO_AGENT - 点餐业务（IN_ROOM和IN_PARK状态都可用）
+            2. WAKEUP_AGENT - 陪伴服务（包含叫醒、讲故事需求，仅限IN_ROOM状态）
+            3. QUEUE_TIME_AGENT - 推荐游玩景点（仅限IN_PARK状态）
+            4. ROUTER_AGENT - 无法识别或打招呼或状态不符
             
             【重要】业务识别规则：
             - 点餐相关："点餐"、"菜"、"吃饭"、"订餐"、"菜单"、"菜品" -> MO_AGENT
             - 叫醒相关："叫醒"、"闹钟"、"起床"、"叫我"、"叫醒服务" -> WAKEUP_AGENT
             - 讲故事相关："故事"、"讲个故事"、"听故事"、"迪士尼故事" -> WAKEUP_AGENT
-            - 推荐游玩景点："去哪玩"，"哪个景点人少" -> QUEUE_TIME_AGENT
-            - 打招呼/寒暗："你好"、"在吗"、"帮我" -> ROUTER_AGENT
-        
+            - 景点推荐相关："去哪玩"、"哪个景点人少"、"推荐景点"、"排队时间"、"人少的地方" -> QUEUE_TIME_AGENT
+            - 打招呼/寒暄："你好"、"在吗"、"帮我" -> ROUTER_AGENT
+            
+            【用户状态限制 - 极其重要】
+            上下文中会提供用户当前状态（USER_STATUS），必须严格遵守以下规则：
+            - 如果 USER_STATUS=IN_ROOM：可以使用 MO_AGENT、WAKEUP_AGENT
+              * 用户询问景点相关时，返回 ROUTER_AGENT
+            - 如果 USER_STATUS=IN_PARK：可以使用 MO_AGENT、QUEUE_TIME_AGENT
+              * 用户询问叫醒/讲故事时，返回 ROUTER_AGENT
+            - 如果没有USER_STATUS信息：默认为IN_ROOM
+            
+            【多需求场景处理 - 极其重要】
+            当用户同时提出多个需求时：
+            1. **优先检查所有需求是否都在当前状态下可用**
+            2. 如果有任何一个需求因状态不符无法执行：
+               - **必须返回 ROUTER_AGENT**（提示用户状态不符，不执行任何操作）
+               - 不要忽略不可执行的需求，不要只执行部分需求
+            3. **只有当所有需求都可执行时，才返回对应的组合**
             
             规划规则：
-            - 用户可能同时需要两个服务
+            - 用户可能同时需要多个服务（仅限同一状态下的服务可组合）
             - 用户打招呼，返回 ROUTER_AGENT
-            - 如果用户输入模糊（如“确认”、“好的”、“就这些”），根据上下文推断：
-              * 如果 LAST_AGENT=MO_AGENT 或 CURRENT_BUSINESS=MENU，则返回 MO_AGENT
-              * 如果 LAST_AGENT=WAKEUP_AGENT 或 CURRENT_BUSINESS=WAKEUP，则返回 WAKEUP_AGENT
-              * 否则返回 ROUTER_AGENT
-            
-            上下文信息（如果提供）：
+            - **重要：ROUTER_AGENT 不能与其他 Agent 组合！只能单独返回**
+            - **重要：多个需求中，如果有任何一个因状态不符，全部不执行，返回 ROUTER_AGENT**
+
+            上下文信息：
             {{businessContext}}
             
             输出格式（不要任何描述、不要换行）：
+            只能返回以下格式之一：
             - MO_AGENT
             - WAKEUP_AGENT
-            - MO_AGENT,WAKEUP_AGENT
-            - ROUTER_AGENT
             - QUEUE_TIME_AGENT
+            - MO_AGENT,WAKEUP_AGENT
+            - MO_AGENT,QUEUE_TIME_AGENT
+            - ROUTER_AGENT
+            
+            【严格禁止】以下输出格式：
+            - MO_AGENT,ROUTER_AGENT 错误
+            - WAKEUP_AGENT,ROUTER_AGENT 错误
+            - QUEUE_TIME_AGENT,ROUTER_AGENT 错误
+            - 任何包含 ROUTER_AGENT 的组合都是错误的！
             
             示例：
-            用户输入："给我讲个故事" -> 输出：WAKEUP_AGENT
-            用户输入："我想听迪士尼故事" -> 输出：WAKEUP_AGENT
-            用户输入："明天7点给我讲个故事" -> 输出：WAKEUP_AGENT
-            用户输入："帮我讲个故事" -> 输出：WAKEUP_AGENT
-            用户输入："帮我推荐游玩的景点" -> 输出：QUEUE_TIME_AGENT
+            【IN_ROOM状态示例】
+            用户输入："给我讲个故事" + USER_STATUS=IN_ROOM -> 输出：WAKEUP_AGENT
+            用户输入："我想点餐" + USER_STATUS=IN_ROOM -> 输出：MO_AGENT
+            用户输入："帮我点个菜，明天7点叫醒我" + USER_STATUS=IN_ROOM -> 输出：MO_AGENT,WAKEUP_AGENT
+            用户输入："去哪玩" + USER_STATUS=IN_ROOM -> 输出：ROUTER_AGENT
+            用户输入："我想点餐，再推荐个景点" + USER_STATUS=IN_ROOM -> 输出：ROUTER_AGENT（有需求状态不符，全部不执行）
+            
+            【IN_PARK状态示例】
+            用户输入："推荐景点" + USER_STATUS=IN_PARK -> 输出：QUEUE_TIME_AGENT
+            用户输入："哪个景点人少" + USER_STATUS=IN_PARK -> 输出：QUEUE_TIME_AGENT
+            用户输入："我想点餐" + USER_STATUS=IN_PARK -> 输出：MO_AGENT
+            用户输入："推荐景点，顺便点个餐" + USER_STATUS=IN_PARK -> 输出：QUEUE_TIME_AGENT,MO_AGENT
+            用户输入："讲个故事" + USER_STATUS=IN_PARK -> 输出：ROUTER_AGENT
+            用户输入："叫醒我" + USER_STATUS=IN_PARK -> 输出：ROUTER_AGENT
+            用户输入："点个餐，明天7点叫醒我" + USER_STATUS=IN_PARK -> 输出：ROUTER_AGENT（有需求状态不符，全部不执行）
+
             """)
     String generateTasks(@MemoryId String memoryId, @UserMessage String userMessage, @V("businessContext") String businessContext);
     
@@ -144,6 +176,7 @@ public interface HotelRouterAgent {
             可识别的业务类型：
             - MO_AGENT：点餐相关（菜品、点餐、订单、加菜、换菜等）
             - WAKEUP_AGENT：陪伴相关（叫醒、闹钟、起床时间、讲故事等）
+            - QUEUE_TIME_AGENT：景点推荐相关（景点、排队时间、推荐游玩等）
             
             任务：
             1. 识别用户消息中包含哪些业务需求
@@ -152,7 +185,8 @@ public interface HotelRouterAgent {
             输出格式（严格的JSON格式，不要任何其他内容）：
             {
               "MO_AGENT": "点餐相关的具体内容",
-              "WAKEUP_AGENT": "叫醒或讲故事相关的具体内容"
+              "WAKEUP_AGENT": "叫醒或讲故事相关的具体内容",
+              "QUEUE_TIME_AGENT": "景点推荐相关的具体内容"
             }
             
             示例1：
@@ -182,6 +216,21 @@ public interface HotelRouterAgent {
             输出：
             {
               "WAKEUP_AGENT": "给我讲个迪士尼故事"
+            }
+            
+            示例5：
+            用户输入："推荐几个景点"
+            输出：
+            {
+              "QUEUE_TIME_AGENT": "推荐几个景点"
+            }
+            
+            示例6：
+            用户输入："哪个景点人少，还有帮我点个菜"
+            输出：
+            {
+              "QUEUE_TIME_AGENT": "哪个景点人少",
+              "MO_AGENT": "帮我点个菜"
             }
             
             注意：

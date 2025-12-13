@@ -261,6 +261,15 @@ public class HotelAssistantService {
 
                 // 获取业务上下文（使用SessionContext中的方法）
                 String businessContext = finalContext.getBusinessContextString();
+                
+                // 添加用户状态到上下文中
+                String userStatus = userStatusMap.getOrDefault(userId, "IN_ROOM"); // 默认IN_ROOM
+                if (!businessContext.isEmpty()) {
+                    businessContext += ", USER_STATUS=" + userStatus;
+                } else {
+                    businessContext = "USER_STATUS=" + userStatus;
+                }
+                
                 if (!businessContext.isEmpty()) {
                     log.info("[上下文] {}", businessContext);
                 }
@@ -274,6 +283,8 @@ public class HotelAssistantService {
                     finalContext.updateLastAgentType("MO_AGENT");
                 } else if (tasks.equals("WAKEUP_AGENT")) {
                     finalContext.updateLastAgentType("WAKEUP_AGENT");
+                } else if (tasks.equals("QUEUE_TIME_AGENT")) {
+                    finalContext.updateLastAgentType("QUEUE_TIME_AGENT");
                 } else if (tasks.equals("ROUTER_AGENT")) {
                     finalContext.updateLastAgentType("ROUTER_AGENT");
                 } else if (tasks.contains(",")) {
@@ -295,6 +306,7 @@ public class HotelAssistantService {
                         log.warn("[意图解析] 意图解析失败~，使用原始消息: {}", e.getMessage());
                         if (tasks.contains("MO_AGENT")) agentMessages.put("MO_AGENT", userMessage);
                         if (tasks.contains("WAKEUP_AGENT")) agentMessages.put("WAKEUP_AGENT", userMessage);
+                        if (tasks.contains("QUEUE_TIME_AGENT")) agentMessages.put("QUEUE_TIME_AGENT", userMessage);
                     }
                 } else if (tasks.equals("MO_AGENT")) {
                     // 单任务 - 直接使用原始消息
@@ -302,6 +314,9 @@ public class HotelAssistantService {
                 } else if (tasks.equals("WAKEUP_AGENT")) {
                     // 单任务 - 直接使用原始消息
                     agentMessages.put("WAKEUP_AGENT", userMessage);
+                } else if (tasks.equals("QUEUE_TIME_AGENT")) {
+                    // 单任务 - 直接使用原始消息
+                    agentMessages.put("QUEUE_TIME_AGENT", userMessage);
                 }
 
                 String response;
@@ -315,6 +330,7 @@ public class HotelAssistantService {
                 List<StructuredDataWrapper> structuredDataList = new ArrayList<>();
 
                 if (tasks.equals("ROUTER_AGENT")) {
+                    // 检查是否是因为状态不匹配导致的ROUTER_AGENT
                     response = getDefaultResponseByCharacter(voiceCharacter);
                 } else if (tasks.contains(",")) {
                     // 多个任务 - 并发执行
@@ -342,6 +358,15 @@ public class HotelAssistantService {
                             agentResponses.put("WAKEUP_AGENT", getWakeUpAgent().chat(memoryId + "_wakeup", wakeUpMessage));
                             wakeupWatch.stop();
                             log.info("[耗时统计] WAKEUP_AGENT 执行耗时: {} ms", wakeupWatch.getTotalTimeMillis());
+                        } else if ("QUEUE_TIME_AGENT".equals(task)) {
+                            String queueTimeMessage = agentMessages.getOrDefault("QUEUE_TIME_AGENT", userMessage);
+                            log.info("[Agent执行] QUEUE_TIME_AGENT 使用消息: {}", queueTimeMessage);
+
+                            StopWatch queueTimeWatch = new StopWatch("QUEUE_TIME_AGENT");
+                            queueTimeWatch.start();
+                            agentResponses.put("QUEUE_TIME_AGENT", getQueueTimeAgent().chat(memoryId + "_queuetime", queueTimeMessage));
+                            queueTimeWatch.stop();
+                            log.info("[耗时统计] QUEUE_TIME_AGENT 执行耗时: {} ms", queueTimeWatch.getTotalTimeMillis());
                         }
                     }
                     agentWatch.stop();
@@ -412,6 +437,29 @@ public class HotelAssistantService {
                     // 执行业务并收集结构化数据
                     structuredDataList = executeBusinessLogic(agentResponses, finalSessionId, finalContext, voiceCharacter);
 
+                    // 清理标记
+                    response = cleanAllDataTags(response);
+                } else if (tasks.equals("QUEUE_TIME_AGENT")) {
+                    String queueTimeMessage = agentMessages.getOrDefault("QUEUE_TIME_AGENT", userMessage);
+                    log.info("[Agent执行] QUEUE_TIME_AGENT 使用消息: {}", queueTimeMessage);
+
+                    StopWatch queueTimeWatch = new StopWatch("QUEUE_TIME_AGENT");
+                    queueTimeWatch.start();
+                    String queueTimeResponse = getQueueTimeAgent().chat(memoryId + "_queuetime", queueTimeMessage);
+                    queueTimeWatch.stop();
+                    log.info("[耗时统计] QUEUE_TIME_AGENT 执行耗时: {} ms", queueTimeWatch.getTotalTimeMillis());
+
+                    agentResponses.put("QUEUE_TIME_AGENT", queueTimeResponse);
+
+                    // 汇总响应
+                    StopWatch summaryWatch = new StopWatch("SummaryAgent");
+                    summaryWatch.start();
+                    response = getSummaryAgent().summarizeResponses("QUEUE_TIME_AGENT: " + queueTimeResponse);
+                    summaryWatch.stop();
+                    log.info("[耗时统计] SummaryAgent 汇总耗时: {} ms", summaryWatch.getTotalTimeMillis());
+                    log.info("[响应汇总] 单任务QUEUE_TIME_AGENT汇总完成");
+
+                    // QUEUE_TIME_AGENT 不需要执行业务逻辑，直接返回响应
                     // 清理标记
                     response = cleanAllDataTags(response);
                 } else {
