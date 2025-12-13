@@ -1,9 +1,7 @@
 package com.unicorn.journey.assistant.hotel.factory;
 
-import com.unicorn.journey.assistant.hotel.agent.HotelRouterAgent;
-import com.unicorn.journey.assistant.hotel.agent.MOAgent;
-import com.unicorn.journey.assistant.hotel.agent.WakeUpAgent;
-import com.unicorn.journey.assistant.hotel.agent.WakeUpCopywritingAgent;
+import com.unicorn.journey.assistant.hotel.agent.*;
+import com.unicorn.journey.assistant.hotel.service.QueueTimeService;
 import com.unicorn.journey.assistant.hotel.tool.MenuCalculatorTool;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
@@ -23,7 +21,10 @@ public class HotelAgentFactory {
     
     @Resource
     private MenuCalculatorTool menuCalculatorTool;
-    
+
+    @Resource
+    private QueueTimeService queueTimeService;
+
     /**
      * 创建路由Agent
      */
@@ -51,6 +52,14 @@ public class HotelAgentFactory {
     public WakeUpAgent createWakeUpAgent() {
         return AiServices.builder(WakeUpAgent.class)
                 .chatModel(chatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .build();
+    }
+
+    public QueueTimeAgent createQueueTimeAgent() {
+        return AiServices.builder(QueueTimeAgent.class)
+                .chatModel(chatModel)
+                .tools(queueTimeService)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
                 .build();
     }

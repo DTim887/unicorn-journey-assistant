@@ -171,6 +171,12 @@ public class HotelAssistantController {
                     .build();
         }
     }
+
+    @PostMapping("/switch_status")
+    public Result switchStatus(@RequestParam("userId") String userId, @RequestParam("status") String status) {
+        hotelAssistantService.switchStatus(userId, status);
+        return Result.ok();
+    }
     
     /**
      * 解析语音角色字符串
