@@ -2,7 +2,6 @@ package com.unicorn.journey.assistant.hotel.factory;
 
 import com.unicorn.journey.assistant.hotel.agent.*;
 import com.unicorn.journey.assistant.hotel.service.QueueTimeService;
-import com.unicorn.journey.assistant.hotel.tool.MenuCalculatorTool;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
@@ -17,21 +16,23 @@ import org.springframework.stereotype.Component;
 public class HotelAgentFactory {
     
     @Resource
-    private ChatModel chatModel;
-    
+    private ChatModel deepseekChatModel;
+
     @Resource
-    private MenuCalculatorTool menuCalculatorTool;
+    private ChatModel deepseekChatModelWithHighTemperature;
+
 
     @Resource
     private QueueTimeService queueTimeService;
+
 
     /**
      * 创建路由Agent
      */
     public HotelRouterAgent createRouterAgent() {
         return AiServices.builder(HotelRouterAgent.class)
-                .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .chatModel(deepseekChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
     
@@ -40,9 +41,8 @@ public class HotelAgentFactory {
      */
     public MOAgent createMOAgent() {
         return AiServices.builder(MOAgent.class)
-                .chatModel(chatModel)
+                .chatModel(deepseekChatModel)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
-                .tools(menuCalculatorTool)
                 .build();
     }
     
@@ -51,16 +51,16 @@ public class HotelAgentFactory {
      */
     public WakeUpAgent createWakeUpAgent() {
         return AiServices.builder(WakeUpAgent.class)
-                .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .chatModel(deepseekChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
 
     public QueueTimeAgent createQueueTimeAgent() {
         return AiServices.builder(QueueTimeAgent.class)
-                .chatModel(chatModel)
+                .chatModel(deepseekChatModel)
                 .tools(queueTimeService)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
     
@@ -69,8 +69,8 @@ public class HotelAgentFactory {
      */
     public WakeUpCopywritingAgent createWakeUpCopywritingAgent() {
         return AiServices.builder(WakeUpCopywritingAgent.class)
-                .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .chatModel(deepseekChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
     
@@ -79,8 +79,14 @@ public class HotelAgentFactory {
      */
     public com.unicorn.journey.assistant.hotel.agent.SummaryAgent createSummaryAgent() {
         return AiServices.builder(com.unicorn.journey.assistant.hotel.agent.SummaryAgent.class)
-                .chatModel(chatModel)
-                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(2))
+                .chatModel(deepseekChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
+                .build();
+    }
+
+    public WakeUpCopywritingAgent createWakeUpCopywritingAgentWithHighTemperature() {
+        return AiServices.builder(WakeUpCopywritingAgent.class)
+                .chatModel(deepseekChatModelWithHighTemperature)
                 .build();
     }
 }

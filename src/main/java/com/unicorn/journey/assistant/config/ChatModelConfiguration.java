@@ -67,9 +67,20 @@ public class ChatModelConfiguration {
                 .build();
     }
 
+    @Bean
+    public ChatModel deepseekChatModelWithHighTemperature() {
+        return OpenAiChatModel.builder()
+                .apiKey(deepseekApiKey)
+                .baseUrl(deepseekBaseUrl)
+                .modelName(deepseekModelName) //deepseek 3.1
+                .temperature(0.7)
+                .listeners(List.of(customChatModelListener))
+                .build();
+    }
+
 
     @Bean
-    public StreamingChatModel   streamingChatModel() {
+    public StreamingChatModel streamingChatModel() {
         return QwenStreamingChatModel.builder()
                 .modelName(streamModelName)
                 .apiKey(streamModelKey)

@@ -2,14 +2,16 @@ package com.unicorn.journey.assistant.controller;
 
 import com.unicorn.journey.assistant.controller.request.ApproveWorkflowDTO;
 import com.unicorn.journey.assistant.controller.request.MagicDTO;
-import com.unicorn.journey.assistant.entity.queuetime.ParkDataSchema;
-import com.unicorn.journey.assistant.langgraph.tour.PlannerApp;
+import com.unicorn.journey.assistant.hotel.entity.FacilityQueueTime;
 import com.unicorn.journey.assistant.hotel.service.QueueTimeService;
+import com.unicorn.journey.assistant.langgraph.tour.PlannerApp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -39,7 +41,7 @@ public class TestController {
     }
 
     @GetMapping("/queuetime")
-    public ResponseEntity<ParkDataSchema> queueTime() {
+    public ResponseEntity<List<FacilityQueueTime>> queueTime() {
         return ResponseEntity.ok(queueTimeService.getAttractionQueueTime());
     }
 }
