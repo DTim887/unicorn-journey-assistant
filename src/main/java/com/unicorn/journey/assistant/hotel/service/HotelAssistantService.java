@@ -1,24 +1,27 @@
 package com.unicorn.journey.assistant.hotel.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.hotel.agent.*;
-import com.unicorn.journey.assistant.hotel.entity.WakeUpAssistance;
-import com.unicorn.journey.assistant.hotel.enums.SseEventType;
-import com.unicorn.journey.assistant.hotel.factory.HotelAgentFactory;
 import com.unicorn.journey.assistant.hotel.entity.MenuItem;
 import com.unicorn.journey.assistant.hotel.entity.MenuOrder;
 import com.unicorn.journey.assistant.hotel.entity.SessionContext;
+import com.unicorn.journey.assistant.hotel.entity.WakeUpAssistance;
+import com.unicorn.journey.assistant.hotel.enums.SseEventType;
+import com.unicorn.journey.assistant.hotel.factory.HotelAgentFactory;
 import com.unicorn.journey.assistant.hotel.utils.SseEventSender;
 import com.unicorn.journey.assistant.service.STTService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +45,7 @@ public class HotelAssistantService {
     private WakeUpAgent wakeUpAgent;
     private SummaryAgent summaryAgent;
     private WakeUpCopywritingAgent wakeUpCopywritingAgent;
+    private QueueTimeAgent queueTimeAgent;
 
     // 存储会话上下文（包含菜单、业务类型、SSE等所有会话数据）
     private final Map<String, SessionContext> sessionContexts = new ConcurrentHashMap<>();
@@ -55,7 +59,7 @@ public class HotelAssistantService {
     //存储用户状态
     private final Map<String, String> userStatusMap = new ConcurrentHashMap<>();
 
-    private QueueTimeAgent queueTimeAgent;
+
 
     /**
      * 结构化数据包装类
@@ -626,7 +630,7 @@ public class HotelAssistantService {
         groupedByCategory.forEach((category, items) -> {
             sb.append("**").append(category).append("菜品**\n");
             for (MenuItem item : items) {
-                sb.append(String.format("%d. %s - %.0f元（%s）\n",
+                sb.append(String.format("%d. %s - %d元（%s）\n",
                         item.getMenuId(), item.getName(), item.getPrice(),
                         item.getFlavors()));
             }
@@ -920,44 +924,55 @@ public class HotelAssistantService {
      * 生成叫醒文案
      */
     private String generateWakeUpMusicText(LocalDateTime wakeUpTime) {
-        int hour = wakeUpTime.getHour();
-        int minute = wakeUpTime.getMinute();
 
-        // 根据时间段生成不同的问候
-        String timeGreeting;
-        String musicGreeting;
+        wakeUpCopywritingAgent = hotelAgentFactory.createWakeUpCopywritingAgentWithHighTemperature();
 
-        if (hour >= 5 && hour < 9) {
-            timeGreeting = "早上好";
-            musicGreeting = "早上的阳光多美好！";
-        } else if (hour >= 9 && hour < 12) {
-            timeGreeting = "上午好";
-            musicGreeting = "新的一天开始啦！";
-        } else if (hour >= 12 && hour < 14) {
-            timeGreeting = "中午好";
-            musicGreeting = "该起床啦！";
-        } else if (hour >= 14 && hour < 18) {
-            timeGreeting = "下午好";
-            musicGreeting = "下午的时光不要费！";
-        } else {
-            timeGreeting = "晚上好";
-            musicGreeting = "该起床啦！";
-        }
+        String response = wakeUpCopywritingAgent.generateWakeUpCopy(wakeUpTime.toString());
 
-        String minuteText = minute == 0 ? "" : String.format("%d分", minute);
+        return response;
 
-        // 生成固定叫醒文案
-        return String.format(
-                "%s\n\n" +
-                        "尊敬的客人，%s！\n\n" +
-                        "现在是%d点%s，%s\n\n" +
-                        "祝您今天有个美好的一天！",
-                musicGreeting,
-                timeGreeting,
-                hour,
-                minuteText,
-                "该起床啦"
-        );
+//        int hour = wakeUpTime.getHour();
+//        int minute = wakeUpTime.getMinute();
+//
+//
+//        // 根据时间段生成不同的问候
+//        String timeGreeting;
+//        String musicGreeting;
+//
+//
+//        if (hour >= 5 && hour < 9) {
+//            timeGreeting = "早上好";
+//            musicGreeting = "早上的阳光多美好！";
+//        } else if (hour >= 9 && hour < 12) {
+//            timeGreeting = "上午好";
+//            musicGreeting = "新的一天开始啦！";
+//        } else if (hour >= 12 && hour < 14) {
+//            timeGreeting = "中午好";
+//            musicGreeting = "该起床啦！";
+//        } else if (hour >= 14 && hour < 18) {
+//            timeGreeting = "下午好";
+//            musicGreeting = "下午的时光不要费！";
+//        } else {
+//            timeGreeting = "晚上好";
+//            musicGreeting = "该起床啦！";
+//        }
+//
+//
+//        String minuteText = minute == 0 ? "" : String.format("%d分", minute);
+//
+//
+//        String response = String.format(
+//                        "尊敬的客人，%s！\n" +
+//                        "现在是%d点%s，%s \n" +
+//                        "祝您今天有个美好的一天！",
+//                musicGreeting,
+//                timeGreeting,
+//                hour,
+//                minuteText,
+//                "该起床啦"
+//        );
+//        // 生成固定叫醒文案
+//        return response;
     }
 
 
@@ -1103,6 +1118,12 @@ public class HotelAssistantService {
             context.clear();
             log.info("[SESSION] 清除会话数据: sessionId={}", sessionId);
         }
+        hotelRouterAgent = null;
+        moAgent = null;
+        wakeUpAgent = null;
+        summaryAgent = null;
+        wakeUpCopywritingAgent = null;
+        queueTimeAgent = null;
     }
 
     /**

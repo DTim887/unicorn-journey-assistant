@@ -44,7 +44,7 @@ public class MenuItem {
     /**
      * 价格
      */
-    private Double price;
+    private int price;
     
     /**
      * 菜品描述

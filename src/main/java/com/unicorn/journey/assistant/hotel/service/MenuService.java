@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 菜单服务
@@ -43,29 +41,29 @@ public class MenuService {
             log.info("加载菜单数据成功，共 {} 道菜品", menuDatabase.size());
         } catch (IOException e) {
             log.error("加载菜单数据失败", e);
-            // 如果加载失败，使用默认数据
-            loadDefaultMenuData();
+//            // 如果加载失败，使用默认数据
+//            loadDefaultMenuData();
         }
     }
     
     /**
      * 加载默认菜单数据（备用）
      */
-    private void loadDefaultMenuData() {
-        log.warn("使用默认菜单数据");
-        menuDatabase.add(MenuItem.builder()
-                .menuId(1).name("清蒸鲈鱼").category("中式").flavors(Arrays.asList("清淡", "鲜"))
-                .image("/images/menu/steamed_sea_bass.jpg")
-                .price(68.0).description("新鲜鲈鱼清蒸，保留原味").build());
-        menuDatabase.add(MenuItem.builder()
-                .menuId(2).name("躁椒鱼头").category("中式").flavors(Arrays.asList("辣", "鲜"))
-                .image("/images/menu/fish_head_with_chopped_chili.jpg")
-                .price(68.0).description("湘菜经典，鱼肉鲜嫩").build());
-        menuDatabase.add(MenuItem.builder()
-                .menuId(3).name("蒜蓉西兰花").category("中式").flavors(Arrays.asList("清淡", "蒜香"))
-                .image("/images/menu/garlic_broccoli.webp")
-                .price(28.0).description("清爭健康的时蔬").build());
-    }
+//    private void loadDefaultMenuData() {
+//        log.warn("使用默认菜单数据");
+//        menuDatabase.add(MenuItem.builder()
+//                .menuId(1).name("清蒸鲈鱼").category("中式").flavors(Arrays.asList("清淡", "鲜"))
+//                .image("/images/menu/steamed_sea_bass.jpg")
+//                .price(68.0).description("新鲜鲈鱼清蒸，保留原味").build());
+//        menuDatabase.add(MenuItem.builder()
+//                .menuId(2).name("躁椒鱼头").category("中式").flavors(Arrays.asList("辣", "鲜"))
+//                .image("/images/menu/fish_head_with_chopped_chili.jpg")
+//                .price(68.0).description("湘菜经典，鱼肉鲜嫩").build());
+//        menuDatabase.add(MenuItem.builder()
+//                .menuId(3).name("蒜蓉西兰花").category("中式").flavors(Arrays.asList("清淡", "蒜香"))
+//                .image("/images/menu/garlic_broccoli.webp")
+//                .price(28.0).description("清爭健康的时蔬").build());
+//    }
     
     /**
      * 获取所有菜品（按ID排序）
