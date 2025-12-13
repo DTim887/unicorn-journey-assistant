@@ -2,7 +2,9 @@ package com.unicorn.journey.assistant.controller;
 
 import com.unicorn.journey.assistant.controller.request.ApproveWorkflowDTO;
 import com.unicorn.journey.assistant.controller.request.MagicDTO;
+import com.unicorn.journey.assistant.entity.queuetime.ParkDataSchema;
 import com.unicorn.journey.assistant.langgraph.tour.PlannerApp;
+import com.unicorn.journey.assistant.hotel.service.QueueTimeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class TestController {
 
 
+    private final QueueTimeService queueTimeService;
+
+    public TestController(QueueTimeService queueTimeService) {
+        this.queueTimeService = queueTimeService;
+    }
 
 
     //和朱迪聊天
@@ -29,5 +36,10 @@ public class TestController {
     @PostMapping("/approve")
     public ResponseEntity<String> approveWorkflow(@RequestBody ApproveWorkflowDTO approveWorkflowDTO) {
         return ResponseEntity.ok(new PlannerApp().approveWorkflow(approveWorkflowDTO));
+    }
+
+    @GetMapping("/queuetime")
+    public ResponseEntity<ParkDataSchema> queueTime() {
+        return ResponseEntity.ok(queueTimeService.getAttractionQueueTime());
     }
 }

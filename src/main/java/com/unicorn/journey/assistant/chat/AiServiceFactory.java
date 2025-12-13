@@ -4,7 +4,6 @@ import com.unicorn.journey.assistant.annotations.LocalCache;
 import com.unicorn.journey.assistant.constant.Assistants;
 import com.unicorn.journey.assistant.constant.CacheName;
 import com.unicorn.journey.assistant.service.*;
-import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;

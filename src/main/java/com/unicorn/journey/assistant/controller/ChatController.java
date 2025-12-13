@@ -124,7 +124,7 @@ public class ChatController {
 
     @GetMapping("/ttts")
     public Result ttts() throws Exception {
-        trainingTTSService.textToSpeech("我是尼克胡尼克，宇宙无敌第一帅狐狸。");
+        sttService.textToSpeechAndSave("这叫智取，宝贝儿。",VoiceCharacter.NICK);
         return Result.ok();
     }
 

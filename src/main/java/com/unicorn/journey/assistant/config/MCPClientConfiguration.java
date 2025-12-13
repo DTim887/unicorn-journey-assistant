@@ -7,18 +7,17 @@ import dev.langchain4j.mcp.client.transport.McpTransport;
 import dev.langchain4j.mcp.client.transport.http.StreamableHttpMcpTransport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 
-@Configuration
+//@Configuration
 public class MCPClientConfiguration {
 
 
     @Value("${mcp.rednode.sse-url}")
     private String sseUrl;
 
- /*   @Bean
+    @Bean
     public McpToolProvider mcpToolProvider() {
 
         McpTransport mcpTransport = new StreamableHttpMcpTransport.Builder()
@@ -39,6 +38,5 @@ public class MCPClientConfiguration {
                 .build();
 
 
-
-    }*/
+    }
 }
