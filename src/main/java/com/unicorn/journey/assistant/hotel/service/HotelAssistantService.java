@@ -57,7 +57,7 @@ public class HotelAssistantService {
     private final Map<String, WakeUpAssistance> wakeUpAssistanceMap = new ConcurrentHashMap<>();
 
     //存储用户状态
-    private final Map<String, String> userStatusMap = new ConcurrentHashMap<>();
+    public final Map<String, String> userStatusMap = new ConcurrentHashMap<>();
 
 
 
