@@ -1335,9 +1335,9 @@ public class HotelAssistantService {
     private String getDefaultResponseByCharacter(VoiceCharacter voiceCharacter) {
         return switch (voiceCharacter) {
             case JUDY ->
-                    "你好呀～我是兔子警官朱迪，您的专属陪伴助手！🐰 我可以为您讲迪士尼故事、温柔地叫醒您，还能帮您订餐，做您的导游。请问您需要什么服务呢？";
+                    "你好呀～我是兔子警官朱迪，您的专属伴侣！🐰 我可以为您讲迪士尼故事、温柔地叫醒您，还能帮您订餐，做您的导游。请问您需要什么服务呢？";
             case NICK ->
-                    "宝贝儿～我是尼克，您的贴心服务员！🦊 我能给您讲迪士尼的精彩故事、提供叫醒服务，帮您点外卖，还能当您的专属导游。有什么需要尽管说！";
+                    "宝贝儿～我是尼克，您的贴心伴侣！🦊 我能给您讲迪士尼的精彩故事、提供叫醒服务，帮您点外卖，还能当您的专属导游。有什么需要尽管说！";
         };
     }
 
