@@ -39,6 +39,9 @@ public class DataInitializer implements ApplicationRunner {
     @Resource
     private RedNoteService redNoteService;
 
+    @Resource
+    private DpaService dpaService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -49,6 +52,7 @@ public class DataInitializer implements ApplicationRunner {
         warmupProduct();
         warmupAssistant();
         wrmupRednote();
+        wrmupDpa();
     }
 
     public void warmupUser() throws IOException {
@@ -149,6 +153,22 @@ public class DataInitializer implements ApplicationRunner {
             });
             redNotes.forEach(redNote -> redNoteService.saveRedNote(redNote));
             log.info("预热 rednote 缓存 End, size:{}", redNotes.size());
+        }
+    }
+
+
+    private void wrmupDpa() throws IOException {
+        log.info("预热 DPA 缓存 Start");
+        ClassPathResource rednoteResource = new ClassPathResource("dpa.json");
+        if (!rednoteResource.exists()) {
+            log.error("文件不存在: dpa.json");
+            return;
+        }
+        try (InputStream rednoteResourceInputStream = rednoteResource.getInputStream()) {
+            List<DPA> dpaList = objectMapper.readValue(rednoteResourceInputStream, new TypeReference<>() {
+            });
+            dpaList.forEach(dpa -> dpaService.saveDpa(dpa));
+            log.info("预热 dpa 缓存 End, size:{}", dpaList.size());
         }
     }
 }

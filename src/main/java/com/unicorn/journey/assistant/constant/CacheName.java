@@ -14,7 +14,8 @@ public enum CacheName{
     PRODUCT("PRODUCT", Product.class),
     ASSISTANT("ASSISTANT", Assistant.class),
     REFUND("REFUND", Refund.class),
-    REDNOTE("REDNOTE", RedNote.class)
+    REDNOTE("REDNOTE", RedNote.class),
+    DPA("REDNOTE", DPA.class)
     ;
     private final String cacheName;
     private final Class<?> clazz;

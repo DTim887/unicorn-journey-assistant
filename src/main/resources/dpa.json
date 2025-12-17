@@ -1,0 +1,37 @@
+[
+  {
+    "facilityId": "attRoaringRapids;entityType=Attraction;destination=shdr",
+    "productName": "雷鸣山漂流尊享卡",
+    "description": "107厘米或以上可玩，包含雷鸣山漂流的尊享卡，可快速游玩免排队。",
+    "price": 180,
+    "image": "/images/product/shdr-att-roaring-new-c-sq.jpg"
+  },
+  {
+    "facilityId": "attZootopiaHotPursuit;entityType=Attraction;destination=shdr",
+    "productName": "疯狂动物城-热力追踪尊享卡",
+    "description": "所有身高可玩，包含疯狂动物城-热力追踪的尊享卡，可快速游玩免排队",
+    "price": 190,
+    "image": "/images/product/shdr-att-hot-pursuit-sq-20240104.png"
+  },
+  {
+    "facilityId": "attSevenDwarfsMineTrain;entityType=Attraction;destination=shdr",
+    "productName": "七个小矮人矿山车尊享卡",
+    "description": "97厘米或以上可玩，包含七个小矮人矿山车的尊享卡，可快速游玩免排队",
+    "price": 170,
+    "image": "/images/product/shdr-att-seven-dwarfs-mine-train-hero-sq-new.jpg"
+  },
+  {
+    "facilityId": "attPiratesOfCaribbean;entityType=Attraction;destination=shdr",
+    "productName": "加勒比海盗-沉落宝藏之战尊享卡",
+    "description": "所有身高可玩，包含加勒比海盗-沉落宝藏之战的尊享卡，可快速游玩免排队。",
+    "price": 160,
+    "image": "/images/product/shdr-att-pirates-of-caribbean-hero-sq-new-again.jpg"
+  },
+  {
+    "facilityId": "attRexsRCRacer;entityType=Attraction;destination=shdr",
+    "productName": "抱抱龙冲天赛车尊享卡",
+    "description": "120厘米或以上可玩，包含抱抱龙冲天赛车的尊享卡，可快速游玩免排队。",
+    "price": 150,
+    "image": "/images/product/shdr-att-rexs-racer-new-c-sq.jpg"
+  }
+]
