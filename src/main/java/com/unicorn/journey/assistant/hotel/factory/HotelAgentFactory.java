@@ -2,6 +2,7 @@ package com.unicorn.journey.assistant.hotel.factory;
 
 import com.unicorn.journey.assistant.hotel.agent.*;
 import com.unicorn.journey.assistant.hotel.service.QueueTimeService;
+import com.unicorn.journey.assistant.service.DpaService;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class HotelAgentFactory {
-    
+
     @Resource
     private ChatModel deepseekChatModel;
 
@@ -24,6 +25,9 @@ public class HotelAgentFactory {
 
     @Resource
     private QueueTimeService queueTimeService;
+
+    @Resource
+    private DpaService dpaService;
 
 
     /**
@@ -35,7 +39,7 @@ public class HotelAgentFactory {
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
-    
+
     /**
      * 创建点餐Agent（配置计算工具）
      */
@@ -45,7 +49,7 @@ public class HotelAgentFactory {
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
-    
+
     /**
      * 创建叫醒服务Agent
      */
@@ -59,11 +63,11 @@ public class HotelAgentFactory {
     public QueueTimeAgent createQueueTimeAgent() {
         return AiServices.builder(QueueTimeAgent.class)
                 .chatModel(deepseekChatModel)
-                .tools(queueTimeService)
+                .tools(queueTimeService, dpaService)
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
-    
+
     /**
      * 创建叫醒文案生成Agent
      */
@@ -73,7 +77,7 @@ public class HotelAgentFactory {
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(20))
                 .build();
     }
-    
+
     /**
      * 创建总结Agent
      */
