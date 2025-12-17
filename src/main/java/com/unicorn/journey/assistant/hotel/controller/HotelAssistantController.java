@@ -40,7 +40,7 @@ public class HotelAssistantController {
      *
      * @param request 聊天请求（包含userId, message, sessionId, enableVoiceOutput, voiceCharacter）
      */
-    @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(value = "/chat1", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chat(@RequestBody ChatRequest request) {
         log.info("收到聊天请求: userId={}, message={}, sessionId={}, enableVoiceOutput={}, voiceCharacter={}",
                 request.getUserId(), request.getMessage(), request.getSessionId(),

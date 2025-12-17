@@ -8,10 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 用户状态路由Controller
@@ -19,13 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @RestController
-@RequestMapping("/user-status-router")
+@RequestMapping("/hotel")
 public class UserStatusRouterController {
 
     private final UserStatusRouterService userStatusRouterService;
-
-    // 用户对话记录 key: userId, value: 消息列表
-    public final Map<String, List<String>> userConversationHistory = new ConcurrentHashMap<>();
 
     public UserStatusRouterController(UserStatusRouterService userStatusRouterService) {
         this.userStatusRouterService = userStatusRouterService;
@@ -45,11 +40,6 @@ public class UserStatusRouterController {
         log.info("收到聊天请求: userId={}, message={}, sessionId={}, voiceCharacter={}",
                 request.getUserId(), request.getMessage(), request.getSessionId(),
                 request.getVoiceCharacter());
-
-        // 存储用户对话记录
-        String userId = request.getUserId();
-        String message = request.getMessage();
-        userConversationHistory.computeIfAbsent(userId, k -> new ArrayList<>()).add(message);
 
         // 解析语音角色
         VoiceCharacter voiceCharacter = parseVoiceCharacter(request.getVoiceCharacter());

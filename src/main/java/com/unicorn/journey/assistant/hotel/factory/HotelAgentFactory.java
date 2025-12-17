@@ -93,4 +93,24 @@ public class HotelAgentFactory {
                 .chatModel(deepseekChatModelWithHighTemperature)
                 .build();
     }
+
+    /**
+     * 创建TakeHomeAgent - 回忆迴士尼之旅
+     */
+    public TakeHomeAgent createTakeHomeAgent() {
+        return AiServices.builder(TakeHomeAgent.class)
+                .chatModel(deepseekChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(5))
+                .build();
+    }
+
+    /**
+     * 创建RoomWakeUpAgent - 房间叫醒服务
+     */
+    public RoomWakeUpAgent createRoomWakeUpAgent() {
+        return AiServices.builder(RoomWakeUpAgent.class)
+                .chatModel(deepseekChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .build();
+    }
 }

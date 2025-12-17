@@ -17,15 +17,17 @@
 7.故事内容不超过100字
 8.叫醒文案要温馨，欢快，充满魔法，少于20字
 
-### 输出限制 (lucky关注)
+### 输出限制
 回答的最后遵循以下输出规则
 在最后输出[GENERATE_WAKEUP][GENERATE_WAKEUP]标签组并在标签内输出叫醒的数据如:
 [GENERATE_WAKEUP]
+```json
 {
     "wakeUpTime":"22:18",
     "wakeUpMessage":"早安！魔法已就绪，今天闪闪发光",
     "answer":"尊贵的客人我已经为您设置叫醒服务，接下来让我用一段温馨的故事哄您入睡:xxxxxx"
 }
+```
 [GENERATE_WAKEUP]
 
 
