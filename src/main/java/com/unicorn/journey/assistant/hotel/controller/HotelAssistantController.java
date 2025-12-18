@@ -5,6 +5,7 @@ import com.unicorn.journey.assistant.enums.VoiceCharacter;
 import com.unicorn.journey.assistant.hotel.dto.ChatRequest;
 import com.unicorn.journey.assistant.hotel.entity.WakeUpAssistance;
 import com.unicorn.journey.assistant.hotel.service.HotelAssistantService;
+import com.unicorn.journey.assistant.hotel.service.UserStatusRouterService;
 import com.unicorn.journey.assistant.service.STTService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -27,10 +28,12 @@ public class HotelAssistantController {
 
     private final HotelAssistantService hotelAssistantService;
     private final STTService sttService;
+    private final UserStatusRouterService userStatusRouterService;
 
-    public HotelAssistantController(HotelAssistantService hotelAssistantService, STTService sttService) {
+    public HotelAssistantController(HotelAssistantService hotelAssistantService, STTService sttService, UserStatusRouterService userStatusRouterService) {
         this.hotelAssistantService = hotelAssistantService;
         this.sttService = sttService;
+        this.userStatusRouterService = userStatusRouterService;
     }
 
     /**
@@ -136,7 +139,7 @@ public class HotelAssistantController {
      */
     @DeleteMapping("/session/{sessionId}")
     public void clearSession(@PathVariable String sessionId) {
-        hotelAssistantService.clearSession(sessionId);
+        userStatusRouterService.clearSession(sessionId);
     }
 
     /**

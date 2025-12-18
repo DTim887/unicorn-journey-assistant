@@ -210,8 +210,7 @@ public class UserStatusRouterService {
                 }else if ("TAKE_HOME".equals(userStatus)) {
                     handleTakeHomeLogic(userId, message, finalSessionId,
                             voiceCharacter, finalEmitter);
-                }
-                else {
+                } else {
                     // IN_ROOM 或其他状态，默认执行房间内逻辑
                     handleInRoomLogic(userId, message, finalSessionId,
                             voiceCharacter, finalEmitter);
@@ -235,7 +234,7 @@ public class UserStatusRouterService {
         try {
             // 获取用户对话记录
             List<String> conversationHistory = userConversationHistory.getOrDefault(userId, new ArrayList<>());
-            log.info("[TAKE_HOME] 用户对话记录数量: {}", conversationHistory.size());
+            log.info("[TAKE_HOME] 用户对话记录 {}", conversationHistory);
             
             // 将对话记录转换为字符串
             String conversationHistoryText;
@@ -248,7 +247,7 @@ public class UserStatusRouterService {
             // 使用TakeHomeAgent生成回忆总结
             log.info("[TAKE_HOME] 开始生成回忆总结...");
             String memoryText = getTakeHomeAgent().generateMemory(conversationHistoryText);
-            log.info("[TAKE_HOME] 回忆总结生成完成: {}", memoryText.substring(0, Math.min(50, memoryText.length())));
+            log.info("[TAKE_HOME] 回忆总结生成完成: {}", memoryText);
             
             // 生成语音并发送
             try {
@@ -290,38 +289,28 @@ public class UserStatusRouterService {
             String agentResponse = getQueueTimeAgent().inParkChat(memoryId, message);
             log.info("[IN_PARK] Agent响应: {}", agentResponse);
             
-            // 处理业务逻辑
+            // 清理响应中的标记
+            String cleanedResponse = cleanInParkTags(agentResponse);
+            
+            // 提取结构化数据（但先不发送）
+            DpaOrder dpaOrder = null;
+            Map<String, Object> dpaProduct = null;
+            
             if (agentResponse.contains("[DPA_ORDER_SUCCESS]")) {
                 // 用户确认下单，生成DPA订单
                 log.info("[IN_PARK] 检测到DPA订单成功标记");
-                DpaOrder dpaOrder = generateDpaOrder(userId, agentResponse, sessionId);
-                if (dpaOrder != null) {
-                    // 发送DPA订单结构化数据
-                    sseEventSender.sendEvent(sessionId, sseEmitter,
-                            SseEventType.STRUCTURED_DATA.getEventName(),
-                            Map.of("type", "DPA_ORDER", "data", dpaOrder));
-                    log.info("[IN_PARK] 发送DPA订单数据: {}", dpaOrder.getDpaOrderNo());
-                }
+                dpaOrder = generateDpaOrder(userId, agentResponse, sessionId);
             } else if (agentResponse.contains("[DPA_ORDER]")) {
                 // 推荐尊享卡，提取产品信息
                 log.info("[IN_PARK] 检测到DPA产品推荐标记");
-                Map<String, Object> dpaProduct = extractDpaFromResponse(agentResponse);
+                dpaProduct = extractDpaFromResponse(agentResponse);
                 if (dpaProduct != null && !dpaProduct.isEmpty()) {
                     // 临时存储产品信息，用于后续生成订单
                     tempDpaProductMap.put(sessionId, dpaProduct);
-                    
-                    // 发送DPA产品结构化数据
-                    sseEventSender.sendEvent(sessionId, sseEmitter,
-                            SseEventType.STRUCTURED_DATA.getEventName(),
-                            Map.of("type", "DPA_PRODUCT", "data", dpaProduct));
-                    log.info("[IN_PARK] 发送DPA产品数据: {}", dpaProduct.get("productName"));
                 }
             }
-            
-            // 清理响应中的标记
-            String cleanedResponse = cleanInParkTags(agentResponse);
 
-            // 生成语音并发送
+            // 先生成语音并发送
             if (!cleanedResponse.isEmpty()) {
                 try {
                     String audioPath = sttService.textToSpeechAndSave(
@@ -339,6 +328,19 @@ public class UserStatusRouterService {
                 } catch (Exception e) {
                     log.error("[IN_PARK-VOICE] 语音生成失败: {}", e.getMessage(), e);
                 }
+            }
+            
+            // 再发送结构化数据
+            if (dpaOrder != null) {
+                sseEventSender.sendEvent(sessionId, sseEmitter,
+                        SseEventType.STRUCTURED_DATA.getEventName(),
+                        Map.of("type", "DPA_ORDER", "data", dpaOrder));
+                log.info("[IN_PARK] 发送DPA订单数据: {}", dpaOrder.getDpaOrderNo());
+            } else if (dpaProduct != null && !dpaProduct.isEmpty()) {
+                sseEventSender.sendEvent(sessionId, sseEmitter,
+                        SseEventType.STRUCTURED_DATA.getEventName(),
+                        Map.of("type", "DPA_PRODUCT", "data", dpaProduct));
+                log.info("[IN_PARK] 发送DPA产品数据: {}", dpaProduct);
             }
             
         } catch (Exception e) {
@@ -724,6 +726,18 @@ public class UserStatusRouterService {
         return null;
     }
 
-
+    /**
+     * 清除会话数据
+     */
+    public void clearSession(String sessionId) {
+        SessionContext context = sessionContexts.remove(sessionId);
+        if (context != null) {
+            context.clear();
+            log.info("[SESSION] 清除会话数据: sessionId={}", sessionId);
+        }
+        takeHomeAgent = null;
+        roomWakeUpAgent = null;
+        queueTimeAgent = null;
+    }
 
 }
